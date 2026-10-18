@@ -1,14 +1,15 @@
 # CI/CD: shared workflows from github.com/lrozewicz/.github
-#   pull request -> tests, image build, Trivy (no secrets, also for forks)
-#   push to dev  -> build, push to Harbor, deploy to <app>.dev.lucasnextgen.com
-#   push to main -> promote the same image, deploy to <app>.lucasnextgen.com
+#   pull request     -> tests, image build, Trivy (no secrets, also for forks)
+#   push to main     -> build, push to Harbor, deploy to <app>.dev.lucasnextgen.com
+#   tag v1.2.3       -> promote the same image, deploy to <app>.lucasnextgen.com
 name: CI
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [main]
   push:
-    branches: [dev, main]
+    branches: [main]
+    tags: ["v*"]
 
 permissions:
   contents: read
@@ -22,7 +23,7 @@ jobs:
     if: github.event_name == 'push'
     uses: lrozewicz/.github/.github/workflows/deploy.yml@main
     with:
-      environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
+      environment: ${{ github.ref_type == 'tag' && 'prod' || 'dev' }}
     secrets:
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
