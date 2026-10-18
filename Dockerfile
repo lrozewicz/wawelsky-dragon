@@ -4,7 +4,7 @@
 #                     runs as UID 10001 with a read-only root filesystem (/tmp is writable)
 # Replace the Go example with your stack, keeping the stage names and the contract.
 
-FROM golang:1.26-alpine AS build
+FROM golang:1.27-alpine AS build
 WORKDIR /src
 COPY go.mod ./
 RUN go mod download
