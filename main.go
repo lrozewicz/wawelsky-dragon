@@ -14,7 +14,7 @@ func newMux() *http.ServeMux {
 		fmt.Fprintln(w, "ok")
 	})
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hello from wawelsky-dragon")
+		fmt.Fprintln(w, "Hello from wawelsky-dragon (pipeline test)")
 	})
 	return mux
 }
