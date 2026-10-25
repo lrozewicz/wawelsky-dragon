@@ -5,24 +5,24 @@ description = "Backend Wawelsky Dragon — lekki system RAG zgodny z API RAGFlow
 license = { text = "Apache-2.0" }
 requires-python = "==3.13.*"
 dependencies = [
-    "fastapi==0.141.1",
-    "starlette==1.6.0",
-    "pydantic==2.13.5",
-    "pydantic-settings==2.15.0",
-    "uvicorn==0.53.0",
-    "sqlalchemy[asyncio]==2.0.54",
-    "asyncmy==0.2.15",
+    "fastapi==0.161.0",
+    "starlette==1.9.0",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.1",
+    "uvicorn==0.54.0",
+    "sqlalchemy[asyncio]==2.1.6",
+    "asyncmy==0.2.17",
     "pymysql==1.2.3",
-    "alembic==1.20.0",
+    "alembic==1.20.1",
     "httpx==0.28.1",
-    "xxhash==4.0.1",
-    "openai==3.19.2",
-    "httpx2==2.13.1",
+    "xxhash==4.0.2",
+    "openai==3.37.0",
+    "httpx2==2.16.0",
     "tiktoken==0.14.0",
-    "cryptography==50.0.1",
-    "pyjwt==2.15.0",
+    "cryptography==50.0.2",
+    "pyjwt==2.15.1",
     "argon2-cffi==25.1.0",
-    "pypdfium2==5.13.0",
+    "pypdfium2==5.14.0",
     "pdfplumber==0.11.10",
     "mammoth==1.13.0",
     "python-docx==1.2.0",
@@ -32,7 +32,7 @@ dependencies = [
     "markdown-it-py==4.2.0",
     "beautifulsoup4==4.15.0",
     "lxml==6.1.3",
-    "charset-normalizer==3.5.1",
+    "charset-normalizer==3.5.2",
     "pytesseract==0.3.13",
     "pillow==13.0.0",
     "pystempel==1.2.0",
@@ -47,8 +47,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff==0.16.9",
-    "mypy==2.3.1",
+    "ruff==0.17.2",
+    "mypy==2.4.0",
     "pytest==9.1.1",
     "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
@@ -59,9 +59,9 @@ dev = [
     # Port testów upstream RAGFlow (E2-3a1): `hypothesis` (dekoratory `@given`),
     # `requests-toolbelt` (`MultipartEncoder` uploadu dokumentów), `reportlab` (PDF-y w
     # `utils/file_utils.py`). Instalowane też w obrazach dev, ale nie w runtime.
-    "hypothesis==6.168.3",
+    "hypothesis==6.170.7",
     "requests-toolbelt==1.0.0",
-    "reportlab==5.0.1",
+    "reportlab==5.1.0",
     # Port testów SDK (E2-3b): klient `ragflow_sdk` w wersji upstream v0.27.2.
     # Tylko do testów kontraktowych — nie trafia do obrazów runtime.
     "ragflow-sdk==0.27.2",
