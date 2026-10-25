@@ -42,7 +42,7 @@ dependencies = [
     "wordfreq==3.1.1",
     # Serwer MCP (E6-2, K17 §2): ten sam zakres co upstream v0.27.2 (`mcp>=1.28.1,<2.0.0`);
     # przypięte do 1.30.0 — na tej wersji nagrano złoto `golden/v0.27.2/mcp/`.
-    "mcp==1.30.0",
+    "mcp==2.3.0",
 ]
 
 [dependency-groups]
