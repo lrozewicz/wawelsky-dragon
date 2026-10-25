@@ -18,7 +18,7 @@ RUN bun run build
 #
 # Runner CI ma 4 vCPU (hostowa wyrocznia: 32), a testy `waitFor` są wrażliwe na obciążenie (patrz VITEST_MAX_WORKERS w
 # `.claude/verify-fast.sh`), więc: 3 workery i `--retry=2` (flak czasowy nie czerwieni PR; stała awaria nadal tak).
-FROM node:24.16.0-alpine AS test
+FROM node:26.12.1-alpine AS test
 COPY --from=oven/bun:1.4.2-alpine /usr/local/bin/bun /usr/local/bin/bun
 WORKDIR /app
 COPY package.json bun.lock ./
