@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = "==3.13.*"
 
 [[package]]
@@ -1270,15 +1270,15 @@ wheels = [
 
 [[package]]
 name = "pystempel"
-version = "1.2.0"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sortedcontainers" },
     { name = "tqdm" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/83/a436f6a02b7c22d6397ade73293feef38b124ac7968ea160ae7c9410d7b7/pystempel-1.2.0.tar.gz", hash = "sha256:754e84ff6912ab8721a3f0eff299db2a1d72d4a45a90cb4ad82c38f59de820ce", size = 14758, upload-time = "2020-10-29T16:19:58.855Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/d4/ea46cc1cff1ad84bf0ba838405b8a527e5b13ed820ed1c6374e332dcc41b/pystempel-2.0.0.tar.gz", hash = "sha256:201f68397c08a1ed5a7b6751355d40576acbbf0cad6d519836210175ed62a80e", size = 2721022, upload-time = "2024-07-10T17:16:07.35Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/66/e548a15d84c793970d28aab91f2822a44536398a6aa6657ba1deaf3a9f4e/pystempel-1.2.0-py3-none-any.whl", hash = "sha256:efba2d5e46c1ae0e296eaeb69e071826da2bc66b19a68b4a4f3b3a3c375920a4", size = 2716064, upload-time = "2020-10-29T16:19:55.851Z" },
+    { url = "https://files.pythonhosted.org/packages/0d/96/84f748e2f0368c9f7259b23838413fe5d2b4f76a31738c07a00de92747f9/pystempel-2.0.0-py3-none-any.whl", hash = "sha256:5271ab3d8640372567aaf9b8feaa4824ebede08362e4e34c4a24c64ad910abd3", size = 2717909, upload-time = "2024-07-10T17:16:03.302Z" },
 ]
 
 [[package]]
@@ -1856,7 +1856,7 @@ requires-dist = [
     { name = "pyjwt", specifier = "==2.15.0" },
     { name = "pymysql", specifier = "==1.2.3" },
     { name = "pypdfium2", specifier = "==5.13.0" },
-    { name = "pystempel", specifier = "==1.2.0" },
+    { name = "pystempel", specifier = "==2.0.0" },
     { name = "pytesseract", specifier = "==0.3.13" },
     { name = "python-docx", specifier = "==1.2.0" },
     { name = "python-multipart", specifier = "==0.0.32" },

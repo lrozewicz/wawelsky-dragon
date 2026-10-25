@@ -35,7 +35,7 @@ dependencies = [
     "charset-normalizer==3.5.1",
     "pytesseract==0.3.13",
     "pillow==13.0.0",
-    "pystempel==1.2.0",
+    "pystempel==2.0.0",
     "python-multipart==0.0.32",
     # Mapa modeli dla migracji RAGFlow→WD (E4-6a): czytana w runtime przez `plan`/`run`.
     "pyyaml==6.0.3",
