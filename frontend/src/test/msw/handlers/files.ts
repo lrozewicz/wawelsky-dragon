@@ -1,6 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import type { HttpHandler } from 'msw'
 
+import { parseMultipart } from '../multipart'
 import { apiUrl } from './common'
 import {
   FILES_ROOT_ID,
@@ -78,14 +79,10 @@ export function filesHandlers(): HttpHandler[] {
     http.post(apiUrl('/api/v1/files'), async ({ request }) => {
       const contentType = request.headers.get('content-type') ?? ''
       if (contentType.includes('multipart/form-data')) {
-        const form = await request.formData()
-        // `File` z `formData()` MSW nie jest `instanceof File` jsdomu — rozpoznajemy po typie.
-        const uploaded = form
-          .getAll('file')
-          .filter((entry): entry is File => typeof entry !== 'string')
+        const form = await parseMultipart(request)
+        const uploaded = form.files.filter((entry) => entry.field === 'file')
         if (uploaded.length === 0) return HttpResponse.json({ code: 101, message: 'No file part!' })
-        const rawParent = form.get('parent_id')
-        const parent = resolveParent(typeof rawParent === 'string' ? rawParent : undefined)
+        const parent = resolveParent(form.fields.parent_id)
         if (parent === null) return dataError('Parent folder not found!')
         const created = uploaded.map((file) => insertUpload(parent.id, file.name, file.size))
         return HttpResponse.json({ code: 0, message: '', data: created.map(presentCreated) })
