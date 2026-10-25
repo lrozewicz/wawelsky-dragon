@@ -19,7 +19,7 @@ permissions:
 jobs:
   pr:
     if: github.event_name == 'pull_request'
-    uses: lrozewicz/.github/.github/workflows/pr.yml@multi-image
+    uses: lrozewicz/.github/.github/workflows/pr.yml@main
     with:
       images: |
         [
@@ -30,7 +30,7 @@ jobs:
 
   deploy:
     if: github.event_name == 'push'
-    uses: lrozewicz/.github/.github/workflows/deploy.yml@multi-image
+    uses: lrozewicz/.github/.github/workflows/deploy.yml@main
     with:
       environment: ${{ github.ref_type == 'tag' && 'prod' || 'dev' }}
       images: |
