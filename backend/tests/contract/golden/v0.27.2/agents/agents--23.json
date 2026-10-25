@@ -1,0 +1,36 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "query": {
+      "type": "filter"
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "filter": {
+        "canvas_category": [
+          {
+            "count": 3,
+            "id": "agent_canvas"
+          }
+        ],
+        "owner": [
+          {
+            "count": 3,
+            "id": "<ID:id#14>",
+            "label": "recorder"
+          }
+        ]
+      },
+      "total": 3
+    },
+    "message": "success"
+  }
+}

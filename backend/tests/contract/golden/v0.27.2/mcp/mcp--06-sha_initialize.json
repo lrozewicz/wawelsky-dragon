@@ -1,0 +1,23 @@
+{
+  "request": {
+    "transport": "streamable_http",
+    "op": "initialize",
+    "tool": null,
+    "arguments": null,
+    "auth": "key"
+  },
+  "outcome": "ok",
+  "result": {
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "experimental": {},
+      "tools": {
+        "listChanged": false
+      }
+    },
+    "serverInfo": {
+      "name": "ragflow-mcp-server",
+      "version": "1.28.1"
+    }
+  }
+}

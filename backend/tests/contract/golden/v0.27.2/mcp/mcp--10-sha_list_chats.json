@@ -1,0 +1,23 @@
+{
+  "request": {
+    "transport": "streamable_http",
+    "op": "call_tool",
+    "tool": "ragflow_list_chats",
+    "arguments": null,
+    "auth": "key"
+  },
+  "outcome": "ok",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": {
+          "id": "<ID:chat#1>",
+          "name": "wd_rec_e6_mcp_chat",
+          "description": "A helpful Assistant"
+        }
+      }
+    ],
+    "isError": false
+  }
+}

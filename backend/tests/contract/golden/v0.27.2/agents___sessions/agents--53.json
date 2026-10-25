@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/agents/<ID:agent#1>/sessions",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e6_agents_intruder"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 103,
+    "data": false,
+    "message": "Make sure you have permission to access the agent."
+  }
+}

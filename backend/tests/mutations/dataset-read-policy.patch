@@ -1,0 +1,29 @@
+diff --git a/backend/app/services/datasets.py b/backend/app/services/datasets.py
+index eb8d928e..88fad5b8 100644
+--- a/backend/app/services/datasets.py
++++ b/backend/app/services/datasets.py
+@@ -21,6 +21,7 @@ from app.domain.policy import (
+     Action,
+     Principal,
+     ResourceRef,
++    VisibilityFilter,
+     can,
+     require,
+     visibility_filter,
+@@ -308,7 +309,6 @@ class DatasetService:
+             record = await datasets_repo.get_record(session, dataset_id)
+         if record is None:
+             raise NotFound(missing.format(dataset_id=dataset_id, user_id=principal.user_id))
+-        require(principal, action, _ref(record))
+         return record
+ 
+     def _sessionmaker(self) -> async_sessionmaker[AsyncSession]:
+@@ -373,7 +373,7 @@ class DatasetService:
+         wcześniej WD zwracał tu 102, bo brał ``total == 0`` za brak dostępu.
+         """
+         async with transaction(self._sessionmaker()) as session:
+-            visibility = visibility_filter(principal, "dataset")
++            visibility = VisibilityFilter(True, frozenset(), False)
+             if q.dataset_id is not None and not await datasets_repo.exists(
+                 session, visibility=visibility, dataset_id=q.dataset_id
+             ):

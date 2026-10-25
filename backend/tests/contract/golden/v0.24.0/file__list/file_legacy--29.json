@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/file/list",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 109,
+    "data": false,
+    "message": "Authentication error: API key is invalid!"
+  }
+}

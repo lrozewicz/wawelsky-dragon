@@ -1,0 +1,25 @@
+{
+  "value": [
+    {
+      "id": "f1",
+      "name": "Docs",
+      "folder": {"childCount": 1},
+      "eTag": "\"e-f1\"",
+      "parentReference": {"path": "/drives/b!d1/root:"}
+    },
+    {
+      "id": "i1",
+      "name": "a.docx",
+      "size": 1234,
+      "file": {
+        "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      },
+      "cTag": "\"c-i1\"",
+      "eTag": "\"e-i1\"",
+      "webUrl": "https://contoso.sharepoint.com/sites/Docs/Shared%20Documents/Docs/a.docx",
+      "lastModifiedDateTime": "2026-09-01T10:00:00Z",
+      "parentReference": {"path": "/drives/b!d1/root:/Docs"}
+    }
+  ],
+  "@odata.nextLink": "https://graph.microsoft.com/v1.0/drives/b!d1/root/delta?$skiptoken=P2"
+}

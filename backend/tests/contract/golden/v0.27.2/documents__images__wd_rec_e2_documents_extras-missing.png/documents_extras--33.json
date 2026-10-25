@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/documents/images/wd_rec_e2_documents_extras-missing.png",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json",
+    "content-length": "42"
+  },
+  "body": {
+    "length": 42,
+    "sha256": "af63896453e33fec73368e36f034c077ff1d5bd858ea83a345fad0d6002130b9"
+  }
+}

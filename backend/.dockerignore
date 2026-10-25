@@ -1,0 +1,13 @@
+# Poza kontekstem budowy obrazu backendu (kontrakt WP E0-3 C1; `tests` kopiuje tylko etap test-ocr, C12)
+.venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+coverage.xml
+.coverage*
+# harness jakości wdeval (E1-10a) — poza obrazami; testy wymagają pakietu backend/wdeval
+tests/unit/wdeval
+tests/integration/wdeval
+# testy live (E1-10b) — potrzebują kluczy WD_LLM_* i działającej bramki; poza obrazami
+tests/live

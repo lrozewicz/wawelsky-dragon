@@ -1,0 +1,21 @@
+[mysqld]
+character-set-server      = utf8mb4
+# wynik SP-3 (04 §1) — w 11 §2.1 było utf8mb4_unicode_ci
+collation-server          = utf8mb4_uca1400_ai_ci
+# Fallback dla stosu testowego i uruchomień bez compose prod.
+# Wartość produkcyjna pochodzi z argumentu `command` w docker-compose.yml
+# (zmienna WD_MARIADB_BUFFER_POOL, domyślnie 6G) i ma pierwszeństwo przed tym plikiem.
+innodb_buffer_pool_size   = 1G
+innodb_log_file_size      = 256M
+# krótkie tokeny i liczby w FULLTEXT (np. "PIT", "5G", "UE")
+innodb_ft_min_token_size  = 2
+# angielska lista stopwords psuje wyszukiwanie PL
+innodb_ft_enable_stopword = OFF
+# wsadowe inserty wektorów 3072-wym.
+max_allowed_packet        = 256M
+max_connections           = 200
+wait_timeout              = 600
+# kolejka SKIP LOCKED, mniej blokad luk
+transaction_isolation     = READ-COMMITTED
+skip-name-resolve
+# mhnsw_* — dopiero po pozytywnym spike SP-1 (ADR-02)

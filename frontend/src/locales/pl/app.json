@@ -1,0 +1,7 @@
+{
+  "app.name": "Wawelsky Dragon",
+  "app.skipToContent": "Przejdź do treści",
+  "app.notFound.title": "Nie znaleziono strony",
+  "app.notFound.description": "Adres, który wpisano, nie istnieje lub został przeniesiony.",
+  "app.notFound.back": "Przejdź do Baz wiedzy"
+}

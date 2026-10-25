@@ -1,0 +1,3508 @@
+{
+  "comparisons": [
+    {
+      "arms": [
+        "auto",
+        "fast",
+        "vision"
+      ],
+      "common_count": 24,
+      "common_question_ids": [
+        "ig-01",
+        "ig-02",
+        "mh-01",
+        "mh-02",
+        "nr-01",
+        "nr-02",
+        "nr-03",
+        "nr-04",
+        "nr-05",
+        "sl-01",
+        "sl-02",
+        "sl-03",
+        "ss-01",
+        "ss-02",
+        "ss-03",
+        "ss-04",
+        "ss-05",
+        "ss-06",
+        "ss-07",
+        "tx-01",
+        "tx-02",
+        "tx-03",
+        "un-01",
+        "un-02"
+      ],
+      "corpus": "subset",
+      "total": 29
+    }
+  ],
+  "items": [
+    {
+      "answer": "GUS oszacował łączną liczbę mieszkańców Ukrainy przebywających w Polsce na poziomie ponad 1 264 tysięcy osób, korzystając ze zbiorów big data [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-full",
+      "item_id": "tf-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        832,
+        833,
+        820,
+        818,
+        819,
+        880
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Udział mieszkańców Ukrainy objętych ochroną czasową w m.st. Warszawa odnotowano na poziomie 11,0% [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-full",
+      "item_id": "tf-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        832,
+        833,
+        818,
+        820,
+        1040,
+        819
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Publikacje analityczne stanowiły 40% wszystkich tytułów wśród publikacji ogólnopolskich GUS w 2023 roku [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-full",
+      "item_id": "tf-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        784,
+        781,
+        848,
+        782,
+        746,
+        907
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "GUS zapewnia kontakt poprzez sms/mms pod numerem 538 550 457 dla osób ze szczególnymi potrzebami [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-full",
+      "item_id": "tf-04",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        806,
+        803,
+        745,
+        685,
+        792,
+        709
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Konferencja „Demograficzne zróżnicowanie przestrzenne Polski. Konsekwencje społeczne i ekonomiczne\" odbyła się 15 listopada 2023 r. w Warszawie [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-full",
+      "item_id": "tf-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1048,
+        924,
+        927,
+        925,
+        1046,
+        933
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet ogółem w wieku 0 lat w 2024 r. wynosiło 82,26 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1085,
+        1084,
+        1089,
+        1087,
+        1088,
+        1086
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia mężczyzn ogółem w wieku 60 lat w 2024 r. wynosiło 19.8 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1084,
+        1085,
+        1088,
+        1086,
+        1089,
+        1087
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet na wsi w wieku 0 lat w 2024 r. wynosiło 82.21 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1089,
+        1088,
+        1085,
+        1084,
+        1087,
+        1086
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W badaniu przeanalizowano łącznie 3000 komentarzy pochodzących z trzech platform społecznościowych: X, Instagram oraz TikTok [Źródło 1][Źródło 3].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1052,
+        1061,
+        1063,
+        1062,
+        1056,
+        1065
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aż 79% młodych osób w wieku 15–24 lata zadeklarowało kontakt z hejtem [1][2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1058,
+        1059,
+        1068,
+        1067,
+        1073,
+        1056
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "NIE",
+          "value": false
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aby wypowiedź uznano za hejt w tym badaniu, muszą być spełnione przynajmniej dwa kryteria z pięciu określonych w Załączniku 1 [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1080,
+        1061,
+        1063,
+        1058,
+        1056,
+        1055
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Informacja o tym, kto był audytorem dostępności cyfrowej strony internetowej CBA, nie znajduje się w przekazanej wiedzy.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "narrative",
+      "item_id": "nr-04",
+      "miss_kind": "retrieval-miss",
+      "retrieved_chunk_ids": [
+        1097,
+        1100,
+        1090,
+        1096,
+        1228,
+        1225
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Adres strony internetowej objętej audytem dostępności cyfrowej CBA to: www.edu.cba.gov.pl [1][2][3][5].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1090,
+        1097,
+        1100,
+        1096,
+        1228,
+        1225
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Samorządy składają sprawozdanie z realizacji działań POP za rok poprzedni do 15 lutego, zgodnie z terminem określonym w Ustawie Poś [2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1233,
+        1237,
+        1232,
+        1238,
+        1241,
+        1235
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Poziom 3 alertu w Planie Działań Krótkoterminowych oznaczony jest kolorem czerwonym [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1242,
+        1230,
+        1233,
+        1231,
+        1232,
+        1151
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Konferencja, na której przedstawiono platformę sprawozdawczą POP, odbyła się 11 grudnia 2023 roku [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1229,
+        676,
+        1050,
+        941,
+        930,
+        1046
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia mężczyzn w wieku 0 lat było wyższe w miastach (75,07 lat) niż na wsi (74,68 lat) [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1088,
+        1086,
+        1089,
+        1087,
+        1084,
+        1085
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia kobiet w wieku 0 lat wynosiło 82,26 lat, a mężczyzn 74,93 lat. Różnica wynosi więc 82,26 - 74,93 = 7,33 lat na korzyść kobiet [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1085,
+        1084,
+        1088,
+        1089,
+        681,
+        1086
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W przekazanej wiedzy nie ma informacji o średniej cenie metra kwadratowego mieszkania w Gdańsku w 2023 r.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-01",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        926,
+        721,
+        844,
+        705,
+        1043,
+        694
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W przekazanej wiedzy nie ma informacji o budżecie Głównego Urzędu Statystycznego na rok 2025.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "full",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-02",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        694,
+        673,
+        695,
+        649,
+        788,
+        807
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet ogółem w wieku 0 lat w 2024 r. wynosiło 82,26 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1318,
+        1317,
+        1322,
+        1320,
+        1321,
+        1319
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia mężczyzn ogółem w wieku 60 lat w 2024 r. wynosiło 19.8 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1317,
+        1318,
+        1321,
+        1319,
+        1322,
+        1320
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet na wsi w wieku 0 lat w 2024 r. wynosiło 82.21 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1322,
+        1321,
+        1318,
+        1317,
+        1320,
+        1319
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Główny Urząd Statystyczny liczył 737 pracowników według stanu na 31.12.2023 r. [Źródło 2].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1246,
+        1248,
+        1244,
+        1276,
+        1262,
+        1247
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Na 31.12.2023 r. do korpusu służby cywilnej w GUS należało 667 pracowników [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1247,
+        1246,
+        1244,
+        1248,
+        1262,
+        1280
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Księgozbiór Centralnej Biblioteki Statystycznej w 2023 roku liczył 512 585 woluminów [Źródło 3].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1253,
+        1249,
+        1250,
+        1252,
+        1251,
+        1284
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 roku w Bibliotece Cyfrowej CBS było dostępnych 5 970 publikacji [Źródło 2].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-04",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1251,
+        1252,
+        1250,
+        1249,
+        1253,
+        1329
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 r. środowiska wirtualizacyjne używane w statystyce publicznej miały 58 112 GB pamięci operacyjnej (RAM) [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1256,
+        1281,
+        1254,
+        1262,
+        1252,
+        1246
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 roku odnotowano 51 216 mln zapytań do API rejestru TERYT [Źródło 2].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-06",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1261,
+        1260,
+        1258,
+        1259,
+        1257,
+        1280
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Wiedza nie zawiera informacji o liczbie uczestników Olimpiady Statystycznej w edycji 2023/24.",
+      "answer_correct": false,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "scan-synth",
+      "item_id": "ss-07",
+      "miss_kind": "retrieval-miss",
+      "retrieved_chunk_ids": [
+        1269,
+        1276,
+        1271,
+        1277,
+        1262,
+        1272
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W przekazanej wiedzy nie ma informacji o adresie e-mail do wysyłania zgłoszeń w celu otrzymywania informacji prasowych GUS.",
+      "answer_correct": false,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "infographic",
+      "item_id": "ig-01",
+      "miss_kind": "parse-miss",
+      "retrieved_chunk_ids": [
+        1244,
+        1323,
+        1272,
+        1246,
+        1267,
+        1262
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W przekazanej wiedzy nie ma informacji o godzinie publikacji komunikatów i obwieszczeń Prezesa GUS.",
+      "answer_correct": false,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "infographic",
+      "item_id": "ig-02",
+      "miss_kind": "parse-miss",
+      "retrieved_chunk_ids": [
+        1453,
+        1244,
+        1267,
+        1284,
+        1246,
+        1249
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W badaniu przeanalizowano łącznie 3000 komentarzy pochodzących z trzech platform społecznościowych: X, Instagram oraz TikTok [Źródło 1][Źródło 3].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1285,
+        1294,
+        1296,
+        1295,
+        1289,
+        1298
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aż 79% młodych osób w wieku 15–24 lata zadeklarowało kontakt z hejtem [1][2].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1291,
+        1292,
+        1301,
+        1300,
+        1306,
+        1289
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "NIE",
+          "value": false
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aby wypowiedź uznać za hejt, muszą być spełnione przynajmniej dwa kryteria z przyjętej listy kryteriów oceny hejtu [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1313,
+        1294,
+        1296,
+        1291,
+        1289,
+        1292
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Informacja o tym, kto był audytorem dostępności cyfrowej strony internetowej CBA, nie znajduje się w przekazanej wiedzy.",
+      "answer_correct": false,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "narrative",
+      "item_id": "nr-04",
+      "miss_kind": "retrieval-miss",
+      "retrieved_chunk_ids": [
+        1330,
+        1333,
+        1323,
+        1329,
+        1461,
+        1458
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Adres strony internetowej objętej audytem dostępności cyfrowej CBA to: www.edu.cba.gov.pl [1][2][3][5].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1323,
+        1330,
+        1333,
+        1329,
+        1461,
+        1458
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Samorządy składają sprawozdanie z realizacji działań POP za rok poprzedni do 15 lutego, zgodnie z terminem określonym w Ustawie Poś [2].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1466,
+        1470,
+        1465,
+        1471,
+        1474,
+        1468
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Poziom 3 alertu w Planie Działań Krótkoterminowych oznaczony jest kolorem czerwonym [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1475,
+        1463,
+        1466,
+        1464,
+        1465,
+        1384
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Konferencja, na której przedstawiono platformę sprawozdawczą POP, odbyła się 11 grudnia 2023 roku [Źródło 1].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1462,
+        1472,
+        1468,
+        1466,
+        1471,
+        1474
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia mężczyzn w wieku 0 lat było wyższe w miastach (75,07 lat) niż na wsi (74,68 lat) [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1321,
+        1319,
+        1322,
+        1320,
+        1317,
+        1318
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia kobiet w wieku 0 lat wynosiło 82,26 lat, a mężczyzn 74,93 lat. Różnica wynosi więc 7,33 lat na korzyść kobiet [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1318,
+        1317,
+        1248,
+        1321,
+        1322,
+        1319
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W przekazanej wiedzy nie ma informacji o średniej cenie metra kwadratowego mieszkania w Gdańsku w 2023 r.",
+      "answer_correct": false,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-01",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        1270,
+        1449,
+        1254,
+        1280,
+        1255,
+        1252
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W dostępnej wiedzy nie ma informacji o budżecie Głównego Urzędu Statystycznego na rok 2025.",
+      "answer_correct": false,
+      "arm": "auto",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-02",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        1323,
+        1250,
+        1252,
+        1251,
+        1253,
+        1270
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet ogółem w wieku 0 lat w 2024 r. wynosiło 82,26 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        54,
+        53,
+        58,
+        56,
+        57,
+        55
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia mężczyzn ogółem w wieku 60 lat w 2024 r. wynosiło 19.8 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        53,
+        54,
+        57,
+        55,
+        58,
+        56
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet na wsi w wieku 0 lat w 2024 r. wynosiło 82.21 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        58,
+        57,
+        54,
+        53,
+        56,
+        55
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Główny Urząd Statystyczny liczył 737 pracowników według stanu na 31.12.2023 r. [Źródło 1][Źródło 3].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1,
+        2,
+        3,
+        6,
+        16,
+        4
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Na dzień 31.12.2023 r. do korpusu służby cywilnej w GUS należało 667 pracowników [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1,
+        2,
+        6,
+        3,
+        16,
+        20
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Wiedza nie zawiera informacji o liczbie woluminów księgozbioru Centralnej Biblioteki Statystycznej w 2023 r. Podane są dane do 2022 r. (510 095 woluminów) [Źródło 1].",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "scan-synth",
+      "item_id": "ss-03",
+      "miss_kind": "parse-miss",
+      "retrieved_chunk_ids": [
+        4,
+        20,
+        5,
+        10,
+        2,
+        7
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W dostępnej wiedzy nie ma informacji o liczbie publikacji dostępnych w Bibliotece Cyfrowej CBS w 2023 roku. Podane są dane do 2022 roku, kiedy to było 5 657 publikacji [Źródło 1].",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "scan-synth",
+      "item_id": "ss-04",
+      "miss_kind": "parse-miss",
+      "retrieved_chunk_ids": [
+        4,
+        5,
+        65,
+        7,
+        59,
+        20
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 r. środowiska wirtualizacyjne używane w statystyce publicznej miały 58 112 GB pamięci operacyjnej (RAM) [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        5,
+        1,
+        17,
+        6,
+        2,
+        7
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 r. do API rejestru TERYT odnotowano 51 216 mln zapytań [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-06",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        5,
+        16,
+        7,
+        2,
+        4,
+        1
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Do Olimpiady Statystycznej w edycji 2023/24 zgłosiło się 5701 uczestników [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-07",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        10,
+        14,
+        15,
+        13,
+        6,
+        11
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W przekazanej wiedzy nie ma informacji o adresie e-mail do wysyłania zgłoszeń w celu otrzymywania informacji prasowych GUS.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "infographic",
+      "item_id": "ig-01",
+      "miss_kind": "parse-miss",
+      "retrieved_chunk_ids": [
+        1,
+        59,
+        11,
+        2,
+        6,
+        7
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W dostępnych źródłach nie ma informacji o godzinie publikacji komunikatów i obwieszczeń Prezesa GUS.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "infographic",
+      "item_id": "ig-02",
+      "miss_kind": "parse-miss",
+      "retrieved_chunk_ids": [
+        1,
+        189,
+        20,
+        7,
+        4,
+        206
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W badaniu przeanalizowano łącznie 3000 komentarzy pochodzących z trzech platform społecznościowych: X, Instagram oraz TikTok [Źródło 1][Źródło 3].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        21,
+        30,
+        32,
+        31,
+        25,
+        34
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aż 79% młodych osób w wieku 15–24 lata zadeklarowało kontakt z hejtem [1][2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        27,
+        28,
+        37,
+        36,
+        42,
+        25
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "NIE",
+          "value": false
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aby wypowiedź uznać za hejt, muszą być spełnione przynajmniej dwa kryteria z przyjętej listy kryteriów oceny hejtu [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        49,
+        30,
+        32,
+        27,
+        25,
+        28
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Informacja o tym, kto był audytorem dostępności cyfrowej strony internetowej CBA, nie znajduje się w przekazanej wiedzy.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "narrative",
+      "item_id": "nr-04",
+      "miss_kind": "retrieval-miss",
+      "retrieved_chunk_ids": [
+        66,
+        69,
+        59,
+        65,
+        197,
+        194
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Adres strony internetowej objętej audytem dostępności cyfrowej CBA to: www.edu.cba.gov.pl [1][2][3][5].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        59,
+        66,
+        69,
+        65,
+        197,
+        194
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Samorządy składają sprawozdanie z realizacji działań POP za rok poprzedni do 15 lutego, zgodnie z terminem określonym w Ustawie Poś [2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        202,
+        206,
+        201,
+        207,
+        210,
+        204
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Poziom 3 alertu w Planie Działań Krótkoterminowych oznaczony jest kolorem czerwonym [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        211,
+        199,
+        202,
+        200,
+        201,
+        120
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Konferencja, na której przedstawiono platformę sprawozdawczą POP, odbyła się 11 grudnia 2023 roku [Źródło 1].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        198,
+        208,
+        204,
+        202,
+        207,
+        210
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia mężczyzn w wieku 0 lat było wyższe w miastach (75,07 lat) niż na wsi (74,68 lat) [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        57,
+        55,
+        58,
+        56,
+        53,
+        54
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia kobiet w wieku 0 lat wynosiło 82,26 lat, a mężczyzn 74,93 lat. Różnica wynosi więc 7,33 lat na korzyść kobiet [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        54,
+        53,
+        57,
+        58,
+        55,
+        3
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W dostępnej wiedzy nie ma informacji o średniej cenie metra kwadratowego mieszkania w Gdańsku w 2023 r.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-01",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        5,
+        2,
+        1,
+        6,
+        185,
+        16
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W przekazanej wiedzy nie ma informacji na temat budżetu Głównego Urzędu Statystycznego na rok 2025.",
+      "answer_correct": false,
+      "arm": "fast",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-02",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        206,
+        59,
+        4,
+        1,
+        2,
+        20
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet ogółem w wieku 0 lat w 2024 r. wynosiło 82,26 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1571,
+        1570,
+        1575,
+        1573,
+        1574,
+        1572
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia mężczyzn ogółem w wieku 60 lat w 2024 r. wynosiło 19.8 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1570,
+        1571,
+        1574,
+        1572,
+        1575,
+        1573
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Przeciętne dalsze trwanie życia kobiet na wsi w wieku 0 lat w 2024 r. wynosiło 82.21 lat [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "tables-xlsx",
+      "item_id": "tx-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1575,
+        1574,
+        1571,
+        1570,
+        1573,
+        1572
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Główny Urząd Statystyczny liczył 737 pracowników według stanu na 31.12.2023 r. [Źródło 2].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1479,
+        1481,
+        1477,
+        1508,
+        1495,
+        1512
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Na 31.12.2023 r. do korpusu służby cywilnej w GUS należało 667 pracowników [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1480,
+        1479,
+        1477,
+        1481,
+        1495,
+        1512
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Księgozbiór Centralnej Biblioteki Statystycznej w 2023 roku liczył 512 585 woluminów [Źródło 3].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1482,
+        1486,
+        1483,
+        1485,
+        1484,
+        1518
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 roku w Bibliotece Cyfrowej CBS było dostępnych 5 970 publikacji [Źródło 3].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-04",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1484,
+        1486,
+        1485,
+        1483,
+        1482,
+        1582
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 r. środowiska wirtualizacyjne używane w statystyce publicznej miały 58 112 GB pamięci operacyjnej (RAM) [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1489,
+        1487,
+        1495,
+        1488,
+        1479,
+        1485
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2023 roku do API rejestru TERYT odnotowano 51 216 mln zapytań [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-06",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1493,
+        1494,
+        1491,
+        1492,
+        1490,
+        1485
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Do Olimpiady Statystycznej w edycji 2023/24 zgłosiło się 5701 uczestników [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "scan-synth",
+      "item_id": "ss-07",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1502,
+        1516,
+        1508,
+        1509,
+        1495,
+        1504
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Należy wysłać e-mail na adres obslugaprasowa@stat.gov.pl, podając imię i nazwisko, nazwę redakcji oraz adres e-mail, który ma zostać dodany do bazy [Źródło 1][Źródło 3].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "infographic",
+      "item_id": "ig-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1513,
+        1515,
+        1514,
+        1477,
+        1512,
+        1576
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "GUS publikuje komunikaty i obwieszczenia Prezesa GUS o godzinie 10:00 [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "infographic",
+      "item_id": "ig-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1513,
+        1515,
+        1512,
+        1477,
+        1500,
+        1479
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W badaniu przeanalizowano łącznie 3000 komentarzy [Źródło 1][Źródło 3].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1520,
+        1537,
+        1538,
+        1534,
+        1544,
+        1524
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aż 79% młodych osób w wieku 15–24 lata zadeklarowało kontakt z hejtem [2].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1527,
+        1526,
+        1547,
+        1561,
+        1560,
+        1524
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Aby wypowiedź uznać za hejt, muszą być spełnione przynajmniej dwa kryteria z przyjętej listy kryteriów oceny hejtu [2][1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1563,
+        1564,
+        1524,
+        1526,
+        1534,
+        1537
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Informacja o tym, kto był audytorem dostępności cyfrowej strony internetowej CBA, nie znajduje się w przekazanej wiedzy.",
+      "answer_correct": false,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "narrative",
+      "item_id": "nr-04",
+      "miss_kind": "retrieval-miss",
+      "retrieved_chunk_ids": [
+        1583,
+        1586,
+        1576,
+        1582,
+        1714,
+        1711
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Adres strony internetowej objętej audytem dostępności cyfrowej CBA to: www.edu.cba.gov.pl [1][2][3][5].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "narrative",
+      "item_id": "nr-05",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1576,
+        1583,
+        1586,
+        1582,
+        1714,
+        1711
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Samorządy składają sprawozdanie z realizacji działań POP za rok poprzedni do 15 lutego, zgodnie z terminem określonym w Ustawie Poś [2].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1719,
+        1723,
+        1718,
+        1724,
+        1727,
+        1721
+      ],
+      "verdicts": {
+        "citation_ok": {
+          "raw": "TAK",
+          "value": true
+        },
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Poziom 3 alertu w Planie Działań Krótkoterminowych oznaczony jest kolorem czerwonym [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1728,
+        1716,
+        1719,
+        1717,
+        1517,
+        1718
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "Konferencja, na której przedstawiono platformę sprawozdawczą POP, odbyła się 11 grudnia 2023 roku [Źródło 1].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "group": "slides",
+      "item_id": "sl-03",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1715,
+        1725,
+        1721,
+        1719,
+        1724,
+        1727
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia mężczyzn w wieku 0 lat było wyższe w miastach (75,07 lat) niż na wsi (74,68 lat) [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-01",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1574,
+        1572,
+        1575,
+        1573,
+        1570,
+        1571
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W 2024 r. przeciętne dalsze trwanie życia kobiet w wieku 0 lat wynosiło 82,26 lat, a mężczyzn 74,93 lat. Różnica wynosi więc 7,33 lat na korzyść kobiet [Źródło 1][Źródło 2].",
+      "answer_correct": true,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": true,
+        "3": true,
+        "6": true
+      },
+      "empty_path": null,
+      "fragment_recall": {
+        "1": false,
+        "3": true,
+        "6": true
+      },
+      "group": "multihop",
+      "item_id": "mh-02",
+      "miss_kind": "hit",
+      "retrieved_chunk_ids": [
+        1571,
+        1570,
+        1481,
+        1574,
+        1575,
+        1572
+      ],
+      "verdicts": {
+        "grounded": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W dostępnej wiedzy nie ma informacji o średniej cenie metra kwadratowego mieszkania w Gdańsku w 2023 r.",
+      "answer_correct": false,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-01",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        1512,
+        1702,
+        1488,
+        1487,
+        1485,
+        1481
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    },
+    {
+      "answer": "W dostępnej wiedzy nie ma informacji o budżecie Głównego Urzędu Statystycznego na rok 2025.",
+      "answer_correct": false,
+      "arm": "vision",
+      "corpus": "subset",
+      "doc_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "empty_path": "prose_refusal",
+      "fragment_recall": {
+        "1": false,
+        "3": false,
+        "6": false
+      },
+      "group": "unanswerable",
+      "item_id": "un-02",
+      "miss_kind": null,
+      "retrieved_chunk_ids": [
+        1515,
+        1513,
+        1517,
+        1512,
+        1576,
+        1483
+      ],
+      "verdicts": {
+        "empty_ok": {
+          "raw": "TAK",
+          "value": true
+        }
+      }
+    }
+  ],
+  "manifest": {
+    "answering_model": {
+      "family": "openai-gpt",
+      "id": "openai/gpt-4.1-mini",
+      "name": "openai/gpt-4.1-mini"
+    },
+    "arms": [
+      {
+        "arm": "fast",
+        "assistant_config": {
+          "empty_response": "Nie znalazłem odpowiedzi na to pytanie w dostępnych dokumentach.",
+          "frequency_penalty": 0.0,
+          "keyword_analysis": false,
+          "llm_model_id": 1,
+          "max_tokens": 512,
+          "presence_penalty": 0.0,
+          "rerank_model_id": null,
+          "show_quote": true,
+          "similarity_threshold": 0.2,
+          "system_prompt": "Jesteś asystentem odpowiadającym wyłącznie na podstawie przekazanej wiedzy.\n\nWiedza:\n{knowledge}\n\nOdpowiadaj krótko i rzeczowo, wyłącznie na podstawie powyższej wiedzy. Jeśli odpowiedzi nie ma w wiedzy, powiedz to wprost — nie zgaduj i nie dopowiadaj.",
+          "temperature": 0.0,
+          "top_n": 6,
+          "top_p": 1.0,
+          "vector_weight": 0.7
+        },
+        "assistant_id": 4,
+        "chunk_count": 598,
+        "chunk_size": 1000,
+        "config_fingerprint": "dc404df9c1647eed691842cdeb7e0862c73c50aad2ab34d7bffd9eabda8b8eb5",
+        "corpus": "full",
+        "dimension": 3072,
+        "doc_count": 6,
+        "documents": [
+          "20231215092656_2023konferencjapopprezentacjaplatformasprawozdawczapop.pptx",
+          "Raport_z_audytu_dostepnosci_cyfrowej_CBA_nr_7.docx",
+          "analiza_sklonnosci_do_hejtu_podczas_wyborow_prezydenckich_raport.pdf",
+          "raport_gus_2023_7-08-2024.pdf",
+          "tablica_a_tablica_trwania_zycia_w_2024_r.xlsx",
+          "unctad2004.ppt"
+        ],
+        "embedding_model": "openai/text-embedding-3-large",
+        "kb_id": 4,
+        "kb_name": "eval:full:fast",
+        "ocr_model": null,
+        "overlap": 100,
+        "parse_cost": {
+          "probe_pages": null,
+          "vision_calls": 0,
+          "vision_tokens_in": null,
+          "vision_tokens_out": null,
+          "wall_seconds_per_doc": 6.819343280832982,
+          "wall_seconds_total": 40.91605968499789
+        },
+        "router": {
+          "pages_total": 206,
+          "pages_via_fast": 205,
+          "pages_via_tesseract": 1,
+          "pages_via_vision": 0
+        }
+      },
+      {
+        "arm": "auto",
+        "assistant_config": {
+          "empty_response": "Nie znalazłem odpowiedzi na to pytanie w dostępnych dokumentach.",
+          "frequency_penalty": 0.0,
+          "keyword_analysis": false,
+          "llm_model_id": 1,
+          "max_tokens": 512,
+          "presence_penalty": 0.0,
+          "rerank_model_id": null,
+          "show_quote": true,
+          "similarity_threshold": 0.2,
+          "system_prompt": "Jesteś asystentem odpowiadającym wyłącznie na podstawie przekazanej wiedzy.\n\nWiedza:\n{knowledge}\n\nOdpowiadaj krótko i rzeczowo, wyłącznie na podstawie powyższej wiedzy. Jeśli odpowiedzi nie ma w wiedzy, powiedz to wprost — nie zgaduj i nie dopowiadaj.",
+          "temperature": 0.0,
+          "top_n": 6,
+          "top_p": 1.0,
+          "vector_weight": 0.7
+        },
+        "assistant_id": 5,
+        "chunk_count": 233,
+        "chunk_size": 1000,
+        "config_fingerprint": "4c875c23d6fdd9e0203ee3b745cc1520a6a6c4f0e7af6af1d14c33c9dfcc9566",
+        "corpus": "subset",
+        "dimension": 3072,
+        "doc_count": 7,
+        "documents": [
+          "20231215092656_2023konferencjapopprezentacjaplatformasprawozdawczapop.pptx",
+          "Raport_z_audytu_dostepnosci_cyfrowej_CBA_nr_7.docx",
+          "analiza_sklonnosci_do_hejtu_podczas_wyborow_prezydenckich_raport.pdf",
+          "gus_excerpt.pdf",
+          "gus_scan_synth.pdf",
+          "tablica_a_tablica_trwania_zycia_w_2024_r.xlsx",
+          "unctad2004.ppt"
+        ],
+        "embedding_model": "openai/text-embedding-3-large",
+        "kb_id": 5,
+        "kb_name": "eval:subset:auto",
+        "ocr_model": "openai/gpt-4.1-mini",
+        "overlap": 100,
+        "parse_cost": {
+          "probe_pages": null,
+          "vision_calls": 7,
+          "vision_tokens_in": null,
+          "vision_tokens_out": null,
+          "wall_seconds_per_doc": 14.696299444285355,
+          "wall_seconds_total": 102.87409610999748
+        },
+        "router": {
+          "pages_total": 26,
+          "pages_via_fast": 19,
+          "pages_via_tesseract": 0,
+          "pages_via_vision": 7
+        }
+      },
+      {
+        "arm": "fast",
+        "assistant_config": {
+          "empty_response": "Nie znalazłem odpowiedzi na to pytanie w dostępnych dokumentach.",
+          "frequency_penalty": 0.0,
+          "keyword_analysis": false,
+          "llm_model_id": 1,
+          "max_tokens": 512,
+          "presence_penalty": 0.0,
+          "rerank_model_id": null,
+          "show_quote": true,
+          "similarity_threshold": 0.2,
+          "system_prompt": "Jesteś asystentem odpowiadającym wyłącznie na podstawie przekazanej wiedzy.\n\nWiedza:\n{knowledge}\n\nOdpowiadaj krótko i rzeczowo, wyłącznie na podstawie powyższej wiedzy. Jeśli odpowiedzi nie ma w wiedzy, powiedz to wprost — nie zgaduj i nie dopowiadaj.",
+          "temperature": 0.0,
+          "top_n": 6,
+          "top_p": 1.0,
+          "vector_weight": 0.7
+        },
+        "assistant_id": 1,
+        "chunk_count": 212,
+        "chunk_size": 1000,
+        "config_fingerprint": "78dec5d60dd4502874b4c3bbedfade9faffb54cde06f8cee243bf231b662954a",
+        "corpus": "subset",
+        "dimension": 3072,
+        "doc_count": 7,
+        "documents": [
+          "20231215092656_2023konferencjapopprezentacjaplatformasprawozdawczapop.pptx",
+          "Raport_z_audytu_dostepnosci_cyfrowej_CBA_nr_7.docx",
+          "analiza_sklonnosci_do_hejtu_podczas_wyborow_prezydenckich_raport.pdf",
+          "gus_excerpt.pdf",
+          "gus_scan_synth.pdf",
+          "tablica_a_tablica_trwania_zycia_w_2024_r.xlsx",
+          "unctad2004.ppt"
+        ],
+        "embedding_model": "openai/text-embedding-3-large",
+        "kb_id": 1,
+        "kb_name": "eval:subset:fast",
+        "ocr_model": null,
+        "overlap": 100,
+        "parse_cost": {
+          "probe_pages": null,
+          "vision_calls": 0,
+          "vision_tokens_in": null,
+          "vision_tokens_out": null,
+          "wall_seconds_per_doc": 2.9959979391444773,
+          "wall_seconds_total": 20.97198557401134
+        },
+        "router": {
+          "pages_total": 26,
+          "pages_via_fast": 19,
+          "pages_via_tesseract": 7,
+          "pages_via_vision": 0
+        }
+      },
+      {
+        "arm": "vision",
+        "assistant_config": {
+          "empty_response": "Nie znalazłem odpowiedzi na to pytanie w dostępnych dokumentach.",
+          "frequency_penalty": 0.0,
+          "keyword_analysis": false,
+          "llm_model_id": 1,
+          "max_tokens": 512,
+          "presence_penalty": 0.0,
+          "rerank_model_id": null,
+          "show_quote": true,
+          "similarity_threshold": 0.2,
+          "system_prompt": "Jesteś asystentem odpowiadającym wyłącznie na podstawie przekazanej wiedzy.\n\nWiedza:\n{knowledge}\n\nOdpowiadaj krótko i rzeczowo, wyłącznie na podstawie powyższej wiedzy. Jeśli odpowiedzi nie ma w wiedzy, powiedz to wprost — nie zgaduj i nie dopowiadaj.",
+          "temperature": 0.0,
+          "top_n": 6,
+          "top_p": 1.0,
+          "vector_weight": 0.7
+        },
+        "assistant_id": 6,
+        "chunk_count": 253,
+        "chunk_size": 1000,
+        "config_fingerprint": "744597f139529c47fbdf5ec0d275e0e2d4bb029f491cfaae1b8b38af93801ae4",
+        "corpus": "subset",
+        "dimension": 3072,
+        "doc_count": 7,
+        "documents": [
+          "20231215092656_2023konferencjapopprezentacjaplatformasprawozdawczapop.pptx",
+          "Raport_z_audytu_dostepnosci_cyfrowej_CBA_nr_7.docx",
+          "analiza_sklonnosci_do_hejtu_podczas_wyborow_prezydenckich_raport.pdf",
+          "gus_excerpt.pdf",
+          "gus_scan_synth.pdf",
+          "tablica_a_tablica_trwania_zycia_w_2024_r.xlsx",
+          "unctad2004.ppt"
+        ],
+        "embedding_model": "openai/text-embedding-3-large",
+        "kb_id": 6,
+        "kb_name": "eval:subset:vision",
+        "ocr_model": "openai/gpt-4.1-mini",
+        "overlap": 100,
+        "parse_cost": {
+          "probe_pages": null,
+          "vision_calls": 26,
+          "vision_tokens_in": null,
+          "vision_tokens_out": null,
+          "wall_seconds_per_doc": 34.62715071157228,
+          "wall_seconds_total": 242.39005498100596
+        },
+        "router": {
+          "pages_total": 26,
+          "pages_via_fast": 0,
+          "pages_via_tesseract": 0,
+          "pages_via_vision": 26
+        }
+      }
+    ],
+    "comparisons": [
+      {
+        "arms": [
+          "auto",
+          "fast",
+          "vision"
+        ],
+        "common_count": 24,
+        "common_question_ids": [
+          "ig-01",
+          "ig-02",
+          "mh-01",
+          "mh-02",
+          "nr-01",
+          "nr-02",
+          "nr-03",
+          "nr-04",
+          "nr-05",
+          "sl-01",
+          "sl-02",
+          "sl-03",
+          "ss-01",
+          "ss-02",
+          "ss-03",
+          "ss-04",
+          "ss-05",
+          "ss-06",
+          "ss-07",
+          "tx-01",
+          "tx-02",
+          "tx-03",
+          "un-01",
+          "un-02"
+        ],
+        "corpus": "subset",
+        "total": 29
+      }
+    ],
+    "dataset_item_count": 29,
+    "dataset_path": "eval/data/dataset.jsonl",
+    "dataset_sha256": "933fb71be76dc87ffcb94f0fbdb573bbc8b184edeef3d4fe2945a39581715b48",
+    "git_commit": "0d5287e6e7631bec6773eee29b5735ba325d96a6",
+    "git_dirty": false,
+    "judge_model": {
+      "family": "zhipu-glm",
+      "id": "6",
+      "mode": "medium",
+      "name": "glm-5.3-flash"
+    },
+    "judge_prompt_version": 1,
+    "retrieval": {
+      "k_list": [
+        1,
+        3,
+        6
+      ],
+      "similarity_threshold": 0.2,
+      "top_n": 6,
+      "vector_weight": 0.7
+    },
+    "run_id": "20260910T195345Z",
+    "timestamp": "2026-09-10T19:53:45.003808+00:00"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>/chunks",
+    "query": {},
+    "body": {
+      "chunk_ids": [
+        "<ID:chunk#1>"
+      ],
+      "available": true
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": true
+  }
+}

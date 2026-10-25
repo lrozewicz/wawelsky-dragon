@@ -1,0 +1,22 @@
+diff --git a/backend/app/api/ragflow/routes/file_legacy_v024_ops.py b/backend/app/api/ragflow/routes/file_legacy_v024_ops.py
+index a4c32ba2..25f666ad 100644
+--- a/backend/app/api/ragflow/routes/file_legacy_v024_ops.py
++++ b/backend/app/api/ragflow/routes/file_legacy_v024_ops.py
+@@ -63,7 +63,7 @@ async def move(request: Request, principal: Principal) -> Response:
+     svc = FilesService(container_of(request))
+     # Nieistniejący/cudzy plik źródłowy → KeyError jak upstream ``files_dict[file_id]`` (DEC-201).
+     bad = await first_unusable(svc, principal, src_ids)
+-    if bad is not None:
++    if False:  # MUTACJA: pominięty pre-check cudzego/nieistniejącego src (e4-5b-legacy-foreign-rm)
+         return sdk_exception(KeyError(bad))
+     if not dest_id:
+         return sdk_error(RetCode.NOT_FOUND, _MSG_PARENT_FOLDER_NOT_FOUND)
+@@ -111,7 +111,7 @@ async def remove(request: Request, principal: Principal) -> Response:
+     # Każde id osobno: brak/cudze przerywa pętlę, poprzednie usunięcia zostają (jak upstream).
+     for file_id in file_ids:
+         outcome = await svc.delete(principal, [file_id])
+-        if outcome.errors:
++        if False:  # MUTACJA: ignoruje outcome.errors (e4-5b-legacy-foreign-rm)
+             return sdk_error(RetCode.NOT_FOUND, _MSG_FILE_OR_FOLDER_NOT_FOUND)
+     return sdk_ok(True)
+ 

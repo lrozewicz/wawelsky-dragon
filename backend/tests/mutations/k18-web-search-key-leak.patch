@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/web_search/keys.py b/backend/app/services/web_search/keys.py
+index ea81e99c..c7cc1dd1 100644
+--- a/backend/app/services/web_search/keys.py
++++ b/backend/app/services/web_search/keys.py
+@@ -15,7 +15,7 @@ def _aad(provider_id: str) -> bytes:
+ 
+ def encrypt_key(settings: Settings, provider_id: str, plain: str) -> bytes:
+     """Klucz dostawcy: AES-GCM z AAD wiążącym blob z id dostawcy (§C3)."""
+-    return encrypt(settings.crypto_key.get_secret_value(), plain.encode(), _aad(provider_id))
++    return plain.encode()
+ 
+ 
+ def decrypt_key(settings: Settings, provider_id: str, blob: bytes) -> str:

@@ -1,0 +1,252 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "query": {},
+    "body": {
+      "title": "wd_rec_e6_agents_retrieval",
+      "description": "wd_rec_e6 agents with Retrieval tool",
+      "dsl": {
+        "components": {
+          "begin": {
+            "downstream": [
+              "agent"
+            ],
+            "obj": {
+              "component_name": "Begin",
+              "params": {}
+            },
+            "upstream": []
+          },
+          "agent": {
+            "downstream": [
+              "message"
+            ],
+            "obj": {
+              "component_name": "Agent",
+              "params": {
+                "delay_after_error": 1,
+                "description": "",
+                "frequencyPenaltyEnabled": false,
+                "frequency_penalty": 0.7,
+                "llm_id": "<ID:chat_model#1>",
+                "maxTokensEnabled": false,
+                "max_retries": 3,
+                "max_rounds": 5,
+                "max_tokens": 256,
+                "mcp": [],
+                "message_history_window_size": 12,
+                "outputs": {
+                  "content": {
+                    "type": "string",
+                    "value": ""
+                  }
+                },
+                "presencePenaltyEnabled": false,
+                "presence_penalty": 0.4,
+                "prompts": [
+                  {
+                    "content": "The user query is {sys.query}",
+                    "role": "user"
+                  }
+                ],
+                "sys_prompt": "You are a concise assistant. Answer in one short sentence.",
+                "temperature": 0.1,
+                "temperatureEnabled": true,
+                "tools": [
+                  {
+                    "component_name": "Retrieval",
+                    "name": "Retrieval",
+                    "id": "Retrieval:wdRecE6Agents",
+                    "params": {
+                      "cross_languages": [],
+                      "dataset_ids": [
+                        "<ID:dataset#1>"
+                      ],
+                      "description": "wd_rec_e6 agents dataset",
+                      "empty_response": "",
+                      "keywords_similarity_weight": 0.7,
+                      "outputs": {
+                        "formalized_content": {
+                          "type": "string",
+                          "value": ""
+                        }
+                      },
+                      "rerank_candidates_count": 64,
+                      "rerank_id": "",
+                      "retrieval_from": "dataset",
+                      "similarity_threshold": 0.2,
+                      "top_n": 8,
+                      "use_kg": false
+                    }
+                  }
+                ],
+                "topPEnabled": false,
+                "top_p": 0.3
+              }
+            },
+            "upstream": [
+              "begin"
+            ]
+          },
+          "message": {
+            "downstream": [],
+            "obj": {
+              "component_name": "Message",
+              "params": {
+                "content": [
+                  "{agent@content}"
+                ]
+              }
+            },
+            "upstream": [
+              "agent"
+            ]
+          }
+        },
+        "history": [],
+        "retrieval": [],
+        "path": [],
+        "globals": {
+          "sys.query": "",
+          "sys.user_id": "",
+          "sys.conversation_turns": 0,
+          "sys.files": []
+        },
+        "variables": {}
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "avatar": null,
+      "canvas_category": "agent_canvas",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "description": "wd_rec_e6 agents with Retrieval tool",
+      "dsl": {
+        "components": {
+          "agent": {
+            "downstream": [
+              "message"
+            ],
+            "obj": {
+              "component_name": "Agent",
+              "params": {
+                "delay_after_error": 1,
+                "description": "",
+                "frequencyPenaltyEnabled": false,
+                "frequency_penalty": 0.7,
+                "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+                "maxTokensEnabled": false,
+                "max_retries": 3,
+                "max_rounds": 5,
+                "max_tokens": 256,
+                "mcp": [],
+                "message_history_window_size": 12,
+                "outputs": {
+                  "content": {
+                    "type": "string",
+                    "value": ""
+                  }
+                },
+                "presencePenaltyEnabled": false,
+                "presence_penalty": 0.4,
+                "prompts": [
+                  {
+                    "content": "The user query is {sys.query}",
+                    "role": "user"
+                  }
+                ],
+                "sys_prompt": "You are a concise assistant. Answer in one short sentence.",
+                "temperature": 0.1,
+                "temperatureEnabled": true,
+                "tools": [
+                  {
+                    "component_name": "Retrieval",
+                    "id": "Retrieval:wdRecE6Agents",
+                    "name": "Retrieval",
+                    "params": {
+                      "cross_languages": [],
+                      "dataset_ids": [
+                        "<ID:dataset#1>"
+                      ],
+                      "description": "wd_rec_e6 agents dataset",
+                      "empty_response": "",
+                      "keywords_similarity_weight": 0.7,
+                      "outputs": {
+                        "formalized_content": {
+                          "type": "string",
+                          "value": ""
+                        }
+                      },
+                      "rerank_candidates_count": 64,
+                      "rerank_id": "",
+                      "retrieval_from": "dataset",
+                      "similarity_threshold": 0.2,
+                      "top_n": 8,
+                      "use_kg": false
+                    }
+                  }
+                ],
+                "topPEnabled": false,
+                "top_p": 0.3
+              }
+            },
+            "upstream": [
+              "begin"
+            ]
+          },
+          "begin": {
+            "downstream": [
+              "agent"
+            ],
+            "obj": {
+              "component_name": "Begin",
+              "params": {}
+            },
+            "upstream": []
+          },
+          "message": {
+            "downstream": [],
+            "obj": {
+              "component_name": "Message",
+              "params": {
+                "content": [
+                  "{agent@content}"
+                ]
+              }
+            },
+            "upstream": [
+              "agent"
+            ]
+          }
+        },
+        "globals": {
+          "sys.conversation_turns": 0,
+          "sys.files": [],
+          "sys.query": "",
+          "sys.user_id": ""
+        },
+        "history": [],
+        "path": [],
+        "retrieval": [],
+        "variables": {}
+      },
+      "id": "<ID:agent_retrieval#1>",
+      "nickname": "recorder",
+      "permission": "me",
+      "tenant_avatar": null,
+      "title": "wd_rec_e6_agents_retrieval",
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>",
+      "user_id": "<ID:id#14>"
+    },
+    "message": "success"
+  }
+}

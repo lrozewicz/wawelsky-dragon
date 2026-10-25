@@ -1,0 +1,14 @@
+diff --git a/backend/app/integrations/sharepoint/auth.py b/backend/app/integrations/sharepoint/auth.py
+index eef86429..23c7683a 100644
+--- a/backend/app/integrations/sharepoint/auth.py
++++ b/backend/app/integrations/sharepoint/auth.py
+@@ -66,8 +66,7 @@ class TokenProvider:
+
+     def _cache_key(self) -> tuple[str, str, str]:
+         """Klucz wpisu cache: para tenant/client plus skrót sekretu (nigdy sam sekret)."""
+-        secret_hash = hashlib.sha256(self._client_secret.encode()).hexdigest()
+-        return (self._tenant_id, self._client_id, secret_hash)
++        return (self._tenant_id, self._client_id, "")
+
+     async def get_token(self, *, force_refresh: bool = False) -> str:
+         """Zwraca ważny token; cache jest wspólny dla instancji o tym samym kluczu."""

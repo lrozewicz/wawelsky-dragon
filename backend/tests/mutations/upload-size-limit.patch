@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/ingest.py b/backend/app/services/ingest.py
+index b82ed00..0588d88 100644
+--- a/backend/app/services/ingest.py
++++ b/backend/app/services/ingest.py
+@@ -125,7 +125,6 @@ class DocumentIngestService:
+         stored = await self._container.storage.put(
+             key,
+             source.stream,
+-            max_bytes=self._container.settings.max_upload_mb * 1024 * 1024,
+         )
+         now = self._container.clock.now_ms()
+         async with transaction(self._sm()) as session:

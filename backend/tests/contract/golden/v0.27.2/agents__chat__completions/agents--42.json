@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/agents/chat/completions",
+    "query": {},
+    "body": {
+      "agent_id": "00000000000000000000000000000000",
+      "query": "smokwawelski",
+      "stream": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 103,
+    "data": false,
+    "message": "Make sure you have permission to access the agent."
+  }
+}

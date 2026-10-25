@@ -1,0 +1,6 @@
+# Mapa modeli źródła RAGFlow → WD dla fixture'u (CONTRACT WP E4-6a §2, §5).
+# Klucz: `llm_name@llm_factory` ze źródła; wartość: nazwa modelu w WD (+ typ/ wymiar, gdy potrzebne).
+models:
+  "fake-chat@Tongyi-Qianwen": {name: "fake-chat-tongyi", model_type: chat}
+  "fake-chat@OpenAI-API-Compatible": {name: "fake-chat", model_type: chat}
+  "fake-embed-1024@OpenAI-API-Compatible": {name: "fake-embed-1024", dimension: 1024}

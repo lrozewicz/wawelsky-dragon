@@ -1,0 +1,13 @@
+diff --git a/backend/app/tools/ragflow_migrate/stages/sessions_rows.py b/backend/app/tools/ragflow_migrate/stages/sessions_rows.py
+index dbce157a..92a5b2bd 100644
+--- a/backend/app/tools/ragflow_migrate/stages/sessions_rows.py
++++ b/backend/app/tools/ragflow_migrate/stages/sessions_rows.py
+@@ -259,7 +259,7 @@ def resolve_session(
+         "id": session_id,
+         "chat_id": chat_id,
+         "name": session_name(row["name"]),
+-        "user_id": row["user_id"],
++        "user_id": chat_owners[chat_id],
+         "owner_id": chat_owners[chat_id],
+         "source": DEFAULT_SOURCE,
+         "message_count": len(messages),

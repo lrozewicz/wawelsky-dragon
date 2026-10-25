@@ -1,0 +1,19 @@
+diff --git a/backend/app/worker/pool.py b/backend/app/worker/pool.py
+index 5e8c6c9e..2722b6fb 100644
+--- a/backend/app/worker/pool.py
++++ b/backend/app/worker/pool.py
+@@ -53,13 +53,7 @@ class ParsePool(Executor):
+ 
+     def submit(self, fn: Callable[..., _T], /, *args: Any, **kwargs: Any) -> Future[_T]:
+         """Zleca zadanie; zepsuta pula → nowa (jedna próba też przy wyjątku z ``submit``)."""
+-        if self._broken:
+-            self._recreate()
+-        try:
+-            future = self._executor.submit(fn, *args, **kwargs)
+-        except BrokenProcessPool:
+-            # Pula padła między callbackiem a ``submit`` — jedna próba na nowej puli.
+-            future = self._recreate().submit(fn, *args, **kwargs)
++        future = self._executor.submit(fn, *args, **kwargs)  # MUTACJA: pula nigdy nieodtwarzana
+         future.add_done_callback(self._on_done)
+         return future
+ 

@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/datasets/<ID:dataset#1>/chunks",
+    "query": {},
+    "body": {
+      "document_ids": [
+        "<ID:document#1>"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0
+  }
+}

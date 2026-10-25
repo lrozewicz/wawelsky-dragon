@@ -1,0 +1,13 @@
+diff --git a/backend/app/core/middleware.py b/backend/app/core/middleware.py
+index b356ca2e..9b877f48 100644
+--- a/backend/app/core/middleware.py
++++ b/backend/app/core/middleware.py
+@@ -110,8 +110,6 @@ class SecurityHeadersMiddleware:
+                 media_type = content_type.split(";", 1)[0].strip().lower()
+                 if media_type not in _MACHINE_MEDIA_TYPES:
+                     headers["X-Content-Type-Options"] = "nosniff"
+-                    if media_type in _ACTIVE_MEDIA_TYPES:
+-                        headers["Content-Security-Policy"] = "sandbox"
+             await send(message)
+ 
+         await self.app(scope, receive, send_wrapper)

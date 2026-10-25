@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/00000000000000000000000000000000/metadata/config",
+    "query": {},
+    "body": {
+      "metadata": {}
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "document <ID:id#3> not found in dataset <ID:dataset#1>"
+  }
+}

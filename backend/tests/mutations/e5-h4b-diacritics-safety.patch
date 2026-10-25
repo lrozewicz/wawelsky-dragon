@@ -1,0 +1,13 @@
+diff --git a/backend/app/parsing/diacritics.py b/backend/app/parsing/diacritics.py
+index c90d317d..f4f6b180 100644
+--- a/backend/app/parsing/diacritics.py
++++ b/backend/app/parsing/diacritics.py
+@@ -72,7 +72,7 @@ def fuse(orig: str, new: str | None) -> tuple[str, str | None]:
+     if new is None:
+         return orig, "missing"
+     reason: str | None = None
+-    if _NUM_RE.findall(orig) != _NUM_RE.findall(new):
++    if False:
+         reason = "numbers"
+     elif _MARK_RE.findall(orig) != _MARK_RE.findall(new):
+         reason = "markup"

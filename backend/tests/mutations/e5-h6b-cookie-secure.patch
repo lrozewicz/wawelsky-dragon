@@ -1,0 +1,16 @@
+diff --git a/backend/app/api/ragflow/auth.py b/backend/app/api/ragflow/auth.py
+index 8046bd1b..d9d8a42d 100644
+--- a/backend/app/api/ragflow/auth.py
++++ b/backend/app/api/ragflow/auth.py
+@@ -43,10 +43,7 @@ def _cookie_secure(request: Request) -> bool:
+         return False
+     if settings.cookie_secure != "auto":
+         return settings.cookie_secure == "true"
+-    proto = request.headers.get("x-forwarded-proto")
+-    if proto:
+-        return proto.split(",")[0].strip().lower() == "https"
+-    return request.url.scheme == "https"
++    return False
+ 
+ 
+ def _set_refresh_cookie(response: Response, tokens: SessionTokens, secure: bool) -> None:

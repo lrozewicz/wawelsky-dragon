@@ -1,0 +1,20 @@
+diff --git a/backend/app/services/documents.py b/backend/app/services/documents.py
+--- a/backend/app/services/documents.py
++++ b/backend/app/services/documents.py
+@@ -368,15 +368,7 @@ class DocumentService:
+             ):
+                 raise Conflict(MSG_DOC_NOT_OWNED.format(document_id=q.name))
+             allowed_ids: frozenset[str] | None = None
+-            if q.meta_condition is not None:
+-                # Jedno zapytanie po (id, meta_fields) kandydatów z SQL-owym pushdownem (nadzbiór,
+-                # DEC-300 p. 2); dopasowanie liczy ``match_documents`` (K11 §10f p. 1) — bez
+-                # zapytania per dokument.
+-                pushdown = pushdown_condition(q.meta_condition)
+-                metas = await documents_query.meta_fields_by_document(
+-                    session, dataset_id, pushdown=pushdown
+-                )
+-                allowed_ids = match_documents(metas, q.meta_condition)
++            # MUTACJA k11-10f: lista ignoruje metadata_condition (dla testu mutacyjnego).
+             rows, total = await documents_query.list_page(
+                 session, dataset_id, q, allowed_ids=allowed_ids
+             )

@@ -1,0 +1,26 @@
+{
+  "request": {
+    "transport": "streamable_http",
+    "op": "call_tool",
+    "tool": "ragflow_list_datasets",
+    "arguments": {
+      "page": 1,
+      "page_size": 10
+    },
+    "auth": "key"
+  },
+  "outcome": "ok",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": {
+          "id": "<ID:dataset#1>",
+          "name": "wd_rec_e6_mcp_ds",
+          "description": null
+        }
+      }
+    ],
+    "isError": false
+  }
+}

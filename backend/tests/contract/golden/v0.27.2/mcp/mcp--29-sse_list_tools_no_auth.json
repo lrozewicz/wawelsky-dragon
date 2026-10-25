@@ -1,0 +1,15 @@
+{
+  "request": {
+    "transport": "sse",
+    "op": "list_tools",
+    "tool": null,
+    "arguments": null,
+    "auth": "none"
+  },
+  "outcome": "error",
+  "result": {
+    "error_type": "HTTPStatusError",
+    "message": "Client error '401 Unauthorized' for url 'http://host.docker.internal:19382/sse'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/401",
+    "http_status": 401
+  }
+}

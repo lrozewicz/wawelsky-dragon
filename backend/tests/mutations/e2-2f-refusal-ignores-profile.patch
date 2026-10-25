@@ -1,0 +1,20 @@
+diff --git a/backend/app/api/ragflow/refusals.py b/backend/app/api/ragflow/refusals.py
+index 247bdd7..475a4c3 100644
+--- a/backend/app/api/ragflow/refusals.py
++++ b/backend/app/api/ragflow/refusals.py
+@@ -129,14 +129,7 @@ def refuse(  # noqa: PLR0913 — sygnatura dosłowna z kontraktu E2-2f C1
+     Klucz nieobecny w mapie danego profilu (trasa bez złota odmowy w tej wersji) → 108
+     ``PermissionDenied`` z komunikatem wyjątku (albo ``no authorization`` bez wyjątku).
+     """
+-    if compat == "ragflow_0_27":
+-        profiles: Mapping[str, RefusalProfile] = PROFILES
+-    else:
+-        # Import leniwy (kontrakt E2-2f C1): ``refusals_v024`` importuje stałe i
+-        # ``RefusalProfile`` z tego modułu, więc import na górze domknąłby cykl.
+-        from app.api.ragflow.refusals_v024 import PROFILES_V024  # noqa: PLC0415
+-
+-        profiles = PROFILES_V024
++    profiles: Mapping[str, RefusalProfile] = PROFILES
+     profile = profiles.get(route)
+     if profile is None:
+         raise PermissionDenied(err.message if err is not None else MSG_NO_AUTHORIZATION)

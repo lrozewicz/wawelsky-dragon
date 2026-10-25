@@ -1,0 +1,40 @@
+data:{"event":"workflow_started","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":{}},"session_id":"<ID:id#22>"}
+
+data:{"event":"node_started","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":null,"created_at":"<TS_S>","component_id":"begin","component_name":"","component_type":"Begin","thoughts":""},"session_id":"<ID:id#22>"}
+
+data:{"event":"node_finished","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":{},"outputs":{"_created_time":"<IGNORE>","_elapsed_time":"<FLOAT>"},"component_id":"begin","component_name":"","component_type":"Begin","error":null,"elapsed_time":"<FLOAT>","created_at":"<TS_S>"},"session_id":"<ID:id#22>"}
+
+data:{"event":"node_started","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":null,"created_at":"<TS_S>","component_id":"agent","component_name":"","component_type":"Agent","thoughts":"⌛Give me a moment—starting from: \n\nThe user query is smokwawelski\n\nI’ll figure out our best next move."},"session_id":"<ID:id#22>"}
+
+data:{"event":"node_started","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":null,"created_at":"<TS_S>","component_id":"message","component_name":"","component_type":"Message","thoughts":""},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"Odpow"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"iedź "},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"testo"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"wa: T"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"he us"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"er qu"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"ery i"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"s smo"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"kwawe"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"content":"lski"},"session_id":"<ID:id#22>"}
+
+data:{"event":"message_end","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{},"session_id":"<ID:id#22>"}
+
+data:{"event":"node_finished","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":{"sys.query":"smokwawelski"},"outputs":{"content":"Odpowiedź testowa: The user query is smokwawelski","_created_time":"<IGNORE>","_elapsed_time":"<FLOAT>"},"component_id":"agent","component_name":"","component_type":"Agent","error":null,"elapsed_time":"<FLOAT>","created_at":"<TS_S>"},"session_id":"<ID:id#22>"}
+
+data:{"event":"node_finished","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":{"agent@content":"Odpowiedź testowa: The user query is smokwawelski"},"outputs":{"content":"Odpowiedź testowa: The user query is smokwawelski","downloads":[],"_created_time":"<IGNORE>","_elapsed_time":"<FLOAT>"},"component_id":"message","component_name":"","component_type":"Message","error":null,"elapsed_time":"<FLOAT>","created_at":"<TS_S>"},"session_id":"<ID:id#22>"}
+
+data:{"event":"workflow_finished","message_id":"<ID:id#21>","created_at":"<TS_S>","task_id":"<ID:id#22>","data":{"inputs":{},"outputs":{"content":"Odpowiedź testowa: The user query is smokwawelski","downloads":[],"_created_time":"<IGNORE>","_elapsed_time":"<FLOAT>"},"elapsed_time":"<FLOAT>","created_at":"<TS_S>","usage":{"prompt_tokens":0,"completion_tokens":0,"total_tokens":45,"calls":1}},"session_id":"<ID:id#22>"}
+
+data:[DONE]
+

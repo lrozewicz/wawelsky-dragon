@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "DELETE",
+    "path": "/api/v1/datasets",
+    "query": {},
+    "body": {
+      "ids": [
+        "<ID:dataset#1>"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 108,
+    "message": "User '<ID:id#1>' lacks permission for datasets: '<ID:dataset#1>'"
+  }
+}

@@ -1,0 +1,13 @@
+diff --git a/backend/app/api/ragflow/routes/chats.py b/backend/app/api/ragflow/routes/chats.py
+index 8e40a74..472fe4e 100644
+--- a/backend/app/api/ragflow/routes/chats.py
++++ b/backend/app/api/ragflow/routes/chats.py
+@@ -139,8 +139,6 @@ async def _update(
+     a ``get_data_error_result`` u upstream nie ma klucza ``data``.
+     """
+     svc = _svc(request)
+-    if not await svc.ensure_owned(principal, chat_id):
+-        return refuse(request, principal, "chats_update", compat=profile)
+     inp = parse_chat_update(await json_body(request), profile, patch=merge)
+     try:
+         view = await svc.update(principal, chat_id, inp, merge=merge)

@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/chats/00000000000000000000000000000000",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e2_chat_extras_missing"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 109,
+    "data": false,
+    "message": "no authorization"
+  }
+}

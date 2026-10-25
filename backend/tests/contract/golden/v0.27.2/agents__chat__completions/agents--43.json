@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/agents/chat/completions",
+    "query": {},
+    "body": {
+      "agent_id": "<ID:agent#1>",
+      "query": "smokwawelski",
+      "stream": false,
+      "session_id": "00000000000000000000000000000000"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "Session not found!"
+  }
+}

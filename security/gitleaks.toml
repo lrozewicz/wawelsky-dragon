@@ -1,0 +1,35 @@
+# Konfiguracja gitleaks dla historii repo Wawelsky Dragon (WP E5-2b, H16).
+# Rozszerza wbudowane reguły; allowlistujemy WYŁĄCZNIE ścieżki z danymi syntetycznymi
+# (złoto/fixture/testy/dokumentacja). Żadna reguła nie jest wyłączana globalnie.
+[extend]
+useDefault = true
+
+# Każdy wpis w `paths` to regex ścieżki pliku w historii; komentarz wyjaśnia, dlaczego.
+[allowlist]
+description = "Ścieżki z syntetycznymi tokenami (fixture/testy/szablon/dokumentacja) — nie prawdziwe sekrety"
+# Fałszywy alarm: odwołanie do pola `body.api_key` w kodzie dostawców wyszukiwarki, WP E6-3a1; nie sekret.
+# Allowlistujemy dokładnie ten jeden commit z cudzej gałęzi (E6-3a1), nie plik ani regułę.
+commits = ["ed8b9ded7f404828254386c604dd76411665889d"]
+paths = [
+  # Szablon środowiska z pustymi/placeholderowymi wartościami.
+  '''^\.env\.example$''',
+  # Planowanie i raporty WP (work/wp/**) — cytaty przykładowych stałych testowych w briefach/kontraktach.
+  '''^work/wp/''',
+  # Testy backendu (contract/integration/unit/fixtures) — stałe typu "0123…"×4, "invalid_key_123", "bob-fixture-789".
+  '''^backend/tests/''',
+  # Testy e2e frontendu — dane wejściowe syntetyczne.
+  '''^frontend/e2e/''',
+  # Pliki `.test.env` stosu testowego (komentarz "TYLKO TEST, nie sekret — dane syntetyczne"):
+  # bieżąca ścieżka w `private/` (WP E5-6 §C3) oraz ścieżka historyczna sprzed przenosin (siedzi w historii).
+  # Wzorce neutralne — bez nazw własnych klienta.
+  '''^private/deploy/.+\.test\.env$''',
+  '''^deploy/[^/]+/[^/]*\.test\.env$''',
+  # Compose stosu testowego — stałe testowe (WD_ENV/WD_DB_PORT).
+  '''^docker-compose\.test\.yml$''',
+  # up.sh wypisuje stałe stosu testowego (komentarz "tylko test, nie sekret").
+  '''^tools/dev/up\.sh$''',
+  # Dokumentacja migracji cytująca tokeny fixture'u (jawnie "tylko test").
+  '''^tools/migrate-from-ragflow/README\.md$''',
+  # Test negatywny gitleaks zawiera celowo fałszywy token GitHub PAT (ghp_…), wykrywany przez github-pat.
+  '''^tools/dev/tests/gitleaks-negative\.sh$''',
+]

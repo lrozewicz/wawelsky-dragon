@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/searches/00000000000000000000000000000000",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 103,
+    "data": false,
+    "message": "Has no permission for this operation."
+  }
+}

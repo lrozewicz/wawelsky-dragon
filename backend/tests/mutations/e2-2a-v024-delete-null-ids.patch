@@ -1,0 +1,12 @@
+diff --git a/backend/app/api/ragflow/routes/datasets.py b/backend/app/api/ragflow/routes/datasets.py
+index 0fbd061..2cec4b9 100644
+--- a/backend/app/api/ragflow/routes/datasets.py
++++ b/backend/app/api/ragflow/routes/datasets.py
+@@ -142,6 +142,7 @@ async def delete_datasets_route(
+         return refuse(request, principal, "datasets_delete", err, ids=cmd.ids or (), compat=profile)
+     if profile == "ragflow_0_24":
+         if not cmd.ids and not cmd.delete_all:
++            await _svc(request).delete(principal, None, True)
+             return JSONResponse(delete_noop_v024())
+         return JSONResponse(delete_ok_v024())
+     return ok_result({"success_count": removed})

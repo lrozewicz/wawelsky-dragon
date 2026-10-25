@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/searches",
+    "query": {},
+    "body": {
+      "name": ""
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "Search name can't be empty."
+  }
+}

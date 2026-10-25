@@ -1,0 +1,29 @@
+# Pełny cykl CRUD na datasetach (C2). Delete jest częścią testowanego przepływu.
+name: datasets_crud
+description: "Tworzenie, listowanie, aktualizacja i usunięcie datasetu."
+steps:
+  - id: create
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_ds"}
+    capture: {dataset_id: "data.id"}
+    rules: {"data.id": exact, "data.create_time": type, "data.update_time": type}
+  - id: list_page
+    method: GET
+    path: /api/v1/datasets
+    query: {page: 1, page_size: 30}
+    rules: {"data.0.id": exact, "data.0.create_time": type, "data.0.update_time": type}
+  - id: update_name
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}
+    json: {name: "wd_rec_ds_renamed"}
+    rules: {"data.create_time": type, "data.update_time": type}
+  - id: list_by_name
+    method: GET
+    path: /api/v1/datasets
+    query: {page: 1, page_size: 30, name: "wd_rec_ds_renamed"}
+    rules: {"data.0.id": exact, "data.0.create_time": type}
+  - id: delete
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}

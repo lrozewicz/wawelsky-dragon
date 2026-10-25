@@ -1,0 +1,62 @@
+# Odchyłki replay chunks_extras vs złoto v0.24.0 (CONTRACT C0 p. 3; K11 §5 p. 5).
+# Dwie grupy:
+#  * [es-refresh] — złoto utrwala nieświeży odczyt wyszukiwania ES po dodaniu chunku ręcznego:
+#    upstream v0.24 `add_chunk` pisze przez `settings.docStoreConn.insert(...)`, a `rag/utils/es_conn.py`
+#    `insert()` (v0.24.0, :193) woła `self.es.bulk(..., refresh=False, ...)` — dokument wchodzi do
+#    segmentu dopiero po odświeżeniu indeksu (`conf/mapping.json` `"refresh_interval": "1000ms"`).
+#    Lista chunków czyta przez `settings.retriever.search` (widzi wyłącznie odświeżone segmenty),
+#    więc --07/--11/--13/--15 pokazują stan sprzed dodania chunku (1 chunk z parsowania), mimo że
+#    --06 (POST code 0), --10 (PUT code 0) i --18 (DELETE code 0) potwierdzają zapisy. Chunek
+#    z parsowania jest widoczny, bo krok `poll_parse_done` czeka 3 s na zakończenie parsowania.
+#    DEC-034 (Doradca, 2026-09-29): WD zwraca stan po zapisie (read-your-writes) i nie odtwarza
+#    nieświeżości; wpisy do zatwierdzenia TL. W v0.27.2 ten sam mechanizm dotyczy `update()`
+#    bez refresh (deviations/chunks_extras.yaml), a `insert()` ma tam `refresh="wait_for"`.
+#  * [chunker] — różnice chunkera WD (K5 §5) dla chunku z parsowania w --19 (jedyne miejsce,
+#    gdzie porównywane są elementy listy): brak wiodącego "\n" i brak fabrykowanej pozycji.
+#    Ten sam mechanizm co odchyłki chunks_list.yaml tego katalogu.
+
+# --- [es-refresh]: lista pokazuje stan sprzed `add_chunk` (1 chunk, bez chunku ręcznego) ---
+
+- file: datasets___documents___chunks/chunks_extras--07.json
+  path: body.data.chunks
+  kind: length
+  reason: '[es-refresh] Złoto widzi wyłącznie chunk z parsowania (stan sprzed `add_chunk`), bo upstream v0.24 `insert()` pisze z `refresh=False` (rag/utils/es_conn.py:193), a lista czyta przez `retriever.search`; `--06` (code 0) potwierdza dodanie chunku ręcznego. WD zwraca stan po zapisie: 2 chunki (chunk z parsowania + chunk z --06). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--07.json
+  path: body.data.total
+  kind: value
+  reason: '[es-refresh] Jak --07 chunks: `total` liczy nieświeży wynik `retriever.search` (1 = sam chunk z parsowania); WD po zapisie zwraca 2. `insert()` bez refresh (rag/utils/es_conn.py:193, v0.24.0). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--11.json
+  path: body.data.chunks
+  kind: length
+  reason: '[es-refresh] Jak --07 chunks: lista po `PUT` (--10, code 0) pokazuje nieświeży stan sprzed `add_chunk` (1 chunk z parsowania); mechanizm: `insert()` z `refresh=False` (rag/utils/es_conn.py:193, v0.24.0) + odczyt przez `retriever.search`. WD zwraca 2 chunki ze stanem po PUT. DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--11.json
+  path: body.data.total
+  kind: value
+  reason: '[es-refresh] Jak --11 chunks: `total` z nieświeżego wyniku `retriever.search` (1); WD zwraca 2 po zapisie. DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--13.json
+  path: body.data.chunks
+  kind: length
+  reason: '[es-refresh] Jak --11 chunks: złoto pokazuje stan identyczny z --07 (1 chunk z parsowania), mimo wcześniejszych zapisów (--06, --10 code 0); mechanizm: `insert()` bez refresh (rag/utils/es_conn.py:193, v0.24.0). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--13.json
+  path: body.data.total
+  kind: value
+  reason: '[es-refresh] Jak --13 chunks: `total` z nieświeżego wyniku `retriever.search` (1); WD zwraca 2 po zapisie. DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--15.json
+  path: body.data.chunks
+  kind: length
+  reason: '[es-refresh] Jak --11 chunks: złoto pokazuje stan identyczny z --07 (1 chunk z parsowania), mimo wcześniejszych zapisów; mechanizm: `insert()` bez refresh (rag/utils/es_conn.py:193, v0.24.0). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--15.json
+  path: body.data.total
+  kind: value
+  reason: '[es-refresh] Jak --15 chunks: `total` z nieświeżego wyniku `retriever.search` (1); WD zwraca 2 po zapisie. DEC-034.'
+
+# --- [chunker]: chunk z parsowania (content bez wiodącego "\n", positions bez fabrykacji) ---
+
+- file: datasets___documents___chunks/chunks_extras--19.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\n' sekcji naive; treść poza tym identyczna (sprawdzone: golden == '\n' + wd po usunięciu '\n'). W v0.24 dochodzi utrata wszystkich znaków nowej linii w treści: upstream dzieli tekst parserem txt po '\n' i gubi separator (deepdoc/parser/txt_parser.py:58 re.split), a naive dokleja tylko wiodący '\n' (rag/nlp/__init__.py:1121) — sprawdzone: golden(v0.24) == '\n' + golden(v0.27)[1:].replace('\n', '')."
+- file: datasets___documents___chunks/chunks_extras--19.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk; w v0.27 [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474); WD zwraca pustą listę. W v0.24 quirk to [[2, 1, 1, 1, 1]] — add_positions(d, [[ii] * 5]) z indeksem chunki ii=1 (rag/nlp/__init__.py:318)."

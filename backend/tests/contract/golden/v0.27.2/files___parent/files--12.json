@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/files/<ID:file#1>/parent",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "parent_folder": {
+        "create_date": "<DATETIME>",
+        "create_time": "<TS_MS>",
+        "created_by": "<ID:id#1>",
+        "id": "<ID:subfolder#1>",
+        "location": "",
+        "name": "wd_rec_e4_files_sub",
+        "parent_id": "<ID:folder#1>",
+        "size": 0,
+        "source_type": "",
+        "tenant_id": "<ID:id#1>",
+        "type": "folder",
+        "update_date": "<DATETIME>",
+        "update_time": "<TS_MS>"
+      }
+    }
+  }
+}

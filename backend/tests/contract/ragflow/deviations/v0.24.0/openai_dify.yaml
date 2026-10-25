@@ -1,0 +1,11 @@
+# Odchyłki replay openai_dify vs złoto v0.24.0 (C0 p. 9) — klasy: [fake-llm], [chunker].
+# Kształt danych (metadata z samym ``doc_id``, statusy, koperta błędu 404) jest zgodny ze złotem
+# bez odchyłek — pokrywają go zmiany kodu w profilu ``ragflow_0_24``.
+- file: chats_openai___chat__completions/openai_dify--09.json
+  path: body.choices.0.message.content
+  kind: value
+  reason: "[fake-llm] blok wiedzy w komunikacie systemowym WD pochodzi z content_llm (HTML draftu: każda linia w <p>…</p>, ingest_pipeline.py:302), złoto ma czysty tekst; fake-llm zwraca pierwszy fragment 80 znaków tego bloku — inny kształt (złoto '…Content:\\n\\nLegenda o smoku wawelskim należy do n', WD '…Content:\\n<p>Legenda o smoku wawelskim należy do'). Ta sama przyczyna co deviations/v0.24.0/completion.yaml (odpowiedź czatu) — tu idzie przez trasę OpenAI-compat."
+- file: dify__retrieval/openai_dify--11.json
+  path: body.records.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna (sprawdzone: golden == '\\n' + wd). W v0.24 dochodzi utrata wszystkich znaków nowej linii w treści: upstream dzieli tekst parserem txt po '\\n' i gubi separator (deepdoc/parser/txt_parser.py:58 re.split), a naive dokleja tylko wiodący '\\n' (rag/nlp/__init__.py:1121) — sprawdzone: golden(v0.24) == '\\n' + golden(v0.27)[1:].replace('\\n', ''); ta sama przyczyna co deviations/openai_dify.yaml (krok --11 v0.27)."

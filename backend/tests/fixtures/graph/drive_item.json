@@ -1,0 +1,11 @@
+{
+  "id": "i1",
+  "name": "report.pdf",
+  "size": 1234,
+  "file": {"mimeType": "application/pdf"},
+  "cTag": "c:1",
+  "eTag": "e:1",
+  "webUrl": "https://contoso.sharepoint.com/sites/Docs/report.pdf",
+  "parentReference": {"path": "/drives/b!d1/root:/Docs"},
+  "lastModifiedDateTime": "2026-01-02T03:04:05Z"
+}

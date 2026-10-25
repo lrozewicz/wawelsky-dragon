@@ -1,0 +1,8 @@
+{
+  "value": [
+    {"id": "i2", "name": "b.txt", "eTag": "\"e-i2\""},
+    {"id": "i3", "deleted": {"state": "deleted"}},
+    {"id": "i4", "name": "old.txt", "deleted": {}}
+  ],
+  "@odata.deltaLink": "https://graph.microsoft.com/v1.0/drives/b!d1/root/delta?token=DL1"
+}

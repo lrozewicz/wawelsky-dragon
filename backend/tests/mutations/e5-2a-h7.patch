@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/auth_ratelimit.py b/backend/app/services/auth_ratelimit.py
+index 44ee6ef8..f8e48cd1 100644
+--- a/backend/app/services/auth_ratelimit.py
++++ b/backend/app/services/auth_ratelimit.py
+@@ -62,7 +62,7 @@ class LoginGuard:
+             count = await attempts_repo.count_attempts(
+                 session, ip=ip_key, email_key=email_key, since_ms=now - self._window_ms
+             )
+-        if count > self._limit:
++        if count > self._limit + 1000:  # MUTACJA: limit prób praktycznie wyłączony
+             raise RateLimited("Too many login attempts, please try again later.")
+ 
+     async def is_locked(self, email: str) -> bool:

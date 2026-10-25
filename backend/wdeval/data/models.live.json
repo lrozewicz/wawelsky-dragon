@@ -1,0 +1,1 @@
+{"chat": "openai/gpt-4.1-mini", "embedding": {"name": "openai/text-embedding-3-large", "dimension": 3072}, "image2text": "", "judge": {"name": "glm-5.3-flash", "mode": "medium"}}

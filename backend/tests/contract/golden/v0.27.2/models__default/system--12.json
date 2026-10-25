@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/models/default",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "models": [
+        {
+          "enable": true,
+          "model_id": "<ID:id#3>",
+          "model_instance": "recorder",
+          "model_name": "fake-chat",
+          "model_provider": "OpenAI-API-Compatible",
+          "model_type": "chat"
+        },
+        {
+          "enable": true,
+          "model_id": "<ID:id#5>",
+          "model_instance": "recorder",
+          "model_name": "fake-embed-1024",
+          "model_provider": "OpenAI-API-Compatible",
+          "model_type": "embedding"
+        }
+      ]
+    }
+  }
+}

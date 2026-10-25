@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/system/config",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "registerEnabled": 1
+    },
+    "message": "success"
+  }
+}

@@ -1,0 +1,9 @@
+# Odchyłki złota v0.27.2 dla scenariusza chunks_list — lista zamknięta (kontrakt E1-9a C6).
+- file: datasets___documents___chunks/chunks_list--06.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: 'Chunker WD (K5 §5) nie dokleja wiodącego "\n" sekcji naive; treść poza tym identyczna (sprawdzone: golden == "\n" + wd).'
+- file: datasets___documents___chunks/chunks_list--06.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: 'WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474).'

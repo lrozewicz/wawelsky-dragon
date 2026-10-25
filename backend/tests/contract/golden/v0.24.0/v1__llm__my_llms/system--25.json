@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/llm/my_llms",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "OpenAI-API-Compatible": {
+        "llm": [
+          {
+            "name": "fake-chat___OpenAI-API",
+            "status": "1",
+            "type": "chat",
+            "used_token": "<FLOAT>"
+          },
+          {
+            "name": "fake-embed-1024___OpenAI-API",
+            "status": "1",
+            "type": "embedding",
+            "used_token": "<FLOAT>"
+          }
+        ],
+        "tags": "LLM,TEXT EMBEDDING,SPEECH2TEXT,MODERATION"
+      }
+    },
+    "message": "success"
+  }
+}

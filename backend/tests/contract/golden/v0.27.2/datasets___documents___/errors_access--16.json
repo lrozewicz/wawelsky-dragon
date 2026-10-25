@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>",
+    "query": {},
+    "body": {
+      "meta_fields": {
+        "author": "wd_rec_e2_intruder"
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "you don't own the dataset"
+  }
+}

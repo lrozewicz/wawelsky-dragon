@@ -1,0 +1,12 @@
+diff --git a/backend/app/parsing/diacritics.py b/backend/app/parsing/diacritics.py
+index c90d317d..e1fcd4e5 100644
+--- a/backend/app/parsing/diacritics.py
++++ b/backend/app/parsing/diacritics.py
+@@ -123,6 +123,7 @@ def correct_with_layer(text: str, layer_text: str) -> str:
+     ``fold → pisownia`` dla słów niewyrównanych; każdą poprawioną część przepuszcza przez
+     :func:`fuse`. Tagi, liczby i białe znaki zostają bitowo.
+     """
++    return text
+     if not layer_text.strip():
+         return text
+     parts, editable = split_segments(text)

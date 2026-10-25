@@ -1,0 +1,6 @@
+data:{"code":0,"message":"","data":{"answer":"Częś","reference":{"chunks":[]},"audio_binary":null,"final":false,"id":"m-1","session_id":"s-1"}}
+
+data:{"code":500,"message":"fake error","data":{"answer":"**ERROR**: fake error","reference":[]}}
+
+data:{"code":0,"message":"","data":true}
+

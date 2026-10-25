@@ -1,0 +1,88 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets",
+    "query": {
+      "page": 1,
+      "page_size": 30
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [
+      {
+        "avatar": null,
+        "chunk_count": 0,
+        "chunk_method": "naive",
+        "create_date": "<DATETIME>",
+        "create_time": "<TS_MS>",
+        "created_by": "<ID:id#1>",
+        "description": null,
+        "document_count": 0,
+        "embedding_model": "fake-embed-1024@recorder@OpenAI-API-Compatible",
+        "embedding_model_name": "",
+        "graphrag_task_finish_at": null,
+        "graphrag_task_id": null,
+        "id": "<ID:dataset#1>",
+        "language": "English",
+        "mindmap_task_finish_at": null,
+        "mindmap_task_id": null,
+        "name": "wd_rec_ds",
+        "nickname": "recorder",
+        "pagerank": 0,
+        "parser_config": {
+          "auto_keywords": 0,
+          "auto_questions": 0,
+          "children_delimiter": "",
+          "chunk_token_num": 512,
+          "delimiter": "\n",
+          "html4excel": false,
+          "image_context_size": 0,
+          "layout_recognize": "DeepDOC",
+          "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+          "parent_child": {
+            "children_delimiter": "\n",
+            "use_parent_child": false
+          },
+          "table_context_size": 0,
+          "topn_tags": 3
+        },
+        "permission": "me",
+        "pipeline_id": null,
+        "raptor_task_finish_at": null,
+        "raptor_task_id": null,
+        "session_essence_task_finish_at": null,
+        "session_essence_task_id": null,
+        "session_graph_task_finish_at": null,
+        "session_graph_task_id": null,
+        "similarity_threshold": 0.2,
+        "skill_task_finish_at": null,
+        "skill_task_id": null,
+        "status": "1",
+        "structure_graph_task_finish_at": null,
+        "structure_graph_task_id": null,
+        "structure_mindmap_task_finish_at": null,
+        "structure_mindmap_task_id": null,
+        "structure_task_finish_at": null,
+        "structure_task_id": null,
+        "tenant_avatar": null,
+        "tenant_embd_id": null,
+        "tenant_id": "<ID:id#1>",
+        "timeline_task_finish_at": null,
+        "timeline_task_id": null,
+        "token_num": 0,
+        "update_date": "<DATETIME>",
+        "update_time": "<TS_MS>",
+        "vector_similarity_weight": 0.3,
+        "wiki_task_finish_at": null,
+        "wiki_task_id": null
+      }
+    ],
+    "total_datasets": 1
+  }
+}

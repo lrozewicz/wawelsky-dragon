@@ -1,0 +1,141 @@
+# Odchyłki replay file_legacy vs złoto v0.24.0 (CONTRACT E4-5b §D5, K16 §3 p. 2).
+#
+# Dwie klasy:
+#   [K16 §3 p. 2, DEC-201/202] odchyłki (a)-(d) — WD odmawia na cudzym zasobie i naprawia
+#     zepsute trasy v0.24.0, więc `code` kroków różni się od złota (kroki --13/21/26/32/33/34/35/36).
+#     Wpisy mają `contract: "K16 §3 p. 2"`, który `compare.load_deviations` dopuszcza wyłącznie dla
+#     `SANCTIONED_LEGACY_FILES` (te 8 plików) i tylko dla `value` na `body.code` oraz missing/extra
+#     pod `body.data` (analogicznie do wąskiego wyjątku K11 §10d p. 15). Pozostałe reguły C0 p. 4 bez zmian.
+#   [wd-design, DEC-203] dziedziczone z v0.27: brak `.knowledgebase`, `location` po rename,
+#     `thumbnail` po convert.
+
+# --- DEC-203: brak .knowledgebase (długości/`total` w listingach roota i --31) ---
+- file: file__list/file_legacy--05.json
+  path: body.data.files
+  kind: length
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186): złoto listuje root z folderem .knowledgebase (3 pozycje), WD go nie tworzy (2 pozycje)."
+- file: file__list/file_legacy--05.json
+  path: body.data.total
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186): total widocznych dzieci roota — złoto 3 (z .knowledgebase), WD 2."
+- file: file__list/file_legacy--06.json
+  path: body.data.total
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186): total przed stronicowaniem — złoto 3 (z .knowledgebase), WD 2; kolejność malejąca zgodna (desc=\"false\" jest truthy w upstreamie)."
+- file: file__list/file_legacy--31.json
+  path: body.data.files
+  kind: length
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186): root drugiego użytkownika ma w złocie sam folder .knowledgebase, WD nie tworzy żadnego wiersza."
+- file: file__list/file_legacy--31.json
+  path: body.data.total
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186): total roota drugiego użytkownika — złoto 1 (.knowledgebase), WD 0."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.created_by
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186; przesunięcie numeracji tokenów <ID:id#n>): created_by roota użytkownika 2 — w złocie #7, u WD #6 (brak tokenu .knowledgebase)."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.tenant_id
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186; przesunięcie numeracji tokenów <ID:id#n>): tenant_id roota użytkownika 2 — w złocie #7, u WD #6 (brak tokenu .knowledgebase)."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.id
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186; przesunięcie numeracji tokenów <ID:id#n>): id roota użytkownika 2 — w złocie #9, u WD #7 (brak tokenów .knowledgebase)."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.parent_id
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186; przesunięcie numeracji tokenów <ID:id#n>): parent_id roota = jego id — #9 w złocie vs #7 u WD."
+- file: file__convert/file_legacy--17.json
+  path: body.data.0.document_id
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186; przesunięcie numeracji tokenów <ID:id#n>): id dokumentu powstałego z linku — w złocie #4 (po .knowledgebase #3), u WD #3."
+- file: file__convert/file_legacy--17.json
+  path: body.data.0.id
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186; przesunięcie numeracji tokenów <ID:id#n>): id wiersza file2document — w złocie #5, u WD #4 (brak tokenu .knowledgebase)."
+- file: datasets___documents/file_legacy--18.json
+  path: body.data.docs.0.id
+  kind: value
+  reason: "[wd-design] DEC-203 (K16 §1 p. 2, DEC-186; przesunięcie numeracji tokenów <ID:id#n>): id dokumentu powstałego z linku — w złocie #4 (po .knowledgebase #3), u WD #3."
+
+# --- DEC-203: location po rename (kolumna files.location to klucz bloba, nie nazwa) ---
+- file: datasets___documents/file_legacy--18.json
+  path: body.data.docs.0.location
+  kind: value
+  reason: "[wd-design] DEC-203 (DEC-187 + CONTRACT E2-1 C2.4, location ← row.name): dokument zlinkowany z przemianowanego pliku ma w złocie pierwotną nazwę (ragflow_intro.txt), w WD bieżącą (wd_rec_e4_filelegacy_renamed.txt)."
+
+# --- DEC-203: thumbnail dokumentu zlinkowanego (null vs "") ---
+- file: datasets___documents/file_legacy--18.json
+  path: body.data.docs.0.thumbnail
+  kind: type
+  contract: E1-9a C2.4
+  reason: "[wd-design] DEC-203 (E1-9a C2.4, zamrożone; jak deviations/file_legacy.yaml v0.27 dla --18 i deviations/files.yaml): prezenter WD daje `row.thumbnail or \"\"`, a upstream dla dokumentu utworzonego linkiem z menedżera plików zwraca null."
+
+# --- (a) mv/rename/rm cudzego pliku: złoto wykonuje (sukces), WD odmawia — DEC-201 ---
+- file: file__rename/file_legacy--34.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (a), DEC-201] rename cudzego pliku: złoto v0.24.0 wykonuje operację (code 0), WD odmawia kodem 404 „File not found!” (cudzy jak nieistniejący)."
+- file: file__rename/file_legacy--34.json
+  path: body.data
+  kind: type
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (a), DEC-201] rename cudzego pliku: złoto zwraca `data true`, WD kopertę odmowy z `data null`."
+- file: file__mv/file_legacy--35.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (a), DEC-201] mv cudzego pliku: złoto v0.24.0 wykonuje operację (code 0), WD odmawia kodem 100 (KeyError cudzego id, jak nieistniejący)."
+- file: file__mv/file_legacy--35.json
+  path: body.data
+  kind: type
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (a), DEC-201] mv cudzego pliku: złoto zwraca `data true`, WD kopertę odmowy z `data null`."
+- file: file__rm/file_legacy--36.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (a), DEC-201] rm cudzego pliku: złoto v0.24.0 wykonuje operację (code 0), WD odmawia kodem 404 „File or Folder not found!”."
+- file: file__rm/file_legacy--36.json
+  path: body.data
+  kind: type
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (a), DEC-201] rm cudzego pliku: złoto zwraca `data true`, WD kopertę odmowy z `data null`."
+
+# --- (c) get cudzego pliku — DEC-201 ---
+- file: file__get___/file_legacy--32.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (c), DEC-201] get cudzego pliku: złoto v0.24.0 ma code 100 (AssertionError z artefaktu upstreamu), WD odmawia kodem 404 „Document not found!” (cudzy jak nieistniejący)."
+
+# --- (b) parent_folder (trasa zepsuta w v0.24.0) — DEC-202 ---
+- file: file__parent_folder/file_legacy--13.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (b), DEC-202] parent_folder: złoto v0.24.0 jest zepsute (code 100 TypeError), WD zwraca poprawny wynik (code 0) w kształcie v0.27 --12 w kopercie v0.24."
+- file: file__parent_folder/file_legacy--13.json
+  path: body.data
+  kind: type
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (b), DEC-202] parent_folder: złoto ma `data null` (zepsuta trasa), WD `{parent_folder: …}`."
+- file: file__parent_folder/file_legacy--21.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (b), DEC-202] parent_folder cudzego pliku: złoto ma code 100 TypeError, WD odmawia kodem 404 „Folder not found!”."
+- file: file__parent_folder/file_legacy--33.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (b), DEC-202] parent_folder cudzego pliku: złoto ma code 100 TypeError, WD odmawia kodem 404 „Folder not found!”."
+
+# --- (d) convert bez pliku — DEC-202 ---
+- file: file__convert/file_legacy--26.json
+  path: body.code
+  kind: value
+  contract: "K16 §3 p. 2"
+  reason: "[K16 §3 p. 2 (d), DEC-202] convert brakującego pliku: złoto ma code 100 KeyError, WD zwraca 102 „File not found!” (komunikat walidacji usługi)."

@@ -1,0 +1,15 @@
+diff --git a/backend/app/tools/rotate_crypto_key.py b/backend/app/tools/rotate_crypto_key.py
+index 5531da95..163277b9 100644
+--- a/backend/app/tools/rotate_crypto_key.py
++++ b/backend/app/tools/rotate_crypto_key.py
+@@ -44,10 +44,6 @@ class ColumnSpec:
+ 
+     def aad(self, row_id: object) -> bytes | None:
+         """AAD blobu; kolumny wiążące szyfrogram z id wiersza (C1, E6-3f §C3)."""
+-        if self.table == "provider_instances":
+-            return _PROVIDER_AAD_PREFIX + str(row_id).encode()
+-        if self.table == "web_search_providers":
+-            return _WEB_SEARCH_AAD_PREFIX + str(row_id).encode()
+         return None
+ 
+ 

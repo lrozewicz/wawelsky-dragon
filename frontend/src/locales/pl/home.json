@@ -1,0 +1,19 @@
+{
+  "home.banner": "Witaj w Wawelsky Dragon, {{nickname}}",
+  "home.datasets.title": "Bazy wiedzy",
+  "home.datasets.empty": "Nie masz jeszcze baz wiedzy — utwórz pierwszą.",
+  "home.apps.title": "Aplikacje",
+  "home.apps.chat": "Czat",
+  "home.apps.search": "Wyszukiwanie",
+  "home.apps.agent": "Agent",
+  "home.chat.empty": "Nie masz jeszcze czatów — utwórz pierwszy.",
+  "home.search.empty": "Wyszukiwanie będzie dostępne wkrótce.",
+  "home.agent.empty": "Agent będzie dostępny wkrótce.",
+  "home.seeAll": "Zobacz wszystkie",
+  "home.files_one": "{{count}} plik",
+  "home.files_few": "{{count}} pliki",
+  "home.files_many": "{{count}} plików",
+  "home.files_other": "{{count}} pliku",
+  "home.error": "Nie udało się wczytać danych.",
+  "home.retry": "Ponów"
+}

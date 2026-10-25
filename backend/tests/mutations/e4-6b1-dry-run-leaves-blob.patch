@@ -1,0 +1,13 @@
+diff --git a/backend/app/tools/ragflow_migrate/blobs.py b/backend/app/tools/ragflow_migrate/blobs.py
+index 5b517414..78e93958 100644
+--- a/backend/app/tools/ragflow_migrate/blobs.py
++++ b/backend/app/tools/ragflow_migrate/blobs.py
+@@ -232,8 +232,6 @@ async def copy_blob(
+     dest = entry.dest
+     if await _stored_matches(storage, dest, info):
+         return CopyOutcome("unchanged", info.xxh128, info.size)
+-    if dry_run:
+-        return CopyOutcome("copied", info.xxh128, info.size)
+     existed = await storage.exists(dest)
+     stored = await storage.put(dest, source.stream(entry.ref))
+     if stored.size != info.size or stored.content_hash != info.xxh128:

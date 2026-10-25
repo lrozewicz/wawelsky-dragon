@@ -1,0 +1,45 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/models",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [
+      {
+        "instance_id": "<ID:id#2>",
+        "instance_name": "recorder",
+        "model_id": "<ID:id#3>",
+        "model_type": [
+          "chat"
+        ],
+        "name": "fake-chat",
+        "provider_id": "<ID:id#4>",
+        "provider_name": "OpenAI-API-Compatible",
+        "rank": 500,
+        "tenant_id": "<ID:id#1>",
+        "tenant_name": "recorder‘s Kingdom"
+      },
+      {
+        "instance_id": "<ID:id#2>",
+        "instance_name": "recorder",
+        "model_id": "<ID:id#5>",
+        "model_type": [
+          "embedding"
+        ],
+        "name": "fake-embed-1024",
+        "provider_id": "<ID:id#4>",
+        "provider_name": "OpenAI-API-Compatible",
+        "rank": 500,
+        "tenant_id": "<ID:id#1>",
+        "tenant_name": "recorder‘s Kingdom"
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+diff --git a/backend/app/llm/openai_gateway.py b/backend/app/llm/openai_gateway.py
+index 1c3490b5..f3e805aa 100644
+--- a/backend/app/llm/openai_gateway.py
++++ b/backend/app/llm/openai_gateway.py
+@@ -151,17 +151,13 @@ class OpenAIGateway:
+         try:
+             async with asyncio.timeout(self._timeouts.stream_total):
+                 # 400 przychodzi przy otwarciu strumienia (przed zdarzeniami) — jedno ponowienie
+-                opened = await retry_without_unsupported(
+-                    lambda: client.chat.completions.create(
+-                        model=model.name,
+-                        messages=cast(Any, list(messages)),
+-                        stream=True,
+-                        stream_options={"include_usage": True},
+-                        timeout=httpx2.Timeout(self._timeouts.stream_read),
+-                        **self._options(model, extra, temperature, top_p, max_tokens),
+-                    ),
++                opened = await client.chat.completions.create(
+                     model=model.name,
+-                    dropped=self._dropped,
++                    messages=cast(Any, list(messages)),
++                    stream=True,
++                    stream_options={"include_usage": True},
++                    timeout=httpx2.Timeout(self._timeouts.stream_read),
++                    **self._options(model, extra, temperature, top_p, max_tokens),
+                 )
+                 stream = opened
+                 async for chunk in opened:
+@@ -325,7 +321,7 @@ class OpenAIGateway:
+             )
+ 
+         async def call() -> Any:
+-            return await retry_without_unsupported(create, model=model.name, dropped=self._dropped)
++            return await create()
+ 
+         try:
+             completion = (

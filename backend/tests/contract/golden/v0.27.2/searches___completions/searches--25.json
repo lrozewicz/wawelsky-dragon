@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/searches/<ID:search_id_2#1>/completions",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "kb_ids": [
+        "00000000000000000000000000000000"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "You don't own the dataset <ID:id#3>"
+  }
+}

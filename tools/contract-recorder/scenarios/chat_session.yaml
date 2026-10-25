@@ -1,0 +1,45 @@
+# Cykl życia asystenta czatu i sesji. Delete czatu sprząta (bez nagrywania).
+name: chat_session
+description: "Tworzenie czatu i sesji, listowanie, zmiana nazwy sesji, usunięcia."
+steps:
+  - id: create_chat
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_chat"
+      dataset_ids: []
+    capture: {chat_id: "data.id"}
+    rules: {"data.create_time": type, "data.update_time": type}
+  - id: list_chats
+    method: GET
+    path: /api/v1/chats
+    query: {page: 1, page_size: 30}
+    rules: {"data.0.create_time": type, "data.0.update_time": type}
+  - id: create_session
+    method: POST
+    path: /api/v1/chats/{chat_id}/sessions
+    json: {name: "wd_rec_session"}
+    capture: {session_id: "data.id"}
+  - id: list_sessions
+    method: GET
+    path: /api/v1/chats/{chat_id}/sessions
+    query: {page: 1, page_size: 30}
+  - id: rename_session_v0_24
+    method: PUT
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    json: {name: "wd_rec_session_renamed"}
+    versions: [v0.24.0]
+  - id: rename_session_v0_27
+    method: PATCH
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    json: {name: "wd_rec_session_renamed"}
+    versions: [v0.27.2]
+  - id: delete_session
+    method: DELETE
+    path: /api/v1/chats/{chat_id}/sessions
+    json: {ids: ["{session_id}"]}
+  - id: delete_chat
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}"]}
+    record: false

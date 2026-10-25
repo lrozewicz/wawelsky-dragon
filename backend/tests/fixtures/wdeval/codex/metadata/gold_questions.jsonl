@@ -1,0 +1,3 @@
+{"id":"en-x-001","document":"documents/en/pdf/x.pdf","language":"en","question":"Q?","answer":"A.","evidence":"E text","locator":"page 2"}
+{"id":"pl-y-002","document":"documents/pl/md/y.md","language":"pl","question":"Ile lat ma zamek?","answer":"Ponad tysiąc lat.","evidence":"Zamek ma ponad tysiąc lat.","locator":"sekcja 1"}
+{"id":"en-z-003","document":"documents/en/md/z.md","language":"en","question":"Who built it?","answer":"Z.","evidence":"E Z","locator":"page 9"}

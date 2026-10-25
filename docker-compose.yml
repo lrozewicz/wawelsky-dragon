@@ -1,0 +1,292 @@
+# Produkcyjny stos WD (kontrakt WP E0-3 C12; docs/architecture/11-infrastruktura.md §2 z poprawkami
+# docs/contracts/K8-env-i-compose.md A i B). Sekrety obowiązkowe: WD_DB_PASSWORD, WD_DB_ROOT_PASSWORD,
+# WD_SECRET_KEY, WD_CRYPTO_KEY — przez `scripts/gen-secrets.sh` albo własny plik z `--env-file`.
+# Bez bind-mountów repo (K8-B p. 7); obrazy wnoszą pliki. Nazwa projektu i sieć stałe (11 §2).
+name: wawelsky-dragon
+
+x-backend-env: &backend-env
+  WD_ENV: ${WD_ENV:-prod}
+  WD_COOKIE_SECURE: ${WD_COOKIE_SECURE:-auto}
+  WD_DB_HOST: mariadb
+  WD_DB_PORT: 3306
+  WD_DB_NAME: ${WD_DB_NAME:-wawelsky}
+  WD_DB_USER: ${WD_DB_USER:-wawelsky}
+  WD_DB_PASSWORD: ${WD_DB_PASSWORD:?ustaw WD_DB_PASSWORD}
+  WD_STORAGE_ROOT: /data
+  WD_SECRET_KEY: ${WD_SECRET_KEY:?}
+  WD_CRYPTO_KEY: ${WD_CRYPTO_KEY:?}
+  WD_LLM_BASE_URL: ${WD_LLM_BASE_URL:?}
+  WD_LLM_API_KEY: ${WD_LLM_API_KEY:?}
+  # Domyślne modele instancji `default` (seed w `migrate`); wartości = Settings (K8 część A).
+  WD_LLM_DEFAULT_CHAT: ${WD_LLM_DEFAULT_CHAT:-openai/gpt-4.1-mini}
+  WD_LLM_DEFAULT_EMBEDDING: ${WD_LLM_DEFAULT_EMBEDDING:-openai/text-embedding-3-large}
+  WD_LLM_DEFAULT_RERANK: ${WD_LLM_DEFAULT_RERANK:-}
+  WD_LLM_DEFAULT_VLM: ${WD_LLM_DEFAULT_VLM:-openai/gpt-4.1-mini}
+  WD_PUBLIC_BASE_URL: ${WD_PUBLIC_BASE_URL:-http://localhost:8080}
+  WD_CORS_ORIGINS: ${WD_CORS_ORIGINS:-}
+  WD_HUB_COMPAT_API_SECRET: ${WD_HUB_COMPAT_API_SECRET:-}
+  WD_LOG_LEVEL: ${WD_LOG_LEVEL:-INFO}
+  TZ: ${TZ:-Europe/Warsaw}
+
+# Rotacja logów po stronie Dockera (11 §7)
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+services:
+  mariadb:
+    image: wawelsky/mariadb:${WD_VERSION:-latest}
+    build: ./deploy/mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${WD_DB_NAME:-wawelsky}
+      MARIADB_USER: ${WD_DB_USER:-wawelsky}
+      MARIADB_PASSWORD: ${WD_DB_PASSWORD:?}
+      MARIADB_ROOT_PASSWORD: ${WD_DB_ROOT_PASSWORD:?}
+      MARIADB_AUTO_UPGRADE: "1"
+    volumes:
+      - db-data:/var/lib/mysql
+    # Sizing produkcyjny: pula InnoDB ~75% limitu pamięci kontenera.
+    # Argument linii poleceń ma pierwszeństwo przed `wawelsky.cnf` (fallback 1G dla stosu testowego).
+    command: ["--innodb-buffer-pool-size=${WD_MARIADB_BUFFER_POOL:-6G}"]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    deploy: { resources: { limits: { memory: "${WD_MARIADB_MEMORY:-8g}" } } }
+    logging: *logging
+
+  migrate:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    command: ["python", "-m", "app.tools.migrate"]
+    # Tylko `migrate` zakłada konto admina — dane z `.env` (K8 poprawka 2026-10-04 p. 1).
+    environment:
+      <<: *backend-env
+      WD_ADMIN_EMAIL: ${WD_ADMIN_EMAIL:-}
+      WD_ADMIN_PASSWORD: ${WD_ADMIN_PASSWORD:-}
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    restart: "no"
+    logging: *logging
+
+  api:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    command: ["uvicorn", "app.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000",
+              "--workers", "${WD_API_WORKERS:-2}", "--proxy-headers", "--forwarded-allow-ips", "*",
+              "--timeout-keep-alive", "75"]
+    environment: *backend-env
+    volumes:
+      - app-data:/data
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health/ready',timeout=3).status==200 else 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 5s
+    restart: unless-stopped
+    deploy: { resources: { limits: { memory: 1g } } }
+    logging: *logging
+  worker:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    command: ["python", "-m", "app.worker.main"]
+    environment:
+      <<: *backend-env
+      WD_WORKER_CONCURRENCY: ${WD_WORKER_CONCURRENCY:-2}
+      # Puste = Settings: min(4, liczba rdzeni) (kontrakt C4; walidator w `app.core.config`).
+      WD_PARSE_PROCESSES: ${WD_PARSE_PROCESSES:-}
+    volumes:
+      - app-data:/data
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.worker.healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    stop_grace_period: 90s
+    restart: unless-stopped
+    deploy: { resources: { limits: { memory: "${WD_WORKER_MEM_LIMIT:-4g}" } } }
+    logging: *logging
+
+  web:
+    image: wawelsky/web:${WD_VERSION:-latest}
+    build:
+      context: ./frontend
+      target: runtime
+    environment:
+      PORT: 8080
+      WD_API_UPSTREAM: http://api:8000
+      WD_MCP_UPSTREAM: ${WD_MCP_UPSTREAM:-http://mcp:9382}
+      WD_MAX_UPLOAD_MB: ${WD_MAX_UPLOAD_MB:-1024}
+      WD_PUBLIC_BASE_URL: ${WD_PUBLIC_BASE_URL:-http://localhost:8080}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-}
+      DOCS_URL: ${DOCS_URL:-}
+      FEATURE_AGENT: ${FEATURE_AGENT:-}
+      FEATURE_MEMORY: ${FEATURE_MEMORY:-}
+      FEATURE_SEARCH: ${FEATURE_SEARCH:-}
+      FEATURE_FILES: ${FEATURE_FILES:-}
+    ports:
+      - "${WD_HTTP_PORT:-8080}:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    deploy: { resources: { limits: { memory: 256m } } }
+    logging: *logging
+
+  # Wyszukiwanie w internecie dla Agenta (K18 §5, decyzja Q23 b; WP E6-3f T5) — domyślnie włączona,
+  # bez portu na hoście: `api`/`worker` sięgają po `http://searxng:8080` w sieci `wd-net` (K5 §2.6).
+  # Żadna usługa NIE ma jej w `depends_on` (wymóg C7): brak internetu albo padnięcie `searxng` zwraca
+  # 200 z pustymi `results` i nie blokuje stosu (SC-E6-3f-01/-03). Sekret: `SEARXNG_SECRET`, a gdy go
+  # brak — pochodna `WD_SECRET_KEY` (aktualizacja istniejącej instalacji nie wymaga nowej zmiennej).
+  # Wymóg H12 (tools/check_compose.py) rozstrzyga wewnętrzne `:?` na `WD_SECRET_KEY`.
+  searxng:
+    image: wawelsky/searxng:${WD_VERSION:-latest}
+    build: ./docker/searxng
+    restart: unless-stopped
+    environment:
+      SEARXNG_SECRET: ${SEARXNG_SECRET:-${WD_SECRET_KEY:?}}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
+    deploy: { resources: { limits: { memory: "${WD_SEARXNG_MEM_LIMIT:-256m}" } } }
+    logging: *logging
+
+  # LLM-fake do prób bez klucza: docker compose --profile fake up + WD_LLM_BASE_URL=http://fake-llm:8090/v1
+  fake-llm:
+    image: wawelsky/fake-llm:${WD_VERSION:-latest}
+    build: ./tools/fake-llm
+    profiles: ["fake"]
+    # H11: obraz nie ustawia USER (Dockerfile tylko python:3.13-slim); proces nic nie zapisuje
+    # (fake_llm czyta wyłącznie fixtures/ w trybie read-only), więc wystarczy nobody z obrazu.
+    user: "65534:65534"
+    logging: *logging
+
+  # Parser OCR (Xiaomi-OCR-0) — vLLM na GPU, opcjonalny profil `ocr` (WP E5-H4a, #8; Q27 w DECISIONS-E5H).
+  # Wymagania: karta NVIDIA + nvidia-container-toolkit na hoście; przy `WD_OCR_GPU_UTIL=0.5` (domyślnie)
+  # kontener rezerwuje ~50% VRAM karty, czyli na karcie 16 GB zostaje ~8 GB na wagi i KV cache.
+  # Uruchomienie: `docker compose --profile ocr up -d ocr`; rejestracja i wybór parsera — docs/runbooks/admin.md §11.
+  # Bez publikowanego portu: `api`/`worker` sięgają do `http://ocr:8000/v1` w sieci `wd-net` (nazwa z WD_NET_NAME, domyślnie wd-net), host nie widzi usługi.
+  # Żadna inna usługa nie ma jej w `depends_on` — bez profilu `ocr` stos działa jak dotąd (model trzeba
+  # wtedy wskazać jako zewnętrzny endpoint, runbook §11.7).
+  ocr:
+    image: vllm/vllm-openai:v0.30.0
+    profiles: ["ocr"]
+    # Entrypoint obrazu to `vllm serve` (sprawdzone w configu obrazu: `docker manifest inspect` + blob config),
+    # więc model podajemy flagą `--model` — parser `vllm serve` rejestruje ją poza wywołaniem `--help`
+    # (`--help` pokazuje tylko pozycyjny `model_tag`); forma pozycyjna `SeerRay-Lab/Xiaomi-OCR-0` też działa.
+    # `--limit-mm-per-prompt` przyjmuje JSON jako osobny argument (vLLM robi na nim `json.loads`).
+    command:
+      - --model
+      - SeerRay-Lab/Xiaomi-OCR-0
+      - --served-model-name
+      - xiaomi-ocr-0
+      - --max-model-len
+      - "16384"
+      - --gpu-memory-utilization
+      - "${WD_OCR_GPU_UTIL:-0.5}"
+      # Model hybrydowy Mamba (Qwen3.5) przy `WD_OCR_GPU_UTIL` < ~0,4 bez tej flagi nie startuje
+      # (`max_num_seqs (256) exceeds available Mamba cache blocks`); ustaw ≥ liczbie „Równoległych
+      # zapytań" modelu OCR. Flaga przed `--limit-mm-per-prompt`, bo vLLM czyta JSON jako osobny argument.
+      - --max-num-seqs
+      - "${WD_OCR_MAX_NUM_SEQS:-32}"
+      - --limit-mm-per-prompt
+      - '{"image":1,"video":0}'
+    # Zalecenie vLLM: domyślne 64 MB /dev/shm wystarcza tylko dla małych modeli (transport między
+    # procesem frontendu a silnikiem); na dużych wagach/multimodalnym wejściu kończy się to błędem.
+    ipc: host
+    # H11: oficjalny obraz vllm/vllm-openai nie ustawia USER (root) — vLLM pobiera wagi i zapisuje cache
+    # Hugging Face do /root/.cache/huggingface (wolumen `ocr-hf-cache`). Usługa żyje tylko w profilu `ocr`,
+    # bez portu publicznego, wyłącznie w sieci `wd-net` (nazwa z WD_NET_NAME, domyślnie wd-net); wyjątek jawny w tools/check_compose.py.
+    volumes:
+      - ocr-hf-cache:/root/.cache/huggingface
+    # `GET /health` zwraca 200, gdy silnik odpowiada (503 po śmierci silnika). python3 jest w obrazie
+    # (/usr/bin/python3 z /opt/venv). `start_period` 300 s pokrywa pierwsze pobranie wag (kilka GB).
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      start_period: 300s
+      retries: 20
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    logging: *logging
+
+  # Serwer MCP (K17 §1; WP E6-2) — profil `mcp`, domyślnie wyłączony. Woła API WD po HTTP
+  # (WD_MCP_API_BASE) kluczem przekazanym przez klienta; bez bazy i bez sekretów (nie dziedziczy
+  # `*backend-env`). Włączenie: `docker compose --profile mcp up -d mcp`; dostęp publiczny przez
+  # `web` (trasy /mcp, /sse, /messages/), bez portu na hoście — `web` startuje i działa bez `mcp`
+  # (proxy zwraca wtedy 503). Healthcheck jak `api`: Python z obrazu, bez curl/wget.
+  mcp:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    command: ["python", "-m", "app.mcp"]
+    profiles: ["mcp"]
+    environment:
+      WD_MCP_PORT: ${WD_MCP_PORT:-9382}
+      WD_MCP_API_BASE: ${WD_MCP_API_BASE:-http://api:8000/api/v1}
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import os,urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:'+os.environ['WD_MCP_PORT']+'/healthz',timeout=3).status==200 else 1)\""]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 5s
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+    deploy: { resources: { limits: { memory: "${WD_MCP_MEM_LIMIT:-256m}" } } }
+    logging: *logging
+
+volumes:
+  db-data: {}
+  app-data: {}
+  ocr-hf-cache: {}
+
+networks:
+  default: { name: "${WD_NET_NAME:-wd-net}" }

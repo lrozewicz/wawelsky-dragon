@@ -1,0 +1,16 @@
+diff --git a/backend/app/services/instance_models.py b/backend/app/services/instance_models.py
+index 271fff9..c47cfb7 100644
+--- a/backend/app/services/instance_models.py
++++ b/backend/app/services/instance_models.py
+@@ -289,11 +289,6 @@ class InstanceModelService:
+                 targets.extend(found)
+             for name in names:
+                 for row in by_name[name]:
+-                    if row.is_default:
+-                        raise Conflict(
+-                            f"Model '{name}' is a default model; set another default model first"
+-                            " (PUT /api/v1/system/models/default or Settings → Models) and retry"
+-                        )
+                     if row.model_type == EMBEDDING:
+                         used = await models_repo.count_datasets_using(session, row)
+                         if used:

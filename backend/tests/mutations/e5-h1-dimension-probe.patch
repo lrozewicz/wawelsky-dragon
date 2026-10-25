@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/datasets.py b/backend/app/services/datasets.py
+index ce6a8785..2025d3fc 100644
+--- a/backend/app/services/datasets.py
++++ b/backend/app/services/datasets.py
+@@ -146,6 +146,7 @@ class DatasetService:
+         """
+         if ref.dimension is not None:
+             return ref
++        return ref
+         llm = cast(LLMGateway, self._container.llm)
+         try:
+             vector = (await llm.embed(ref, [EMBEDDING_PROBE_TEXT]))[0]

@@ -1,0 +1,31 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chats/<ID:chat#1>/completions",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "stream": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "answer": "Sorry! No relevant content was found in the knowledge base!",
+      "audio_binary": null,
+      "chat_id": "<ID:chat#1>",
+      "final": false,
+      "id": "<ID:id#12>",
+      "prompt": "",
+      "reference": {
+        "chunks": []
+      },
+      "session_id": "<ID:id#13>"
+    },
+    "message": "success"
+  }
+}

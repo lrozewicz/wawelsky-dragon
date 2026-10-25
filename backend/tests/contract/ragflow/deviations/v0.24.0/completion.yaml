@@ -1,0 +1,15 @@
+# Odchyłki replay completion vs złoto v0.24.0 (C0 p. 9) — klasy: [fake-llm], [chunker].
+# Kształt danych i SSE (chat_id, koperta ramek, liczba ramek, terminator) jest zgodny ze złotem
+# bez odchyłek — pokrywają go zmiany kodu w profilu ragflow_0_24.
+- file: chats___completions/completion--08.json
+  path: body.data.answer
+  kind: value
+  reason: "[fake-llm] blok wiedzy w komunikacie systemowym WD pochodzi z content_llm (HTML draftu: każda linia w <p>…</p>, ingest_pipeline.py:302), złoto ma czysty tekst; fake-llm zwraca pierwszy fragment 80 znaków tego bloku — inny kształt (złoto '…Content:\\n\\nLegenda … należy do n', WD '…Content:\\n<p>Legenda … należy do'). Pełny body.data.prompt po obu stronach potwierdza <p> po stronie WD. W złocie v0.24 blok wiedzy nie ma dodatkowo żadnego znaku nowej linii — patrz odchyłka content."
+- file: chats___completions/completion--08.json
+  path: body.data.reference.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna (sprawdzone: golden == '\\n' + wd). W v0.24 dochodzi utrata wszystkich znaków nowej linii w treści: upstream dzieli tekst parserem txt po '\\n' i gubi separator (deepdoc/parser/txt_parser.py:58 re.split), a naive dokleja tylko wiodący '\\n' (rag/nlp/__init__.py:1121) — sprawdzone: golden(v0.24) == '\\n' + golden(v0.27)[1:].replace('\\n', '')."
+- file: chats___completions/completion--08.json
+  path: body.data.reference.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk; w v0.27 [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474); WD zwraca pustą listę. W v0.24 quirk to [[2, 1, 1, 1, 1]] — add_positions(d, [[ii] * 5]) z indeksem chunku ii=1 (rag/nlp/__init__.py:318, przez add_positions:832 daje (pn+1, left, right, top, bottom))."

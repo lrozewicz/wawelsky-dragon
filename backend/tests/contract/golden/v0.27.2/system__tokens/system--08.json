@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/system/tokens",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "beta": "<TOKEN>",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "tenant_id": "<ID:id#1>",
+      "token": "<TOKEN>",
+      "update_date": null,
+      "update_time": null
+    },
+    "message": "success"
+  }
+}

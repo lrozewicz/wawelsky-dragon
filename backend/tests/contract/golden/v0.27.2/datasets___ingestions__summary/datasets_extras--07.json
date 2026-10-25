@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/ingestions/summary",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunk_num": 1,
+      "doc_num": 1,
+      "status": {
+        "cancel_count": 0,
+        "done_count": 1,
+        "fail_count": 0,
+        "running_count": 0,
+        "unstart_count": 0
+      },
+      "token_num": 179
+    }
+  }
+}

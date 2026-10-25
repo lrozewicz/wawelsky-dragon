@@ -1,0 +1,215 @@
+# Trasy dokumentów (S2): ingest (start/cancel/restart), batch-update-status, metadane
+# dokumentu (meta_fields: nigdy nie ustawiano -> ustawione -> ustawione na {}), metadane
+# zbiorcze, upload, pobranie pliku, preview, thumbnails, obraz dokumentu.
+# Przygotowanie (dataset + upload + parse + poll) i sprzątanie bez nagrywania.
+name: documents_extras
+description: "Trasy dokumentów: ingest, statusy, metadane, upload, pobranie, preview i thumbnails w obu wersjach."
+steps:
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e2_documents_extras_ds"}
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: upload
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    record: false
+    capture: {document_id: "data.0.id"}
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+    record: false
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  # Stan "nigdy nie ustawiano": meta_fields tuż po uploadzie/sparsowaniu.
+  - id: list_docs_meta_unset
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    rules: {"data.docs.0.create_time": type, "data.docs.0.update_time": type, "data.docs.0.create_date": type, "data.docs.0.process_begin_at": type, "data.docs.0.process_duration": type, "data.docs.0.progress_msg": ignore}
+  # Stan "ustawione": meta_fields={"author": "x"} ustawione przez PATCH (v0.27.2) albo PUT (v0.24.0).
+  - id: patch_meta_fields
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {author: "x"}}
+    versions: [v0.27.2]
+  - id: put_meta_fields
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {author: "x"}}
+    versions: [v0.24.0]
+  - id: list_docs_meta_set
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    rules: {"data.docs.0.create_time": type, "data.docs.0.update_time": type, "data.docs.0.create_date": type, "data.docs.0.process_begin_at": type, "data.docs.0.process_duration": type, "data.docs.0.progress_msg": ignore}
+  # Stan "ustawione na {}": jawne wyczyszczenie meta_fields ({} != brak wartości).
+  - id: patch_meta_fields_empty
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {}}
+    versions: [v0.27.2]
+  - id: put_meta_fields_empty
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {}}
+    versions: [v0.24.0]
+  - id: list_docs_meta_empty
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    rules: {"data.docs.0.create_time": type, "data.docs.0.update_time": type, "data.docs.0.create_date": type, "data.docs.0.process_begin_at": type, "data.docs.0.process_duration": type, "data.docs.0.progress_msg": ignore}
+  # Metadane zbiorcze (v0.27.2): jeden krok z updates, jeden z deletes.
+  - id: metadatas_batch_update
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/metadatas
+    json:
+      selector: {document_ids: ["{document_id}"]}
+      updates: [{key: "author", value: "wd_rec_e2"}]
+      deletes: []
+    versions: [v0.27.2]
+  - id: metadatas_batch_delete
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/metadatas
+    json:
+      selector: {document_ids: ["{document_id}"]}
+      updates: []
+      deletes: [{key: "author"}]
+    versions: [v0.27.2]
+  # Status dokumentu: batch-update-status (v0.27.2) i legacy change_status (v0.24.0, JWT).
+  - id: batch_update_status_disable
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/batch-update-status
+    json: {doc_ids: ["{document_id}"], status: "0"}
+    versions: [v0.27.2]
+  - id: batch_update_status_enable
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/batch-update-status
+    json: {doc_ids: ["{document_id}"], status: "1"}
+    versions: [v0.27.2]
+  - id: change_status_v0_24_disable
+    method: POST
+    path: /v1/document/change_status
+    auth: jwt
+    json: {doc_ids: ["{document_id}"], status: "0"}
+    versions: [v0.24.0]
+  - id: change_status_v0_24_enable
+    method: POST
+    path: /v1/document/change_status
+    auth: jwt
+    json: {doc_ids: ["{document_id}"], status: "1"}
+    versions: [v0.24.0]
+  # Ingest (v0.27.2) i legacy run (v0.24.0): start, cancel, restart z delete.
+  - id: ingest_run_start
+    method: POST
+    path: /api/v1/documents/ingest
+    json: {doc_ids: ["{document_id}"], run: "1"}
+    versions: [v0.27.2]
+  - id: run_v0_24_start
+    method: POST
+    path: /v1/document/run
+    auth: jwt
+    json: {doc_ids: ["{document_id}"], run: "1"}
+    versions: [v0.24.0]
+  # Cancel zależy od stanu zadania (RUNNING vs już DONE) — stąd expect: any.
+  - id: ingest_run_cancel
+    method: POST
+    path: /api/v1/documents/ingest
+    json: {doc_ids: ["{document_id}"], run: "2"}
+    expect: any
+    versions: [v0.27.2]
+  - id: run_v0_24_cancel
+    method: POST
+    path: /v1/document/run
+    auth: jwt
+    json: {doc_ids: ["{document_id}"], run: "2"}
+    expect: any
+    versions: [v0.24.0]
+  # Restart z delete=true (kasuje zadania i chunki przed ponownym parsowaniem).
+  - id: ingest_run_restart_delete
+    method: POST
+    path: /api/v1/documents/ingest
+    json: {doc_ids: ["{document_id}"], run: "1", delete: true}
+    versions: [v0.27.2]
+  - id: run_v0_24_restart_delete
+    method: POST
+    path: /v1/document/run
+    auth: jwt
+    json: {doc_ids: ["{document_id}"], run: "1", delete: true}
+    versions: [v0.24.0]
+  # Upload pliku "do sprawdzenia" (bez datasetu): v0.27.2 /documents/upload, legacy upload_info.
+  - id: upload_info
+    method: POST
+    path: /api/v1/documents/upload
+    multipart: {file: fixtures/ragflow_intro.txt}
+    versions: [v0.27.2]
+  - id: upload_info_v0_24
+    method: POST
+    path: /v1/document/upload_info
+    auth: jwt
+    multipart: {file: fixtures/ragflow_intro.txt}
+    versions: [v0.24.0]
+  # Pobranie pliku dokumentu (odpowiedź binarna) — z datasetu i bez datasetu.
+  - id: download_document
+    method: GET
+    path: /api/v1/documents/{document_id}
+    binary: true
+    versions: [v0.27.2]
+  - id: download_document_v0_24
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    binary: true
+    versions: [v0.24.0]
+  # Preview (v0.27.2) i legacy get (v0.24.0) — ta sama treść pliku, inne trasy.
+  - id: preview_document
+    method: GET
+    path: /api/v1/documents/{document_id}/preview
+    binary: true
+    versions: [v0.27.2]
+  - id: get_document_v0_24
+    method: GET
+    path: /v1/document/get/{document_id}
+    auth: jwt
+    binary: true
+    versions: [v0.24.0]
+  # Thumbnails: JSON z mapą doc_id -> thumbnail (dla .txt pusta).
+  - id: thumbnails
+    method: GET
+    path: /api/v1/thumbnails
+    query: {doc_ids: "{document_id}"}
+    versions: [v0.27.2]
+  - id: thumbnails_v0_24
+    method: GET
+    path: /v1/document/thumbnails
+    auth: jwt
+    query: {doc_ids: "{document_id}"}
+    versions: [v0.24.0]
+  # Obraz dokumentu na nieistniejące id (oczekiwany błąd): trasa tylko v0.27.2.
+  - id: document_image_missing
+    method: GET
+    path: /api/v1/documents/images/wd_rec_e2_documents_extras-missing.png
+    binary: true
+    expect: any
+    versions: [v0.27.2]
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

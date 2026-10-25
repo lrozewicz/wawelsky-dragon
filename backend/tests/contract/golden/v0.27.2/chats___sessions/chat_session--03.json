@@ -1,0 +1,35 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chats/<ID:chat#1>/sessions",
+    "query": {},
+    "body": {
+      "name": "wd_rec_session"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chat_id": "<ID:chat#1>",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "id": "<ID:session#1>",
+      "messages": [
+        {
+          "content": "Hi! I'm your assistant. What can I do for you?",
+          "role": "assistant"
+        }
+      ],
+      "name": "wd_rec_session",
+      "reference": [],
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>",
+      "user_id": "<ID:id#2>"
+    },
+    "message": "success"
+  }
+}

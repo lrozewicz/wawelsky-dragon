@@ -1,0 +1,12 @@
+diff --git a/backend/app/api/wd/integrations/deps.py b/backend/app/api/wd/integrations/deps.py
+index fda85c7..deb8156 100644
+--- a/backend/app/api/wd/integrations/deps.py
++++ b/backend/app/api/wd/integrations/deps.py
+@@ -25,7 +25,6 @@ _RESPONSE_DESCRIPTIONS: dict[int, str] = {
+ 
+ async def require_admin(principal: PrincipalDep) -> Principal:
+     """Wymaga akcji ``manage`` na zasobie ``integration`` i zwraca principal (kontrakt §0 p. 2)."""
+-    require(principal, Action.MANAGE, ResourceRef(kind="integration", owner_id=None))
+     return principal
+ 
+ 

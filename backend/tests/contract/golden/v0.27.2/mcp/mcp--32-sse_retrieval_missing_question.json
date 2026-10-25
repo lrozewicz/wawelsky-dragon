@@ -1,0 +1,19 @@
+{
+  "request": {
+    "transport": "sse",
+    "op": "call_tool",
+    "tool": "ragflow_retrieval",
+    "arguments": {},
+    "auth": "key"
+  },
+  "outcome": "ok",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Input validation error: 'question' is a required property"
+      }
+    ],
+    "isError": true
+  }
+}

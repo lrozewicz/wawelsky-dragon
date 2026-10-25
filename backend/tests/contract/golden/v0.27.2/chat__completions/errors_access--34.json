@@ -1,0 +1,27 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chat/completions",
+    "query": {},
+    "body": {
+      "chat_id": "<ID:chat#1>",
+      "session_id": "<ID:session#1>",
+      "messages": [
+        {
+          "role": "user",
+          "content": "smokwawelski"
+        }
+      ],
+      "stream": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 109,
+    "data": false,
+    "message": "no authorization"
+  }
+}

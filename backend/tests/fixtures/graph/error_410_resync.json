@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "resyncRequired",
+    "message": "The requested delta token is no longer valid."
+  }
+}

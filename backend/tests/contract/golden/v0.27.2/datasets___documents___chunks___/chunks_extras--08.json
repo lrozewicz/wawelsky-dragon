@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>/chunks/<ID:chunk#1>",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "content_with_weight": "wd_rec_e2 smokwawelski: chunk dodany przez API.",
+      "create_time": "<DATETIME>",
+      "create_timestamp_flt": "<FLOAT>",
+      "doc_id": "<ID:document#1>",
+      "doc_type_kwd": "text",
+      "docnm_kwd": "ragflow_intro.txt",
+      "id": "<ID:chunk#1>",
+      "important_kwd": [
+        "wd_rec_e2",
+        "smokwawelski"
+      ],
+      "kb_id": "<ID:dataset#1>",
+      "question_kwd": [
+        "Czym jest smokwawelski?"
+      ]
+    }
+  }
+}

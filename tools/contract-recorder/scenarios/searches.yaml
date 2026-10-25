@@ -1,0 +1,289 @@
+# Trasy Search app — wyłącznie RAGFlow v0.27.2 (api/apps/restful_apis/search_api.py):
+# POST /searches (l. 43), GET /searches (l. 77), GET /searches/<id> (l. 107),
+# PUT /searches/<id> (l. 126), DELETE /searches/<id> (l. 186) oraz completion
+# (l. 200 /completion i l. 201 /completions — jeden handler) i
+# POST /chat/recommendation z search_id (chat_api.py l. 1202).
+# W v0.24.0 NIE istnieje żadna trasa /api/v1/searches* — search_app.py to legacy
+# /v1/search/{create,update,detail,list,rm} na sesji webowej (JWT), więc cała
+# wersja v0.24.0 jest pominięta: każdy krok ma versions: [v0.27.2] i na stosie
+# v0.24.0 scenariusz nie wykonuje ani jednego żądania. Wykaz tras: reports/T1-routes.md.
+# Przygotowanie (dataset + upload + parse + poll DONE) bez nagrywania; search_config
+# dostaje chat_id z datasetu (parser_config.llm_id), bo completion wymaga modelu czatu.
+name: searches
+description: "Search app: CRUD /searches, completion (SSE, alias) i /chat/recommendation z search_id."
+steps:
+  # --- przygotowanie (bez nagrania) ---
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e4_searches_ds"}
+    versions: [v0.27.2]
+    record: false
+    capture: {dataset_id: "data.id", chat_model: "data.parser_config.llm_id"}
+  - id: upload
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    versions: [v0.27.2]
+    record: false
+    capture: {document_id: "data.0.id"}
+  - id: parse
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    versions: [v0.27.2]
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+
+  # --- POST /searches ---
+  - id: create_search
+    method: POST
+    path: /api/v1/searches
+    json:
+      name: "wd_rec_e4_searches_app"
+      description: "wd_rec_e4 search app"
+      search_config:
+        kb_ids: ["{dataset_id}"]
+        chat_id: "{chat_model}"
+    auth: key
+    versions: [v0.27.2]
+    capture: {search_id: "data.search_id"}
+  - id: create_search_empty_name
+    method: POST
+    path: /api/v1/searches
+    json: {name: ""}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+  - id: create_search_missing_name
+    method: POST
+    path: /api/v1/searches
+    json: {description: "wd_rec_e4 bez nazwy"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 101}
+  - id: create_search_no_auth
+    method: POST
+    path: /api/v1/searches
+    json: {name: "wd_rec_e4_searches_noauth"}
+    auth: none
+    versions: [v0.27.2]
+    expect: {status: 401, code: 401}
+
+  # --- GET /searches (wszystkie parametry czytane przez handler) ---
+  - id: list_searches
+    method: GET
+    path: /api/v1/searches
+    auth: key
+    versions: [v0.27.2]
+  - id: list_searches_page
+    method: GET
+    path: /api/v1/searches
+    query: {page: 1, page_size: 10}
+    auth: key
+    versions: [v0.27.2]
+  - id: list_searches_keywords
+    method: GET
+    path: /api/v1/searches
+    query: {keywords: "wd_rec_e4_searches_app"}
+    auth: key
+    versions: [v0.27.2]
+  - id: list_searches_orderby_name_asc
+    method: GET
+    path: /api/v1/searches
+    query: {orderby: name, desc: false}
+    auth: key
+    versions: [v0.27.2]
+  - id: list_searches_owner_ids_unknown
+    method: GET
+    path: /api/v1/searches
+    query: {owner_ids: ["11111111111111111111111111111111"]}
+    auth: key
+    versions: [v0.27.2]
+
+  # --- GET /searches/<id> i PUT /searches/<id> ---
+  - id: get_search
+    method: GET
+    path: /api/v1/searches/{search_id}
+    auth: key
+    versions: [v0.27.2]
+  - id: update_search
+    method: PUT
+    path: /api/v1/searches/{search_id}
+    json:
+      name: "wd_rec_e4_searches_renamed"
+      description: "wd_rec_e4 renamed search app"
+      search_config:
+        kb_ids: ["{dataset_id}"]
+        doc_ids: []
+        similarity_threshold: 0.2
+        vector_similarity_weight: 0.3
+        use_kg: false
+        rerank_id: ""
+        top_k: 1024
+        summary: false
+        chat_id: "{chat_model}"
+        llm_setting:
+          temperature: 0.1
+          top_p: 0.3
+          frequency_penalty: 0.7
+          presence_penalty: 0.4
+          temperature_enabled: true
+          top_p_enabled: true
+          frequency_penalty_enabled: true
+          presence_penalty_enabled: true
+        chat_settingcross_languages: []
+        highlight: false
+        keyword: false
+        web_search: false
+        related_search: false
+        query_mindmap: false
+    auth: key
+    versions: [v0.27.2]
+  - id: get_search_after_update
+    method: GET
+    path: /api/v1/searches/{search_id}
+    auth: key
+    versions: [v0.27.2]
+  - id: update_search_invalid_config
+    method: PUT
+    path: /api/v1/searches/{search_id}
+    json: {name: "wd_rec_e4_searches_renamed", search_config: "wd_rec_e4 not an object"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+  - id: update_search_missing
+    method: PUT
+    path: /api/v1/searches/00000000000000000000000000000000
+    json: {name: "wd_rec_e4_searches_missing", search_config: {}}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 109}
+  - id: create_search_duplicate
+    method: POST
+    path: /api/v1/searches
+    json: {name: "wd_rec_e4_searches_renamed"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+    capture: {search_id_2: "data.search_id"}
+  - id: update_search_duplicate_name
+    method: PUT
+    path: /api/v1/searches/{search_id}
+    json: {name: "wd_rec_e4_searches_renamed(1)", search_config: {}}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+
+  # --- completion (/completions i /completion to ten sam handler; nagrywam SSE) ---
+  - id: completion_sse
+    method: POST
+    path: /api/v1/searches/{search_id}/completions
+    json: {question: "smokwawelski"}
+    auth: key
+    versions: [v0.27.2]
+    stream: true
+  - id: completion_missing_question
+    method: POST
+    path: /api/v1/searches/{search_id}/completions
+    json: {}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 101}
+  - id: completion_second_user
+    method: POST
+    path: /api/v1/searches/{search_id}/completions
+    json: {question: "smokwawelski"}
+    auth: second
+    versions: [v0.27.2]
+    expect: {status: 200, code: 109}
+  - id: completion_of_app_without_kb
+    method: POST
+    path: /api/v1/searches/{search_id_2}/completions
+    json: {question: "smokwawelski"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+  - id: completion_foreign_kb
+    method: POST
+    path: /api/v1/searches/{search_id_2}/completions
+    json: {question: "smokwawelski", kb_ids: ["00000000000000000000000000000000"]}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+
+  # --- rekomendacja pytań z search_id (wariantu z search_id nie ma w złocie E2-0) ---
+  - id: recommendation_with_search_id
+    method: POST
+    path: /api/v1/chat/recommendation
+    json: {question: "smokwawelski", search_id: "{search_id}"}
+    auth: key
+    versions: [v0.27.2]
+
+  # --- błędy: nieistniejące id i cudzy zasób ---
+  - id: get_search_missing
+    method: GET
+    path: /api/v1/searches/00000000000000000000000000000000
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 103}
+  - id: get_search_second_user
+    method: GET
+    path: /api/v1/searches/{search_id}
+    auth: second
+    versions: [v0.27.2]
+    expect: {status: 200, code: 103}
+  - id: update_search_second_user
+    method: PUT
+    path: /api/v1/searches/{search_id}
+    json: {name: "wd_rec_e4_searches_intruder", search_config: {}}
+    auth: second
+    versions: [v0.27.2]
+    expect: {status: 200, code: 109}
+  - id: delete_search_second_user
+    method: DELETE
+    path: /api/v1/searches/{search_id}
+    auth: second
+    versions: [v0.27.2]
+    expect: {status: 200, code: 109}
+  - id: delete_search_missing
+    method: DELETE
+    path: /api/v1/searches/00000000000000000000000000000000
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 109}
+
+  # --- DELETE /searches/<id> i próba odczytu po usunięciu ---
+  - id: delete_search
+    method: DELETE
+    path: /api/v1/searches/{search_id}
+    auth: key
+    versions: [v0.27.2]
+  - id: get_search_after_delete
+    method: GET
+    path: /api/v1/searches/{search_id}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 103}
+
+  # --- sprzątanie (bez nagrania) ---
+  - id: delete_search_second
+    method: DELETE
+    path: /api/v1/searches/{search_id_2}
+    versions: [v0.27.2]
+    record: false
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    versions: [v0.27.2]
+    record: false

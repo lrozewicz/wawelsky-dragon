@@ -1,0 +1,40 @@
+diff --git a/backend/app/api/wd/users/api_keys.py b/backend/app/api/wd/users/api_keys.py
+index aa29e87c..30ccd682 100644
+--- a/backend/app/api/wd/users/api_keys.py
++++ b/backend/app/api/wd/users/api_keys.py
+@@ -55,6 +55,7 @@ class ApiKey(BaseModel):
+     expires_at: str | None = Field(
+         description="Czas wygaśnięcia (ISO 8601 UTC; null — klucz bezterminowy)"
+     )
++    token: str = Field(default="", description="Pełny token klucza")
+
+
+ class ApiKeyCreated(ApiKey):
+@@ -112,6 +113,7 @@ def _api_key(view: ApiKeyView) -> ApiKey:
+         id=view.id,
+         name=view.name,
+         prefix=view.prefix,
++        token=view.token,
+         created_at=iso_ms(view.create_time),
+         last_used_at=iso_ms(view.last_used_at),
+         expires_at=iso_ms(view.expires_at),
+@@ -129,7 +131,7 @@ def _api_key(view: ApiKeyView) -> ApiKey:
+ async def list_user_api_keys(request: Request, user_id: UserIdPath) -> Envelope[Items[ApiKey]]:
+     """Aktywne klucze użytkownika bez tokenu; nieznany ``user_id`` → 404 (kontrakt §4)."""
+     row = await _users(request).get(user_id)
+-    views = await _keys(request).list_for_user(row.id)
++    views = await _keys(request).list_full(_users(request).principal_of(row))
+     return Envelope[Items[ApiKey]](data=Items[ApiKey](items=[_api_key(view) for view in views]))
+
+
+@@ -174,9 +176,7 @@ async def create_user_api_key(
+         actor_id=actor.id,
+         ip=actor.ip,
+     )
+-    return Envelope[ApiKeyCreated](
+-        data=ApiKeyCreated(**_api_key(view).model_dump(), token=view.token)
+-    )
++    return Envelope[ApiKeyCreated](data=ApiKeyCreated(**_api_key(view).model_dump()))
+
+
+ @router.delete(

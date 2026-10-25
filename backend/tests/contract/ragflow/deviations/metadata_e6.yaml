@@ -1,0 +1,133 @@
+# Odchyłki złota v0.27.2 dla scenariusza metadata_e6 (K11 §10f).
+# Wyłącznie odchyłki o tej samej przyczynie co zatwierdzone w deviations/retrieval.yaml
+# i deviations/completion.yaml (chunker bez wiodącego '\n', positions dla formatów bez stron,
+# kształt empty_response K4 §1.7) oraz token_num (E6-1a, poza zakresem). Reszta naprawiona
+# w app/** (T2/T3/T3b). Nowe odchyłki zatwierdza Architekt.
+- file: retrieval/metadata_e6--40.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna (sprawdzone: golden == '\\n' + wd)"
+- file: retrieval/metadata_e6--40.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]], rag/nlp/__init__.py:474)"
+- file: retrieval/metadata_e6--40.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--40.json
+  path: body.data.chunks.1.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--41.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--41.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--43.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--43.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--43.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--43.json
+  path: body.data.chunks.1.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--43.json
+  path: body.data.chunks.2.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--43.json
+  path: body.data.chunks.2.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--44.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--44.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--44.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--44.json
+  path: body.data.chunks.1.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--44.json
+  path: body.data.chunks.2.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--44.json
+  path: body.data.chunks.2.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--45.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--45.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: retrieval/metadata_e6--45.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna"
+- file: retrieval/metadata_e6--45.json
+  path: body.data.chunks.1.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]])"
+- file: chats___completions/metadata_e6--47.json
+  path: body.data.reference.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść poza tym identyczna (jak deviations/completion.yaml)"
+- file: chats___completions/metadata_e6--47.json
+  path: body.data.reference.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]]); WD zwraca pustą listę"
+- file: chats___completions/metadata_e6--47.json
+  path: body.data.answer
+  kind: value
+  reason: "[chunker] blok wiedzy w komunikacie systemowym zawiera treść chunku bez wiodącego '\\n'; fake-llm odbija pierwszy fragment tego bloku, więc odpowiedź różni się jednym '\\n' ('Content:\\n\\n…' vs 'Content:\\n…'). Prompt po obu stronach potwierdza brak różnicy poza wiodącym '\\n'."
+- file: chats___completions/metadata_e6--48.sse
+  path: body
+  kind: value
+  reason: "[chunker] Plik .sse porównywany bajtowo; jedyne różnice to (1) treść chunku bez wiodącego '\\n' (chunker WD, K5 §5) w bloku wiedzy i w referencji oraz (2) brak fabrykowanych pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]]) — te same klasy co w deviations/completion.yaml. Kształt ramek, klucze i doc_aggs zgodne."
+- file: chats___completions/metadata_e6--50.json
+  path: body.data.final
+  kind: missing
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD dla stream:false na ścieżce empty_response zwraca wspólny kształt completion_data, który nie emituje klucza final; złoto upstream (ten sam kształt co ramka SSE) ma final: false. Odstępstwo świadome K4 §1.7 (K11 §10b p. 7), jak deviations/completion.yaml."
+- file: chats___completions/metadata_e6--50.json
+  path: body.data.created_at
+  kind: extra
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD dla stream:false na ścieżce empty_response zawsze emituje created_at; złoto upstream (kształt ramki SSE) nie ma created_at. Odstępstwo świadome K4 §1.7."
+- file: chats___completions/metadata_e6--50.json
+  path: body.data.reference.doc_aggs
+  kind: extra
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD emituje pełne reference (doc_aggs: []); złoto upstream (kształt ramki SSE) ma reference bez doc_aggs. Odstępstwo świadome K4 §1.7."
+- file: chats___completions/metadata_e6--50.json
+  path: body.data.reference.total
+  kind: extra
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD emituje pełne reference (total: 0); złoto upstream (kształt ramki SSE) ma reference bez total. Odstępstwo świadome K4 §1.7."
+- file: datasets___documents___metadata__config/metadata_e6--35.json
+  path: body.data.token_num
+  kind: value
+  reason: "Liczba tokenów chunkera WD ≠ upstream (cl100k vs upstream licznik); poza zakresem E6-1a."

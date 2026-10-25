@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/files/<ID:file#1>",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "text/plain",
+    "content-length": "1319"
+  },
+  "body": {
+    "length": 1319,
+    "sha256": "9c776bb0756b9c2fab7f65e2ee2edd2adf2751653424dc546a10b33c2f0002fc"
+  }
+}

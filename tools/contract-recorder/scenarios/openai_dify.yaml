@@ -1,0 +1,148 @@
+# Trasy OpenAI-compat i Dify (C1): uzupełniające trasy OpenAI (nieznany model) oraz
+# Dify external knowledge API — POST/GET /dify/retrieval, wariant z metadata_condition,
+# wariant z nieistniejącą bazą wiedzy i /dify/retrieval/health (v0.27.2).
+# Przygotowanie: dataset + upload + parse + poll + czekanie na widoczność chunki
+# i retrieval + czat (bez nagrania).
+name: openai_dify
+description: "OpenAI-compat z nieznanym modelem oraz Dify retrieval (POST/GET, metadata_condition, brak bazy, health)."
+steps:
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e2_openai_dify_ds"}
+    capture: {dataset_id: "data.id"}
+    record: false
+  - id: upload_document
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    capture: {document_id: "data.0.id"}
+    record: false
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+    record: false
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  # Wyścig: indeks ES odświeża się do 1 s, więc zaraz po parsowaniu liczba chunki
+  # i wynik retriewalu bywają jeszcze puste. Oba kroki tylko czekają (bez nagrania).
+  - id: wait_index
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    record: false
+    poll:
+      until: {path: "data.total", equals: 1}
+      interval_s: 2
+      timeout_s: 60
+  - id: wait_retrieval
+    method: POST
+    path: /api/v1/retrieval
+    json: {question: "smokwawelski", dataset_ids: ["{dataset_id}"]}
+    record: false
+    poll:
+      until: {path: "data.total", equals: 1}
+      interval_s: 2
+      timeout_s: 60
+  - id: create_chat
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_e2_openai_dify_chat"
+      dataset_ids: ["{dataset_id}"]
+    record: false
+    capture: {chat_id: "data.id"}
+  - id: openai_unknown_model_v0_24
+    method: POST
+    path: /api/v1/chats_openai/{chat_id}/chat/completions
+    json:
+      model: "no-such-model"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: false
+    auth: key
+    versions: [v0.24.0]
+  - id: openai_unknown_model_v0_27
+    method: POST
+    path: /api/v1/openai/{chat_id}/chat/completions
+    json:
+      model: "no-such-model"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: false
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 101}
+  - id: dify_retrieval_post
+    method: POST
+    path: /api/v1/dify/retrieval
+    json:
+      knowledge_id: "{dataset_id}"
+      query: "smokwawelski"
+      retrieval_setting: {top_k: 10, score_threshold: 0.0}
+    auth: key
+  - id: dify_retrieval_post_metadata
+    method: POST
+    path: /api/v1/dify/retrieval
+    json:
+      knowledge_id: "{dataset_id}"
+      query: "smokwawelski"
+      retrieval_setting: {top_k: 10, score_threshold: 0.0}
+      metadata_condition:
+        logic: and
+        conditions:
+          - name: "author"
+            comparison_operator: "is"
+            value: "wd_rec_e2"
+    auth: key
+  - id: dify_retrieval_post_missing
+    method: POST
+    path: /api/v1/dify/retrieval
+    json:
+      knowledge_id: "no-such-knowledge-id-0000"
+      query: "smokwawelski"
+      retrieval_setting: {top_k: 10, score_threshold: 0.0}
+    auth: key
+    expect: {status: 404, code: 404}
+  - id: dify_retrieval_get
+    method: GET
+    path: /api/v1/dify/retrieval
+    query:
+      knowledge_id: "{dataset_id}"
+      query: "smokwawelski"
+      top_k: 10
+      score_threshold: 0.0
+    auth: key
+    versions: [v0.27.2]
+  - id: dify_retrieval_health
+    method: GET
+    path: /api/v1/dify/retrieval/health
+    auth: none
+    versions: [v0.27.2]
+  - id: delete_chat
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}"]}
+    record: false
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

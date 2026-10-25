@@ -1,0 +1,52 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/system/status",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "database": {
+        "database": "mysql",
+        "elapsed": "<IGNORE>",
+        "status": "green"
+      },
+      "doc_engine": {
+        "active_primary_shards": 2,
+        "active_shards": 2,
+        "active_shards_percent_as_number": 100.0,
+        "cluster_name": "docker-cluster",
+        "delayed_unassigned_shards": 0,
+        "elapsed": "<IGNORE>",
+        "initializing_shards": 0,
+        "number_of_data_nodes": 1,
+        "number_of_in_flight_fetch": 0,
+        "number_of_nodes": 1,
+        "number_of_pending_tasks": 0,
+        "relocating_shards": 0,
+        "status": "green",
+        "task_max_waiting_in_queue_millis": 0,
+        "timed_out": false,
+        "type": "elasticsearch",
+        "unassigned_shards": 0
+      },
+      "redis": {
+        "elapsed": "<IGNORE>",
+        "status": "green"
+      },
+      "storage": {
+        "elapsed": "<IGNORE>",
+        "status": "green",
+        "storage": "minio"
+      },
+      "task_executor_heartbeats": "<IGNORE>"
+    },
+    "message": "success"
+  }
+}

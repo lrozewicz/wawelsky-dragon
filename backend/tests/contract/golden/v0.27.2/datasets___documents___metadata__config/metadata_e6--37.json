@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:doc_id_a#1>/metadata/config",
+    "query": {},
+    "body": {}
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 101,
+    "message": "metadata is required"
+  }
+}

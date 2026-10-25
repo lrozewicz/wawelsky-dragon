@@ -1,0 +1,46 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/datasets/<ID:dataset_id_auto#1>/metadata/config",
+    "query": {},
+    "body": {
+      "metadata": [
+        {
+          "key": "author",
+          "type": "string",
+          "description": "Autor dokumentu"
+        },
+        {
+          "key": "year",
+          "type": "number",
+          "description": "Rok publikacji"
+        }
+      ],
+      "built_in_metadata": []
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "built_in_metadata": [],
+      "metadata": [
+        {
+          "description": "Autor dokumentu",
+          "enum": null,
+          "key": "author",
+          "type": "string"
+        },
+        {
+          "description": "Rok publikacji",
+          "enum": null,
+          "key": "year",
+          "type": "number"
+        }
+      ]
+    }
+  }
+}

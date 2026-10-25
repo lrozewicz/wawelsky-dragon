@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/dify/retrieval",
+    "query": {},
+    "body": {
+      "knowledge_id": "<ID:dataset#1>",
+      "query": "smokwawelski",
+      "retrieval_setting": {
+        "top_k": 10,
+        "score_threshold": 0.0
+      },
+      "metadata_condition": {
+        "logic": "and",
+        "conditions": [
+          {
+            "name": "author",
+            "comparison_operator": "is",
+            "value": "wd_rec_e2"
+          }
+        ]
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "records": []
+  }
+}

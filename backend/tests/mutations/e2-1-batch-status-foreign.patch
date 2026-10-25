@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/documents_extra.py b/backend/app/services/documents_extra.py
+index 0fd6f06..6efa53e 100644
+--- a/backend/app/services/documents_extra.py
++++ b/backend/app/services/documents_extra.py
+@@ -123,7 +123,6 @@ class DocumentExtraService:
+         status: str,
+     ) -> StatusesResult:
+         """Ustawia ``enabled`` dokumentów datasetu; zwraca wpisy per dokument (DOC:2020-2065)."""
+-        await DatasetService(self._container).load(principal, dataset_id, Action.UPDATE)
+         entries: dict[str, dict[str, str]] = {}
+         has_error = False
+         async with transaction(self._sessionmaker()) as session:

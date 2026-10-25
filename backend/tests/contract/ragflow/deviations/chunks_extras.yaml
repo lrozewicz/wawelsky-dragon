@@ -1,0 +1,120 @@
+# Odchyłki złota v0.27.2 dla scenariusza chunks_extras (K11 §5 p. 5; K11 §10b).
+# Dwie grupy:
+#  * [chunker] — różnice chunkera WD (K5 §5) dla chunka z parsowania dokumentu (naive): brak
+#    wiodącego "\n" sekcji i brak fabrykowanej pozycji [[1, 0, 0, 0, 0]]. Wpis wypisany w raporcie
+#    zadania CH-chunks-extras (brief wym. 1); ten sam mechanizm co odchyłki chunks_list.yaml.
+#  * [es-refresh] — złoto utrwala nieświeży odczyt ES: upstream PATCH …/chunks/{id} i zbiorczy
+#    PATCH …/chunks piszą przez `settings.docStoreConn.update`, które dla warunku z `id` woła
+#    `self.es.update(index=…, id=…, doc=…)` bez `refresh` (rag/utils/es_conn.py, v0.27.2; `insert`
+#    ma `refresh="wait_for"`), a odczyt listy/search idzie przez `retriever.search` (okno
+#    `refresh_interval` = 1000 ms, conf/mapping.json). Dlatego --11/--13/--15/--16/--17 pokazują
+#    stan chunka ręcznego dokładnie taki jak --07 (po POST), mimo późniejszych zapisów.
+#    DEC-034 (Doradca, 2026-09-29): WD zwraca stan po zapisie (read-your-writes) i nie odtwarza
+#    nieświeżości; wpisy do zatwierdzenia TL/Architekta. Żądania i odpowiedzi kroków mutujących
+#    (`--09` PATCH → code 0, `--12`/`--14` switch → code 0) potwierdzają w złocie, że zapis nastąpił.
+
+# --- [chunker]: chunk z parsowania (content bez wiodącego "\n", positions bez fabrykacji) ---
+
+- file: datasets___documents___chunks/chunks_extras--07.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: '[chunker] Chunker WD (K5 §5) nie dokleja wiodącego "\n" sekcji naive; treść poza tym identyczna (sprawdzone: golden == "\n" + wd).'
+- file: datasets___documents___chunks/chunks_extras--07.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: '[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474).'
+- file: datasets___documents___chunks/chunks_extras--11.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: '[chunker] Jak --07: brak wiodącego "\n" sekcji naive w treści chunka z parsowania (K5 §5).'
+- file: datasets___documents___chunks/chunks_extras--11.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: '[chunker] Jak --07: WD nie fabrykuje pozycji [[1, 0, 0, 0, 0]] (rag/nlp/__init__.py:474).'
+- file: datasets___documents___chunks/chunks_extras--13.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: '[chunker] Jak --07: brak wiodącego "\n" sekcji naive w treści chunka z parsowania (K5 §5).'
+- file: datasets___documents___chunks/chunks_extras--13.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: '[chunker] Jak --07: WD nie fabrykuje pozycji [[1, 0, 0, 0, 0]] (rag/nlp/__init__.py:474).'
+- file: datasets___documents___chunks/chunks_extras--15.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: '[chunker] Jak --07: brak wiodącego "\n" sekcji naive w treści chunka z parsowania (K5 §5).'
+- file: datasets___documents___chunks/chunks_extras--15.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: '[chunker] Jak --07: WD nie fabrykuje pozycji [[1, 0, 0, 0, 0]] (rag/nlp/__init__.py:474).'
+- file: datasets___documents___chunks/chunks_extras--19.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: '[chunker] Jak --07: brak wiodącego "\n" sekcji naive w treści chunka z parsowania (K5 §5).'
+- file: datasets___documents___chunks/chunks_extras--19.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: '[chunker] Jak --07: WD nie fabrykuje pozycji [[1, 0, 0, 0, 0]] (rag/nlp/__init__.py:474).'
+- file: datasets___search/chunks_extras--16.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: '[chunker] Jak --07 (chunk z parsowania w wyniku wyszukiwania): brak wiodącego "\n" sekcji naive (K5 §5).'
+- file: datasets___search/chunks_extras--16.json
+  path: body.data.chunks.1.positions
+  kind: length
+  reason: '[chunker] Jak --07: WD nie fabrykuje pozycji [[1, 0, 0, 0, 0]] (rag/nlp/__init__.py:474).'
+- file: datasets__search/chunks_extras--17.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: '[chunker] Jak --07 (chunk z parsowania w wyniku wyszukiwania): brak wiodącego "\n" sekcji naive (K5 §5).'
+- file: datasets__search/chunks_extras--17.json
+  path: body.data.chunks.1.positions
+  kind: length
+  reason: '[chunker] Jak --07: WD nie fabrykuje pozycji [[1, 0, 0, 0, 0]] (rag/nlp/__init__.py:474).'
+
+# --- [es-refresh]: nieświeży odczyt ES w złocie (DEC-034) ---
+
+- file: datasets___documents___chunks/chunks_extras--11.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: '[es-refresh] Złoto pokazuje treść sprzed PATCH (identyczną z --07), bo lista czyta ES przez retriever.search, a PATCH pisze es.update bez refresh (rag/utils/es_conn.py:384-445); WD zwraca treść zapisaną w PATCH (--09 code 0). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--11.json
+  path: body.data.chunks.1.important_keywords
+  kind: length
+  reason: '[es-refresh] Jak --11 content: złoto widzi 2 słowa kluczowe sprzed PATCH (identyczne z --07), WD 1 po PATCH; mechanizm: es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--13.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: '[es-refresh] Jak --11 content: nieświeży odczyt listy po PATCH (stan identyczny z --07); es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--13.json
+  path: body.data.chunks.1.important_keywords
+  kind: length
+  reason: '[es-refresh] Jak --11 important_keywords: 2 elementy sprzed PATCH w złocie, 1 w WD; es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--13.json
+  path: body.data.chunks.1.available
+  kind: value
+  reason: '[es-refresh] Złoto ma available: true po switchu available_int: 0 (--12 code 0) — lista nie widzi jeszcze es.update (rag/utils/es_conn.py:384-445); WD zwraca false po zapisie. DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--15.json
+  path: body.data.chunks.1.content
+  kind: value
+  reason: '[es-refresh] Jak --11 content: nieświeży odczyt listy po PATCH (stan identyczny z --07); es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets___documents___chunks/chunks_extras--15.json
+  path: body.data.chunks.1.important_keywords
+  kind: length
+  reason: '[es-refresh] Jak --11 important_keywords: 2 elementy sprzed PATCH w złocie, 1 w WD; es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets___search/chunks_extras--16.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: '[es-refresh] Jak --11 content, ale w wyniku wyszukiwania: złoto widzi treść sprzed PATCH (identyczną z --07), WD po PATCH; es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets___search/chunks_extras--16.json
+  path: body.data.chunks.0.important_keywords
+  kind: length
+  reason: '[es-refresh] Jak --11 important_keywords w wyniku wyszukiwania: 2 elementy sprzed PATCH w złocie, 1 w WD; es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets__search/chunks_extras--17.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: '[es-refresh] Jak --16 content: wyszukiwanie w zbiorze datasetów widzi treść sprzed PATCH (identyczną z --07); es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'
+- file: datasets__search/chunks_extras--17.json
+  path: body.data.chunks.0.important_keywords
+  kind: length
+  reason: '[es-refresh] Jak --16 important_keywords: 2 elementy sprzed PATCH w złocie, 1 w WD; es.update bez refresh (rag/utils/es_conn.py:384-445). DEC-034.'

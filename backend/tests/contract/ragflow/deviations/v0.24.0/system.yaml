@@ -1,0 +1,12 @@
+# Odchyłki replay system vs złoto v0.24.0 (C0 p. 3) — klasa [fake-llm], wyłącznie liczba modeli.
+# WD zasiewa 6 modeli testowych (K9 §3 p. 4), a nagranie upstreamu objęło 2 modele dodane do
+# tenanta (rf_bootstrap._bootstrap_legacy: fake-chat i fake-embed-1024) — ta sama przyczyna
+# co deviations/system.yaml v0.27.2. Kształt koperty i wpisu my_llms jest zgodny ze złotem.
+- file: v1__llm__my_llms/system--25.json
+  path: body.data.OpenAI-API-Compatible.llm
+  kind: length
+  reason: >-
+    [fake-llm] WD zasiewa 6 modeli testowych (K9 §3 p. 4: fake-chat, fake-chat-think,
+    fake-chat-strict, fake-embed-1024, fake-rerank, fake-vision), a uprawniony tenant nagrania
+    miał 2 modele (fake-chat, fake-embed-1024); GET /v1/llm/my_llms oddaje cały rejestr WD jednej
+    fabryki.

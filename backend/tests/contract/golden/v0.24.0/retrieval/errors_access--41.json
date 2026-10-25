@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/retrieval",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "dataset_ids": [
+        "<ID:dataset#1>"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 109,
+    "data": false,
+    "message": "Authentication error: API key is invalid!"
+  }
+}

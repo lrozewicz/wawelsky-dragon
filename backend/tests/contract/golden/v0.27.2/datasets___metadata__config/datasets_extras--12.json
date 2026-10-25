@@ -1,0 +1,66 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/datasets/<ID:dataset#1>/metadata/config",
+    "query": {},
+    "body": {
+      "metadata": [
+        {
+          "key": "author",
+          "type": "string",
+          "description": "Author name"
+        },
+        {
+          "key": "tags",
+          "type": "list",
+          "description": "Tag list",
+          "enum": [
+            "foo",
+            "bar"
+          ]
+        }
+      ],
+      "built_in_metadata": [
+        {
+          "key": "size",
+          "type": "number",
+          "description": "File size"
+        }
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "built_in_metadata": [
+        {
+          "description": "File size",
+          "enum": null,
+          "key": "size",
+          "type": "number"
+        }
+      ],
+      "metadata": [
+        {
+          "description": "Author name",
+          "enum": null,
+          "key": "author",
+          "type": "string"
+        },
+        {
+          "description": "Tag list",
+          "enum": [
+            "foo",
+            "bar"
+          ],
+          "key": "tags",
+          "type": "list"
+        }
+      ]
+    }
+  }
+}

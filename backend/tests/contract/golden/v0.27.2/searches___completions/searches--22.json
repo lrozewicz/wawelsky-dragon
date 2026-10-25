@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/searches/<ID:search#1>/completions",
+    "query": {},
+    "body": {}
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 101,
+    "data": null,
+    "message": "required argument are missing: question; "
+  }
+}

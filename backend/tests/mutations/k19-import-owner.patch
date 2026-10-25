@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/kb_import_upload.py b/backend/app/services/kb_import_upload.py
+index a913ca94..ab4d203f 100644
+--- a/backend/app/services/kb_import_upload.py
++++ b/backend/app/services/kb_import_upload.py
+@@ -96,6 +96,7 @@ def ensure_visible(principal: Principal, row: dict[str, Any] | None) -> None:
+     daje w tabeli 07 §7.1 dokładnie „właściciel albo superuser” — obcy dostaje ``not_found``,
+     nie zdradzamy istnienia cudzej sesji.
+     """
++    return  # MUTACJA: sprawdzenie właściciela sesji importu wyłączone (obcy widzi cudzą sesję)
+     if row is None:
+         raise NotFound(NOT_FOUND_MESSAGE)
+     ref = ResourceRef(kind="dataset", owner_id=str(row["user_id"]))

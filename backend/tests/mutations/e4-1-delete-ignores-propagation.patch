@@ -1,0 +1,13 @@
+diff --git a/backend/app/integrations/engine_items.py b/backend/app/integrations/engine_items.py
+index f0e50d4..e6a876f 100644
+--- a/backend/app/integrations/engine_items.py
++++ b/backend/app/integrations/engine_items.py
+@@ -151,7 +151,7 @@ class ItemProcessor:
+ 
+     async def _delete_item(self, item: RemoteItem, mapping: MappingRow) -> None:
+         """Wiersz 2: propagacja usunięcia do dokumentu plus zdjęcie mapowania."""
+-        if self._integration.delete_propagation and mapping.document_id is not None:
++        if mapping.document_id is not None:
+             try:
+                 await self._container.ingest.delete_documents([mapping.document_id])
+             except Exception as exc:  # noqa: BLE001 — błąd usuwania to tylko warn (wiersz 2)

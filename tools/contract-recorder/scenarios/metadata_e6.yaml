@@ -1,0 +1,681 @@
+# Metadane (RAGFlow v0.27.2): metadata_condition na liście dokumentów,
+# PUT .../documents/<id>/metadata/config (S-320), meta_data_filter w /retrieval
+# i w completions czatu oraz auto-metadane (parser_config.enable_metadata).
+# Trasy potwierdzone w źródle upstream v0.27.2:
+#   GET  /datasets/<id>/documents                      document_api.py:721 (metadata_condition: query, JSON-string, l. 1066)
+#   GET  /datasets/<id>/documents/<doc_id>             document_api.py:2138 (download pliku, NIE JSON) — pomijam
+#   PATCH /datasets/<id>/documents/metadatas           document_api.py:1337 (selector.updates[{key,value}])
+#   POST /datasets/<id>/metadata/update                document_api.py:359 (alias tego samego ciała)
+#   PUT  /datasets/<id>/documents/<doc_id>/metadata/config  document_api.py:1219 (ciało {metadata: ...})
+#   PUT  /datasets/<id>/metadata/config                dataset_api.py:1471 (auto-metadane: {metadata, built_in_metadata})
+#   GET  /datasets/<id>/metadata/config                dataset_api.py:1430
+#   POST /retrieval                                    chunk_api.py:335 (meta_data_filter l. 391-392; metadata_condition wygrywa)
+#   POST /chats                                        chat_api.py:417 (meta_data_filter = pole modelu Dialog, db_models.py:1472)
+#   PUT  /chats/<chat_id>                              chat_api.py:597
+#   POST /chats/<chat_id>/completions                  backward_compat.py:91 -> chat_api.session_completion
+#   Parser auto-metadanych: rag/svr/task_executor.py:550-590; schemat pól: validation_utils.py AutoMetadataField (klucz `key`)
+# Operatory meta_filter (common/metadata_utils.py:96-123): =, ≠, >, <, ≥, ≤, contains,
+# not contains, in, not in, start with, end with, empty, not empty; convert_conditions
+# (l. 26) mapuje aliasy: is->=, not is->≠, >=->≥, <=->≤, !=->≠.
+# Wszystkie kroki tylko v0.27.2 (E6 nie ma shimu v0.24.0). Wykaz tras: reports/T1-routes.md.
+name: metadata_e6
+description: "Metadane: metadata_condition (lista dokumentów), metadata/config dokumentu, meta_data_filter (retrieval i czat), auto-metadane."
+steps:
+  # --- przygotowanie 1: dataset + 3 dokumenty + parse + czat bazowy (bez nagrania) ---
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e6_meta_ds"}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: upload_a
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/e6_meta_a.txt}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    capture: {doc_id_a: "data.0.id"}
+  - id: upload_b
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/e6_meta_b.txt}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    capture: {doc_id_b: "data.0.id"}
+  - id: upload_c
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/e6_meta_c.txt}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    capture: {doc_id_c: "data.0.id"}
+  - id: parse_all
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{doc_id_a}", "{doc_id_b}", "{doc_id_c}"]}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+  # poll po wszystkich trzech dokumentach (GET list wspiera filtr ?id=, document_api.py:_get_docs_with_request)
+  - id: poll_doc_a
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {id: "{doc_id_a}"}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: poll_doc_b
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {id: "{doc_id_b}"}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: poll_doc_c
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {id: "{doc_id_c}"}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: create_chat
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_e6_meta_chat"
+      dataset_ids: ["{dataset_id}"]
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    capture: {chat_id: "data.id"}
+
+  # --- 1. meta_fields 3 dokumentów (PATCH .../documents/metadatas; nagrywane) ---
+  - id: set_meta_a
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/metadatas
+    json:
+      selector: {document_ids: ["{doc_id_a}"]}
+      updates:
+        - {key: author, value: "A"}
+        - {key: year, value: "2020"}
+        - {key: topic, value: "rag"}
+        - {key: note, value: "alpha"}
+      deletes: []
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: set_meta_b
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/metadatas
+    json:
+      selector: {document_ids: ["{doc_id_b}"]}
+      updates:
+        - {key: author, value: "B"}
+        - {key: year, value: "2021"}
+        - {key: topic, value: "web"}
+        - {key: note, value: ""}
+      deletes: []
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: set_meta_c
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/metadatas
+    json:
+      selector: {document_ids: ["{doc_id_c}"]}
+      updates:
+        - {key: author, value: "A"}
+        - {key: year, value: "2022"}
+        - {key: topic, value: "rag"}
+        - {key: note, value: "gamma"}
+      deletes: []
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+
+  # --- 2. GET /datasets/<id>/documents z metadata_condition (query, JSON-string) ---
+  # orderby=name/desc=false: stała kolejność dokumentów (a, b, c) między biegami.
+  - id: list_docs_baseline
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30, orderby: name, desc: false}
+    auth: key
+    versions: [v0.27.2]
+  - id: cond_eq_author
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"author","comparison_operator":"=","value":"A"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_and_author_year
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"author","comparison_operator":"=","value":"A"},{"name":"year","comparison_operator":"=","value":"2020"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_or_author_year
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"or","conditions":[{"name":"author","comparison_operator":"=","value":"B"},{"name":"year","comparison_operator":"=","value":"2022"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_ne_author
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"author","comparison_operator":"!=","value":"A"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_gt_year
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"year","comparison_operator":">","value":"2020"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_lt_year
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"year","comparison_operator":"<","value":"2022"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_ge_year
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"year","comparison_operator":">=","value":"2021"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_le_year
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"year","comparison_operator":"<=","value":"2021"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_contains_topic
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"topic","comparison_operator":"contains","value":"ag"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_not_contains_topic
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"topic","comparison_operator":"not contains","value":"ag"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_in_author
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"author","comparison_operator":"in","value":["A","B"]}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_not_in_author
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"author","comparison_operator":"not in","value":["A"]}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_start_with_topic
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"topic","comparison_operator":"start with","value":"ra"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_end_with_topic
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"topic","comparison_operator":"end with","value":"eb"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_empty_note
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"note","comparison_operator":"empty","value":""}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_not_empty_note
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"note","comparison_operator":"not empty","value":""}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  # convert_conditions (metadata_utils.py:26-27) czyta cond["value"] bez zabezpieczenia —
+  # warunek bez klucza "value" kończy się EXCEPTION_ERROR (100). Fakt do złota.
+  - id: cond_empty_missing_value
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"note","comparison_operator":"empty"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 100}
+  - id: cond_unknown_operator
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"author","comparison_operator":"bogus","value":"A"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_no_match
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"author","comparison_operator":"=","value":"Z"}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  # wartość liczbowa (int) w warunku: meta_filter (metadata_utils.py:79-82) robi ast.literal_eval
+  # po OBU stronach; literal_eval(int) rzuca — porównanie "2020" == 2020 daje brak trafień.
+  - id: cond_eq_year_int_value
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query:
+      page: 1
+      page_size: 30
+      orderby: name
+      desc: false
+      metadata_condition: '{"logic":"and","conditions":[{"name":"year","comparison_operator":"=","value":2020}]}'
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: cond_bad_json
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30, metadata_condition: "not-json"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+
+  # --- 3. PUT .../documents/<doc_id>/metadata/config (S-320) ---
+  - id: put_doc_metadata_config
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{doc_id_a}/metadata/config
+    json:
+      metadata:
+        type: object
+        properties:
+          author: {type: string, description: "Autor dokumentu"}
+          year: {type: number, description: "Rok publikacji"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: get_doc_after_config
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {id: "{doc_id_a}"}
+    auth: key
+    versions: [v0.27.2]
+  - id: put_doc_metadata_config_missing_metadata
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{doc_id_a}/metadata/config
+    json: {}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 101}
+  - id: put_doc_metadata_config_missing_doc
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/00000000000000000000000000000000/metadata/config
+    json: {metadata: {}}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+  - id: put_doc_metadata_config_second_user
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{doc_id_a}/metadata/config
+    json: {metadata: {}}
+    auth: second
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+
+  # --- 4. POST /api/v1/retrieval z meta_data_filter ---
+  # (a) tylko metadata_condition (w ciele): autor A -> dokumenty a i c
+  - id: retrieval_metadata_condition_only
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+      metadata_condition:
+        logic: and
+        conditions:
+          - {name: author, comparison_operator: "=", value: "A"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  # (b) method: manual, dwa warunki (AND) -> dokładnie 1 dokument (a)
+  - id: retrieval_manual_one_doc
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+      meta_data_filter:
+        method: manual
+        logic: and
+        manual:
+          - {key: author, op: "=", value: "A"}
+          - {key: year, op: "=", value: "2020"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  # (c) manual bez trafień -> doc_ids ["-999"], 0 chunków
+  - id: retrieval_manual_no_match
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+      meta_data_filter:
+        method: manual
+        logic: and
+        manual:
+          - {key: author, op: "=", value: "Z"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  # (d) auto: fake-llm zwraca zwykły tekst -> gen_meta_filter daje {"conditions": []} -> brak filtra
+  - id: retrieval_auto
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+      meta_data_filter: {method: auto}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  # (e) semi_auto: jw. — warunki generuje LLM (fake-llm nie zwraca JSON-a)
+  - id: retrieval_semi_auto
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+      meta_data_filter:
+        method: semi_auto
+        semi_auto: ["author"]
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  # (f) metadata_condition + meta_data_filter razem: chunk_api.py:391 zeruje meta_data_filter
+  #     (klucz `metadata_condition` obecny w ciele) -> wygrywa metadata_condition (autor A)
+  - id: retrieval_condition_and_filter
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+      metadata_condition:
+        logic: and
+        conditions:
+          - {name: author, comparison_operator: "=", value: "A"}
+      meta_data_filter:
+        method: manual
+        logic: and
+        manual:
+          - {key: author, op: "=", value: "B"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+
+  # --- 5. czat z meta_data_filter (manual): POST /chats i PUT /chats/<id> ---
+  - id: create_chat_filtered
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_e6_meta_chat_filtered"
+      dataset_ids: ["{dataset_id}"]
+      meta_data_filter:
+        method: manual
+        logic: and
+        manual:
+          - {key: author, op: "=", value: "A"}
+          - {key: year, op: "=", value: "2020"}
+    auth: key
+    versions: [v0.27.2]
+    capture: {chat_id_filtered: "data.id"}
+  - id: chat_completion_json
+    method: POST
+    path: /api/v1/chats/{chat_id_filtered}/completions
+    json: {question: "smokwawelski", stream: false}
+    auth: key
+    versions: [v0.27.2]
+  - id: chat_completion_sse
+    method: POST
+    path: /api/v1/chats/{chat_id_filtered}/completions
+    json: {question: "smokwawelski", stream: true}
+    auth: key
+    versions: [v0.27.2]
+    stream: true
+  - id: update_chat_zero
+    method: PUT
+    path: /api/v1/chats/{chat_id}
+    json:
+      meta_data_filter:
+        method: manual
+        logic: and
+        manual:
+          - {key: author, op: "=", value: "Z"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: chat_completion_zero_json
+    method: POST
+    path: /api/v1/chats/{chat_id}/completions
+    json: {question: "smokwawelski", stream: false}
+    auth: key
+    versions: [v0.27.2]
+  - id: chat_completion_zero_sse
+    method: POST
+    path: /api/v1/chats/{chat_id}/completions
+    json: {question: "smokwawelski", stream: true}
+    auth: key
+    versions: [v0.27.2]
+    stream: true
+
+  # --- 6. auto-metadane: dataset z parser_config.enable_metadata + pola przez metadata/config ---
+  - id: create_auto_dataset
+    method: POST
+    path: /api/v1/datasets
+    json:
+      name: "wd_rec_e6_meta_auto_ds"
+      parser_config: {enable_metadata: true}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    capture: {dataset_id_auto: "data.id"}
+  - id: put_auto_metadata_config
+    method: PUT
+    path: /api/v1/datasets/{dataset_id_auto}/metadata/config
+    json:
+      metadata:
+        - {key: author, type: string, description: "Autor dokumentu"}
+        - {key: year, type: number, description: "Rok publikacji"}
+      built_in_metadata: []
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 0}
+  - id: get_auto_metadata_config
+    method: GET
+    path: /api/v1/datasets/{dataset_id_auto}/metadata/config
+    auth: key
+    versions: [v0.27.2]
+  - id: upload_auto
+    method: POST
+    path: /api/v1/datasets/{dataset_id_auto}/documents
+    multipart: {file: fixtures/e6_meta_a.txt}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    capture: {doc_id_auto: "data.0.id"}
+  - id: parse_auto
+    method: POST
+    path: /api/v1/datasets/{dataset_id_auto}/documents/parse
+    json: {document_ids: ["{doc_id_auto}"]}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+  - id: poll_auto
+    method: GET
+    path: /api/v1/datasets/{dataset_id_auto}/documents
+    query: {id: "{doc_id_auto}"}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: get_auto_doc_after_parse
+    method: GET
+    path: /api/v1/datasets/{dataset_id_auto}/documents
+    query: {id: "{doc_id_auto}"}
+    auth: key
+    versions: [v0.27.2]
+
+  # --- sprzątanie (bez nagrania) ---
+  - id: delete_chats
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}", "{chat_id_filtered}"]}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+  - id: delete_auto_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id_auto}"]}
+    auth: key
+    versions: [v0.27.2]
+    record: false
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    auth: key
+    versions: [v0.27.2]
+    record: false

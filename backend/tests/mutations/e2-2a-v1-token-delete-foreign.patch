@@ -1,0 +1,14 @@
+diff --git a/backend/app/api/ragflow/routes/legacy_v1.py b/backend/app/api/ragflow/routes/legacy_v1.py
+index 5b6541f..7497626 100644
+--- a/backend/app/api/ragflow/routes/legacy_v1.py
++++ b/backend/app/api/ragflow/routes/legacy_v1.py
+@@ -120,8 +120,7 @@ async def delete_token(token: str, request: Request, principal: PrincipalDep) ->
+     tokenu; WD odmawia zamiast oddawać sukces na cudzym zasobie (CONTRACT C0 p. 9).
+     """
+     keys = cast(ApiKeyService, container_of(request).api_keys)
+-    if await keys.delete(principal, token) == 0:
+-        return refuse(request, principal, "v1_token_delete", compat=COMPAT_V024)
++    await keys.delete(principal, token)
+     return ok(True)
+ 
+ 

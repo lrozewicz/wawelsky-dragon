@@ -1,0 +1,114 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/agents/<ID:agent#1>",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "avatar": null,
+      "canvas_category": "agent_canvas",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "description": "wd_rec_e6 agents linear Begin->Agent->Message",
+      "dsl": {
+        "components": {
+          "agent": {
+            "downstream": [
+              "message"
+            ],
+            "obj": {
+              "component_name": "Agent",
+              "params": {
+                "delay_after_error": 1,
+                "description": "",
+                "frequencyPenaltyEnabled": false,
+                "frequency_penalty": 0.7,
+                "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+                "maxTokensEnabled": false,
+                "max_retries": 3,
+                "max_rounds": 5,
+                "max_tokens": 256,
+                "mcp": [],
+                "message_history_window_size": 12,
+                "outputs": {
+                  "content": {
+                    "type": "string",
+                    "value": ""
+                  }
+                },
+                "presencePenaltyEnabled": false,
+                "presence_penalty": 0.4,
+                "prompts": [
+                  {
+                    "content": "The user query is {sys.query}",
+                    "role": "user"
+                  }
+                ],
+                "sys_prompt": "You are a concise assistant. Answer in one short sentence.",
+                "temperature": 0.1,
+                "temperatureEnabled": true,
+                "tools": [],
+                "topPEnabled": false,
+                "top_p": 0.3
+              }
+            },
+            "upstream": [
+              "begin"
+            ]
+          },
+          "begin": {
+            "downstream": [
+              "agent"
+            ],
+            "obj": {
+              "component_name": "Begin",
+              "params": {}
+            },
+            "upstream": []
+          },
+          "message": {
+            "downstream": [],
+            "obj": {
+              "component_name": "Message",
+              "params": {
+                "content": [
+                  "{agent@content}"
+                ]
+              }
+            },
+            "upstream": [
+              "agent"
+            ]
+          }
+        },
+        "globals": {
+          "sys.conversation_turns": 0,
+          "sys.files": [],
+          "sys.query": "",
+          "sys.user_id": ""
+        },
+        "history": [],
+        "path": [],
+        "retrieval": [],
+        "variables": {}
+      },
+      "id": "<ID:agent#1>",
+      "last_publish_time": null,
+      "nickname": "recorder",
+      "permission": "me",
+      "tenant_avatar": null,
+      "title": "wd_rec_e6_agents_chatbot_v2",
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>",
+      "user_id": "<ID:id#14>"
+    },
+    "message": "success"
+  }
+}

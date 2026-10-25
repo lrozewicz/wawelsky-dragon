@@ -1,0 +1,36 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/retrieval",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "dataset_ids": [
+        "<ID:dataset#1>"
+      ],
+      "meta_data_filter": {
+        "method": "manual",
+        "logic": "and",
+        "manual": [
+          {
+            "key": "author",
+            "op": "=",
+            "value": "Z"
+          }
+        ]
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunks": [],
+      "doc_aggs": [],
+      "total": 0
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/chats/<ID:chat#1>/sessions/<ID:session#1>",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e2_errors_access_session_intruder"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "You do not own the session"
+  }
+}

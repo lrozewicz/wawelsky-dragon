@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/convert",
+    "query": {},
+    "body": {
+      "file_ids": [
+        "00000000000000000000000000000000"
+      ],
+      "kb_ids": [
+        "<ID:dataset#1>"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "File not found!"
+  }
+}

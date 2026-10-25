@@ -1,0 +1,12 @@
+diff --git a/backend/tests/integration/api/test_openapi_shapes.py b/backend/tests/integration/api/test_openapi_shapes.py
+index e8ac7453..fc7183c8 100644
+--- a/backend/tests/integration/api/test_openapi_shapes.py
++++ b/backend/tests/integration/api/test_openapi_shapes.py
+@@ -51,7 +51,6 @@ def validated_components(wd_client: httpx.Client) -> set[str]:
+     validated.update(shapes_chats.flow(wd_client, ADMIN))
+     validated.update(shapes_providers.flow(wd_client))
+     validated.update(shapes_searches.flow(wd_client))
+-    validated.update(shapes_files.flow(wd_client))
+     return validated
+ 
+ 

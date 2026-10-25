@@ -1,0 +1,25 @@
+{
+  "type": "search",
+  "query": {"original": "kot"},
+  "web": {
+    "results": [
+      {
+        "title": "Kot domowy - Wikipedia",
+        "url": "https://pl.wikipedia.org/wiki/Kot_domowy",
+        "description": "Kot domowy (Felis catus) - udomowiony gatunek ssaka.",
+        "age": "2015-01-01"
+      },
+      {
+        "title": "Koty - poradnik",
+        "url": "https://example.org/koty",
+        "description": "Poradnik o kotach.",
+        "age": null
+      },
+      {
+        "title": "Bez adresu",
+        "description": "Wynik bez pola url — dostawca pomija taki wiersz.",
+        "age": null
+      }
+    ]
+  }
+}

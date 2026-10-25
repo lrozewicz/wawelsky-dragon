@@ -1,0 +1,10 @@
+diff --git a/backend/app/api/hub_compat/sharepoint/__init__.py b/backend/app/api/hub_compat/sharepoint/__init__.py
+index 574fb36..e986be4 100644
+--- a/backend/app/api/hub_compat/sharepoint/__init__.py
++++ b/backend/app/api/hub_compat/sharepoint/__init__.py
+@@ -8,4 +8,4 @@ znaczenie: trasy z parametrem `{id}` muszą być po trasach stałych, dlatego `r
+ 
+ from app.api.hub_compat.sharepoint import datasets, documents, integrations, runs
+ 
+-routers = (runs.router, integrations.router, datasets.router, documents.router)
++routers = (integrations.router, runs.router, datasets.router, documents.router)

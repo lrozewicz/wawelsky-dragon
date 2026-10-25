@@ -1,1 +1,46 @@
-/app
+# stan lokalny agentów
+review/
+.task/
+work/heartbeats/
+work/.hook-state/
+work/logs/
+work/qa/**/*.png
+.claude/worktrees/
+.wp/
+.claude/settings.local.json
+# sekrety
+.env
+.env.*
+!.env.example
+# python / node
+__pycache__/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+dist/
+coverage/
+# korpusy testowe (kopiowane skryptem, nie w gicie)
+tools/test-data/corpus/
+# artefakty wyroczni
+work/health/
+backend/coverage.xml
+frontend/coverage/
+# zrzuty/trace Playwrighta i raport verify-real (frontend/test-results-real/ pokrywa frontend/.gitignore)
+test-results-real/
+backend/.coverage*
+tools/fake-llm/coverage.xml
+tools/fake-llm/.coverage*
+tools/fake-graph/coverage.xml
+tools/fake-searx/coverage.xml
+# artefakty eval (E1-10a)
+backend/wdeval/out/
+tools/perf/out/
+
+# Zrzuty drzewa dostępności playwright-cli zapisywane przez agentów w korzeniu repo (2026-10-11)
+/*.yml
+!/docker-compose*.yml
+.playwright-cli/

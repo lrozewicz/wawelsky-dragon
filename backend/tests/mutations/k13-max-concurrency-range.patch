@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/instance_models.py b/backend/app/services/instance_models.py
+index 1bb6c0f7..6e858143 100644
+--- a/backend/app/services/instance_models.py
++++ b/backend/app/services/instance_models.py
+@@ -139,7 +139,7 @@ def _extra_or_none(raw: object) -> dict[str, Any] | None:
+     if not isinstance(raw, dict):
+         return None
+     value = raw.get("max_concurrency")
+-    if "max_concurrency" in raw and not (type(value) is int and 1 <= value <= MAX_CONCURRENCY):
++    if "max_concurrency" in raw and not (type(value) is int):
+         raise ValidationFailed("extra.max_concurrency must be an integer between 1 and 32")
+     return cast("dict[str, Any]", raw)
+ 

@@ -1,0 +1,72 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/agents",
+    "query": {
+      "page": 1,
+      "page_size": 10
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "canvas": [
+        {
+          "avatar": null,
+          "canvas_category": "agent_canvas",
+          "canvas_type": "",
+          "description": null,
+          "id": "<ID:agent_empty#1>",
+          "nickname": "recorder",
+          "permission": "me",
+          "release_time": null,
+          "tags": "",
+          "tenant_avatar": null,
+          "tenant_id": "<ID:id#14>",
+          "title": "wd_rec_e6_agents_empty",
+          "type": "agent",
+          "update_time": "<TS_MS>"
+        },
+        {
+          "avatar": null,
+          "canvas_category": "agent_canvas",
+          "canvas_type": "",
+          "description": "wd_rec_e6 agents with Retrieval tool",
+          "id": "<ID:agent_retrieval#1>",
+          "nickname": "recorder",
+          "permission": "me",
+          "release_time": null,
+          "tags": "",
+          "tenant_avatar": null,
+          "tenant_id": "<ID:id#14>",
+          "title": "wd_rec_e6_agents_retrieval",
+          "type": "agent",
+          "update_time": "<TS_MS>"
+        },
+        {
+          "avatar": null,
+          "canvas_category": "agent_canvas",
+          "canvas_type": "",
+          "description": "wd_rec_e6 agents linear Begin->Agent->Message",
+          "id": "<ID:agent#1>",
+          "nickname": "recorder",
+          "permission": "me",
+          "release_time": null,
+          "tags": "",
+          "tenant_avatar": null,
+          "tenant_id": "<ID:id#14>",
+          "title": "wd_rec_e6_agents_chatbot",
+          "type": "agent",
+          "update_time": "<TS_MS>"
+        }
+      ],
+      "total": 3
+    },
+    "message": "success"
+  }
+}

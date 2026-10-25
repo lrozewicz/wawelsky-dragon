@@ -1,0 +1,178 @@
+# Stos RAGFlow v0.27.2 + fake-llm dla contract-recordera (SP-5, kontrakt C2).
+# Zrodlo prawdy: upstream tag v0.27.2 - docker/docker-compose.yml, docker/docker-compose-base.yml,
+# docker/.env (lokalny klon repo ragflow). Obrazy i healthcheck-i przepisane 1:1 z tamtego tagu
+# (mysql 8.0.40, MinIO zamieniony upstream na pgsty/silo, redis z maxmemory-policy volatile-lru).
+# Roznice celowe wobec upstream:
+# - bez `profiles` (wszystko startuje zawsze), tylko uslugi potrzebne dla DOC_ENGINE=elasticsearch,
+#   DEVICE=cpu, metadane w MySQL (bez nats/go servera - API_PROXY_SCHEME=python);
+# - bez bind-mountow (daemon Dockera jest na hoscie) - obraz RAGFlow ma w sobie entrypoint.sh,
+#   service_conf.yaml.template i konfiguracje nginxa; MySQL startuje z MYSQL_DATABASE zamiast init.sql
+#   (upstreamowy init.sql robi wylacznie CREATE DATABASE + USE - zweryfikowane w gicie upstream);
+# - zmienne z docker/.env wpisane inline (wartosci rozwiazane); jedyny publikowany port hosta
+#   to 18380 -> 9380 (HTTP API RAGFlow); TZ=Asia/Shanghai jak upstream (wplywa na daty w golden files).
+x-ragflow-env: &ragflow-env
+  TZ: Asia/Shanghai
+  DOC_ENGINE: elasticsearch
+  DB_TYPE: mysql
+  METADATA_DB_PROFILE: mysql
+  API_PROXY_SCHEME: python
+  ES_HOST: es01
+  ELASTIC_PASSWORD: infini_rag_flow
+  MYSQL_HOST: mysql
+  MYSQL_PORT: "3306"
+  MYSQL_DBNAME: rag_flow
+  MYSQL_PASSWORD: infini_rag_flow
+  MYSQL_MAX_PACKET: "1073741824"
+  MINIO_HOST: minio
+  MINIO_USER: rag_flow
+  MINIO_PASSWORD: infini_rag_flow
+  REDIS_HOST: redis
+  REDIS_PASSWORD: infini_rag_flow
+  REGISTER_ENABLED: "1"
+  ENABLE_REGISTER: "1"
+  DISABLE_PASSWORD_LOGIN: "false"
+  RERANK_TOKEN_LIMIT_MODE: truncate
+  ADMIN_DEFAULT_PASSWORD: admin
+  DOC_BULK_SIZE: "4"
+  EMBEDDING_BATCH_SIZE: "16"
+  USE_DOCLING: "false"
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: "1"
+  THREAD_POOL_MAX_WORKERS: "128"
+
+services:
+  es01:
+    image: elasticsearch:8.11.3
+    volumes:
+      - esdata01:/usr/share/elasticsearch/data
+    # Oficjalny obraz ES ma ACL na /tmp (tylko r-x dla uzytkownika elasticsearch);
+    # entrypoint potrzebuje zapisywalnego katalogu tymczasowego (jak upstream v0.27.2).
+    tmpfs:
+      - /tmp:mode=1777,size=512m
+    environment:
+      - node.name=es01
+      - TZ=Asia/Shanghai
+      - ELASTIC_PASSWORD=infini_rag_flow
+      - bootstrap.memory_lock=false
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - cluster.routing.allocation.disk.watermark.low=5gb
+      - cluster.routing.allocation.disk.watermark.high=3gb
+      - cluster.routing.allocation.disk.watermark.flood_stage=2gb
+    mem_limit: 8073741824
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl http://localhost:9200"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0.40
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: infini_rag_flow
+      MYSQL_DATABASE: rag_flow
+    command:
+      --max_connections=1000
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-authentication-plugin=mysql_native_password
+      --tls_version="TLSv1.2,TLSv1.3"
+      --binlog_expire_logs_seconds=604800
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-uroot", "-pinfini_rag_flow"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+  minio:
+    image: pgsty/silo:RELEASE.2026-08-06T00-00-00Z
+    command: ["server", "--console-address", ":9001", "/data"]
+    environment:
+      TZ: Asia/Shanghai
+      MINIO_ROOT_USER: rag_flow
+      MINIO_ROOT_PASSWORD: infini_rag_flow
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+  redis:
+    image: valkey/valkey:8
+    command: ["redis-server", "--requirepass", "infini_rag_flow", "--maxmemory", "128mb", "--maxmemory-policy", "volatile-lru"]
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "infini_rag_flow", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+  fake-llm:
+    build: ../fake-llm
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+  ragflow:
+    image: infiniflow/ragflow:v0.27.2
+    command: ["--enable-adminserver", "--init-model-provider-tables"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+      nproc:
+        soft: 65535
+        hard: 65535
+    ports:
+      - "18380:9380"
+    environment:
+      <<: *ragflow-env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+volumes:
+  esdata01:
+    driver: local
+  mysql_data:
+    driver: local
+  minio_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  ragflow:
+    driver: bridge

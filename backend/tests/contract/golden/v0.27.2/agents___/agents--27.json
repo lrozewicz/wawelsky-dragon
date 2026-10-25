@@ -1,0 +1,103 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/agents/<ID:agent#1>",
+    "query": {},
+    "body": {
+      "title": "wd_rec_e6_agents_chatbot_v2",
+      "dsl": {
+        "components": {
+          "begin": {
+            "downstream": [
+              "agent"
+            ],
+            "obj": {
+              "component_name": "Begin",
+              "params": {}
+            },
+            "upstream": []
+          },
+          "agent": {
+            "downstream": [
+              "message"
+            ],
+            "obj": {
+              "component_name": "Agent",
+              "params": {
+                "delay_after_error": 1,
+                "description": "",
+                "frequencyPenaltyEnabled": false,
+                "frequency_penalty": 0.7,
+                "llm_id": "<ID:chat_model#1>",
+                "maxTokensEnabled": false,
+                "max_retries": 3,
+                "max_rounds": 5,
+                "max_tokens": 256,
+                "mcp": [],
+                "message_history_window_size": 12,
+                "outputs": {
+                  "content": {
+                    "type": "string",
+                    "value": ""
+                  }
+                },
+                "presencePenaltyEnabled": false,
+                "presence_penalty": 0.4,
+                "prompts": [
+                  {
+                    "content": "The user query is {sys.query}",
+                    "role": "user"
+                  }
+                ],
+                "sys_prompt": "You are a concise assistant. Answer in one short sentence.",
+                "temperature": 0.1,
+                "temperatureEnabled": true,
+                "tools": [],
+                "topPEnabled": false,
+                "top_p": 0.3
+              }
+            },
+            "upstream": [
+              "begin"
+            ]
+          },
+          "message": {
+            "downstream": [],
+            "obj": {
+              "component_name": "Message",
+              "params": {
+                "content": [
+                  "{agent@content}"
+                ]
+              }
+            },
+            "upstream": [
+              "agent"
+            ]
+          }
+        },
+        "history": [],
+        "retrieval": [],
+        "path": [],
+        "globals": {
+          "sys.query": "",
+          "sys.user_id": "",
+          "sys.conversation_turns": 0,
+          "sys.files": []
+        },
+        "variables": {}
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "update_time": "<TS_MS>"
+    },
+    "message": "success"
+  }
+}

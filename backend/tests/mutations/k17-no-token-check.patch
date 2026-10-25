@@ -1,0 +1,21 @@
+--- a/backend/app/mcp/server.py
++++ b/backend/app/mcp/server.py
+@@ -116,14 +116,11 @@
+             return
+ 
+         if scope["path"].startswith(_AUTH_PATH_PREFIXES):
++            # MUTACJA (k17-no-token-check): brak tokenu nie jest odrzucany — middleware
++            # przepuszcza żądanie bez nagłówka autoryzacji (K17 §3.3 złamane).
+             token = _extract_token_from_headers(dict(scope["headers"]))
+-            if not token:
+-                response = JSONResponse(
+-                    {"error": "Missing or invalid authorization header"}, status_code=401
+-                )
+-                await response(scope, receive, send)
+-                return
+-            scope.setdefault("state", {})[AUTH_TOKEN_STATE_KEY] = token
++            if token:
++                scope.setdefault("state", {})[AUTH_TOKEN_STATE_KEY] = token
+ 
+         await self.app(scope, receive, send)
+ 

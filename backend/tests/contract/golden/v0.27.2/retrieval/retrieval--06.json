@@ -1,0 +1,59 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/retrieval",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "dataset_ids": [
+        "<ID:dataset#1>"
+      ],
+      "top_k": 5
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunks": [
+        {
+          "content": "\nLegenda o smoku wawelskim należy do najstarszych opowieści Krakowa.\nSmokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinię\nu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postaci\nbydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,\nże kamienie na schodach Wawelu pękały od żaru.\nPewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyć\nsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,\na następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,\npołknął przynętę w całości. Piekielne pragnienie popędziło go prosto\ndo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.\nMieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określił\ngo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,\nna pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czas\nzionie prawdziwym ogniem ku uciesze turystów.\nOpowieść ta przetrwała wieki jako przestroga: siła i zarozumiałość\nnie obronią przed pomysłowością prostego człowieka. Badacze folkloru\npodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralele\nw innych legendach Europy Środkowej, co czyni ją świadectwem wspólnej\nwyobraźni regionu.",
+          "content_ltks": "legenda o smoku wawelskim nale ż y do najstarszych opowi ś ci krakowa smokwawelski bo tak przezwali go mieszczani zamieszkiwa ł jaskini ę u st ó p wzg ó rza z kt ó rej co noc wymusza ł na mieszka ń cach okup w postaci byd ł a kroniki wspominaj ą ż e bestia potrafi ł a zion ąć ogniem tak gor ą cym ż e kamieni na schodach wawelu p ę ka ł y od ż aru pewnego dnia ubogi szewczyk imieniem dratewka postanowi ł przechytrzi ć smokwawelski nape ł i ł sk ó rzani w ó r siark ą popio ł em plewami i o ł owiem a nast ę pnie zostawi ł go przi brzegu wi ł y smok licz ą c na ł atw ł upi po ł kn ął przyn ę t ę w ca ł o ś ci piekieln pragnieni pop ę dzi ł o go prosto do rzeki pi ł a ż brzuch jego p ę k ł z hukiem s ł yszalnym na kazimierzu mieszka ń cy krakowskiego grodu og ł osili dratewk ę bohaterem a kr ó l okr ś li ł go swym nast ę pc ą od tamtej pori smokwawelski figuruj w herbach na pomnikach i w nazwach ulic a jego figura przed wawelem co jaki ś czas zioni prawdziwym ogniem ku uciesz turyst ó w opowi ść ta przetrwa ł a wieki jako przestroga si ł a i zarozumia ł o ść nie obroni ą przed pomi ł owo ś ci ą prostego cz ł owieka badacz folkloru podkr ś laj ą ż e motyw jaskini rzeki i sprytnego pomi ł u ma paralel w innych legendach europi ś rodkowej co czyni j ą ś wiadectwem wsp ó lnej wyobra ź ni regionu",
+          "dataset_id": "<ID:dataset#1>",
+          "doc_type_kwd": "",
+          "document_id": "<ID:document#1>",
+          "document_keyword": "ragflow_intro.txt",
+          "id": "<ID:id#1>",
+          "image_id": "",
+          "important_keywords": [],
+          "mom_id": "",
+          "positions": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "row_id": null,
+          "similarity": "<FLOAT>",
+          "tag_kwd": [],
+          "term_similarity": "<FLOAT>",
+          "vector_similarity": "<FLOAT>"
+        }
+      ],
+      "doc_aggs": [
+        {
+          "count": 1,
+          "doc_id": "<ID:document#1>",
+          "doc_name": "ragflow_intro.txt"
+        }
+      ],
+      "total": 1
+    }
+  }
+}

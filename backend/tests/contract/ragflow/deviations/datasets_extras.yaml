@@ -1,0 +1,18 @@
+# Odchyłki złota v0.27.2 dla scenariusza datasets_extras (kontrakt E2-1 C1, DEC-033 p. 2).
+# Zatwierdzone przez TL w briefie zadania DS2 (pkt 4); odchyłka tylko dla `token_num`
+# (reguła `exact` w scenariuszu) — innych niezgodności scenariusz nie ma.
+- file: datasets___/datasets_extras--06.json
+  path: body.data.token_num
+  kind: value
+  reason: >-
+    DEC-033 p. 1-2: WD liczy tokeny dokumentu z chunków tiktokenem cl100k (492), upstream
+    bierze usage providera embeddingu dla tytułu+treści (179) — 05-ingestion §8 p. 2 i §10.2.
+    Semantyka agregacji jest zgodna (datasets.token_num = SUM(documents.token_count)),
+    różnica wynika ze źródła liczenia, nie z trasy. Zmiana źródła = wniosek do Architekta
+    (DEC-033 p. 3), poza zakresem DS2.
+- file: datasets___ingestions__summary/datasets_extras--07.json
+  path: body.data.token_num
+  kind: value
+  reason: >-
+    DEC-033 p. 1-2: to samo pole agregatu KB co w --06 (492 cl100k vs 179 usage providera,
+    05-ingestion §10.2); summary zwraca `kb.token_num` bez zmian semantyki.

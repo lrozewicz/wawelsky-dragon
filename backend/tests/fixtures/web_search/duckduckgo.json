@@ -1,0 +1,29 @@
+{
+  "Abstract": "",
+  "AbstractText": "",
+  "Heading": "Kot",
+  "RelatedTopics": [
+    {
+      "FirstURL": "https://duckduckgo.com/Kot_domowy",
+      "Text": "Kot domowy - Wikipedia",
+      "Result": "<a href=\"https://duckduckgo.com/Kot_domowy\">Kot domowy - Wikipedia</a>"
+    },
+    {
+      "Name": "Rasy kotów",
+      "Topics": [
+        {
+          "FirstURL": "https://duckduckgo.com/Kot_perski",
+          "Text": "Kot perski - rasa kota"
+        },
+        {
+          "FirstURL": "https://duckduckgo.com/Maine_Coon",
+          "Text": "Maine Coon - rasa kota"
+        }
+      ]
+    },
+    {
+      "FirstURL": "",
+      "Text": "Bez adresu - dostawca pomija taki wiersz"
+    }
+  ]
+}

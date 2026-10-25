@@ -1,0 +1,9 @@
+# Odchyłki scenariusza retrieval — lista zamknięta CONTRACT E1-9a C6; nowe = wniosek do TL.
+- file: retrieval/retrieval--06.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "chunker WD (K5 §5) nie dokleja wiodącego '\n' sekcji naive; treść poza tym identyczna (sprawdzone: golden == '\n' + wd)"
+- file: retrieval/retrieval--06.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1,0,0,0,0]], rag/nlp/__init__.py:474)"

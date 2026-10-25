@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+.tanstack
+bun.lock
+src/routeTree.gen.ts
+src/api/schema.gen.ts

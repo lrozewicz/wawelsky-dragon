@@ -1,0 +1,13 @@
+diff --git a/backend/app/tools/ragflow_migrate/runner.py b/backend/app/tools/ragflow_migrate/runner.py
+index 3ad62a4a..458c57ba 100644
+--- a/backend/app/tools/ragflow_migrate/runner.py
++++ b/backend/app/tools/ragflow_migrate/runner.py
+@@ -43,7 +43,7 @@ async def run_all(
+     try:
+         for name in names:
+             results.append(await stages.STAGES[name].run(src, session, ctx))
+-        if dry_run or _any_critical(results):
++        if _any_critical(results):
+             await session.rollback()
+             await discard_new_blobs(ctx)
+         else:

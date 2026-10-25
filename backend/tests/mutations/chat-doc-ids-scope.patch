@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/chat.py b/backend/app/services/chat.py
+index cabc261..2e5afca 100644
+--- a/backend/app/services/chat.py
++++ b/backend/app/services/chat.py
+@@ -170,8 +170,6 @@ class DbChatService:
+                     id=session_row.id,
+                 ),
+             )
+-        if outside:
+-            raise ValidationFailed(f"Documents {outside} are not in the chat's datasets.")
+         metadata: MetadataCondition | None = None
+         if req.metadata_condition is not None:
+             metadata = parse_metadata_condition(req.metadata_condition)

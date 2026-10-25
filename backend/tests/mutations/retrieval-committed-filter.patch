@@ -1,0 +1,13 @@
+diff --git a/backend/app/db/repositories/retrieval.py b/backend/app/db/repositories/retrieval.py
+index f8cb122..c11aa37 100644
+--- a/backend/app/db/repositories/retrieval.py
++++ b/backend/app/db/repositories/retrieval.py
+@@ -92,7 +92,7 @@ def _candidate_filter(ds_column: str, *, with_docs: bool) -> str:
+     """Wspólny filtr kandydatów (M7); wariant z document_id IN tylko gdy scope filtruje."""
+     sql = (
+         " JOIN documents d ON d.id = c.document_id"
+-        f" WHERE {ds_column} IN :ds AND c.available = 1 AND c.committed = 1 AND d.enabled = 1"
++        f" WHERE {ds_column} IN :ds AND c.available = 1 AND d.enabled = 1"
+     )
+     return sql + (" AND c.document_id IN :docs" if with_docs else "")
+ 

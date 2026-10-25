@@ -1,0 +1,102 @@
+{
+  "version": "mini-1",
+  "data": [
+    {
+      "id": "art-0",
+      "title": "Wawel",
+      "summary": "Streszczenie o wzgórzu Wawel.",
+      "url": "https://example.org/wawel",
+      "paragraphs": [
+        {
+          "context": "Wawel to wzgórze w Krakowie.",
+          "qas": [
+            {
+              "question": "Czym jest Wawel?",
+              "answers": [
+                {
+                  "text": "wzgórze",
+                  "answer_start": 10,
+                  "answer_end": 17,
+                  "generative_answer": "wzgórze w Krakowie"
+                }
+              ],
+              "is_impossible": false
+            },
+            {
+              "question": "Gdzie leży Wawel?",
+              "answers": [
+                {
+                  "text": "Krakowie",
+                  "answer_start": 13,
+                  "answer_end": 21,
+                  "generative_answer": "w Krakowie"
+                }
+              ],
+              "is_impossible": false
+            }
+          ]
+        },
+        {
+          "context": "Zamek Królewski na Wawelu był rezydencją królów Polski.",
+          "qas": [
+            {
+              "question": "Kto napisał statut lokacyjny?",
+              "plausible_answers": [
+                {
+                  "text": "nieznany",
+                  "answer_start": 0,
+                  "answer_end": 8,
+                  "generative_answer": "nieznany"
+                }
+              ],
+              "is_impossible": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "art-1",
+      "title": "Smok Wawelski",
+      "summary": "Legenda o smoku wawelskim.",
+      "url": "https://example.org/smok",
+      "paragraphs": [
+        {
+          "context": "Smok Wawelski mieszkał w jaskini pod wzgórzem.",
+          "qas": [
+            {
+              "question": "Gdzie mieszkał smok?",
+              "answers": [
+                {
+                  "text": "w jaskini",
+                  "answer_start": 27,
+                  "answer_end": 36,
+                  "generative_answer": "w jaskini pod wzgórzem"
+                },
+                {
+                  "text": "pod wzgórzem",
+                  "answer_start": 37,
+                  "answer_end": 49,
+                  "generative_answer": "w jaskini pod wzgórzem"
+                }
+              ],
+              "is_impossible": false
+            },
+            {
+              "question": "Kto pokonał smoka?",
+              "answers": [
+                {
+                  "text": "Szewczyk Dratewka",
+                  "answer_start": 0,
+                  "answer_end": 17,
+                  "generative_answer": "Szewczyk Dratewka"
+                }
+              ],
+              "is_impossible": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+diff --git a/backend/app/db/repositories/retrieval.py b/backend/app/db/repositories/retrieval.py
+index 7a3e46a8..3665b486 100644
+--- a/backend/app/db/repositories/retrieval.py
++++ b/backend/app/db/repositories/retrieval.py
+@@ -149,7 +149,6 @@ def _fulltext_sql(*, with_docs: bool) -> TextClause:
+         " FROM chunks c"
+         + _candidate_filter("c.dataset_id", with_docs=with_docs)
+         + " AND (MATCH(c.content_ft) AGAINST(:q_raw IN BOOLEAN MODE)"
+-        " OR MATCH(c.content_stem) AGAINST(:q_stem IN BOOLEAN MODE)"
+         " OR MATCH(c.important_ft) AGAINST(:q_raw IN BOOLEAN MODE)"
+         " OR MATCH(c.question_ft) AGAINST(:q_raw IN BOOLEAN MODE))"
+         " ORDER BY (s_content + s_stem + 10 * s_title + 30 * s_kwd + 20 * s_q) DESC,"

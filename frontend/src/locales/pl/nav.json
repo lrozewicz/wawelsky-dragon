@@ -1,0 +1,18 @@
+{
+  "nav.main": "Nawigacja główna",
+  "nav.home": "Start",
+  "nav.datasets": "Bazy wiedzy",
+  "nav.chat": "Czat",
+  "nav.search": "Wyszukiwanie",
+  "nav.agent": "Agent",
+  "nav.memory": "Pamięć",
+  "nav.files": "Pliki",
+  "nav.settings": "Ustawienia",
+  "nav.admin": "Administracja",
+  "nav.help": "Pomoc",
+  "nav.openMenu": "Otwórz menu",
+  "nav.closeMenu": "Zamknij menu",
+  "nav.collapse": "Zwiń menu",
+  "nav.expand": "Rozwiń menu",
+  "nav.breadcrumb": "Ścieżka nawigacji"
+}

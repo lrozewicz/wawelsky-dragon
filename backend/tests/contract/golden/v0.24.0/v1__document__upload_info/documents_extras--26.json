@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/document/upload_info",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "created_at": "<TS_S>",
+      "created_by": "<ID:id#1>",
+      "extension": "txt",
+      "id": "<ID:id#2>",
+      "mime_type": "text/plain",
+      "name": "ragflow_intro.txt",
+      "preview_url": null,
+      "size": 1352
+    },
+    "message": "success"
+  }
+}

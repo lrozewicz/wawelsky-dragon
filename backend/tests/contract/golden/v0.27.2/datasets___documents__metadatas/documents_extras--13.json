@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/metadatas",
+    "query": {},
+    "body": {
+      "selector": {
+        "document_ids": [
+          "<ID:document#1>"
+        ]
+      },
+      "updates": [
+        {
+          "key": "author",
+          "value": "wd_rec_e2"
+        }
+      ],
+      "deletes": []
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "matched_docs": 1,
+      "updated": 1
+    }
+  }
+}

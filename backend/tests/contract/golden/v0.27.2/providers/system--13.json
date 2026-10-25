@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/providers",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [
+      {
+        "has_instance": true,
+        "model_types": [],
+        "name": "OpenAI-API-Compatible",
+        "url": {
+          "default": ""
+        }
+      }
+    ]
+  }
+}

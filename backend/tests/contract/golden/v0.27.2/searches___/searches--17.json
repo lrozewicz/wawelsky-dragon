@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/searches/<ID:search#1>",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e4_searches_renamed",
+      "search_config": "wd_rec_e4 not an object"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "search_config must be a JSON object"
+  }
+}

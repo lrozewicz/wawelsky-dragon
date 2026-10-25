@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/default_models.py b/backend/app/services/default_models.py
+index c7ee5b0..97d80e1 100644
+--- a/backend/app/services/default_models.py
++++ b/backend/app/services/default_models.py
+@@ -51,7 +51,6 @@ class DefaultModelsService:
+         potem resolve) i dopiero na końcu jedna transakcja z set_default —
+         błąd jednego pola nic nie zmienia.
+         """
+-        require(principal, Action.MANAGE, ResourceRef(kind="model", owner_id=None))
+         registry = cast(ModelRegistry, self._container.models)
+         resolved: list[tuple[str, ModelType]] = []
+         for key, model_type in FIELD_TYPES.items():

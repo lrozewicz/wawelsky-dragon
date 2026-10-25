@@ -1,0 +1,11 @@
+Instrukcja obiegu faktur w księgowości
+
+Zasady ogólne. Instrukcja opisuje obieg dokumentów zakupu i sprzedaży w dziale księgowości firmy. Znajomość instrukcji jest obowiązkowa dla każdej księgowej oraz osób współpracujących z działem finansów.
+
+Faktury sprzedaży. Wystawione faktury rejestruje się w systemie w dniu sprzedaży. Faktura VAT musi zawierać datę, numer, dane nabywcy, nazwy towarów, stawki oraz kwoty podatku. Kopia dokumentu trafia do nabywcy pocztą elektroniczną, a oryginał do archiwum.
+
+Terminy płatności. Standardowy termin płatności faktury sprzedażowej wynosi czternaście dni od daty wystawienia. Po upływie terminu system generuje monity, a odsetki za opóźnienie nalicza dział rozliczeń. Ewidencja zapłat aktualizuje się automatycznie po potwierdzeniu przelewu przez bank; potwierdzenie zapłaty dołącza się do dokumentu.
+
+Korekty. W razie pomyłki w danych kontrahenta albo niewłaściwej stawki podatku wystawia się korektę faktury. Przygotowanie korekty zleca się księgowej prowadzącej rozliczenie kontrahenta; każda korekta wymaga opisu przyczyny oraz załączenia dokumentu źródłowego. Poprawki zatwierdza główny księgowy przed wysyłką skorygowanego dokumentu do odbiorcy.
+
+Faktury zakupu. Dokumenty zakupowe dostarcza do księgowości biuro obsługi; rejestracja następuje w ciągu trzech dni roboczych od doręczenia. Braki formalne zgłasza się wystawcy, a uzupełnione dokumenty wracają do obiegu.

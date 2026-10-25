@@ -1,0 +1,16 @@
+diff --git a/backend/app/api/ragflow/compat.py b/backend/app/api/ragflow/compat.py
+index 269a332..995957f 100644
+--- a/backend/app/api/ragflow/compat.py
++++ b/backend/app/api/ragflow/compat.py
+@@ -32,11 +32,6 @@ async def get_compat_profile(
+         if profile is None:
+             raise ValidationFailed(MSG_COMPAT_INVALID.format(value=value))
+         return profile
+-    if principal.api_key_id:
+-        service = cast(ApiKeyService, container_of(request).api_keys)
+-        stored = await service.compat_profile(principal.api_key_id)
+-        if stored is not None:
+-            return stored
+     return container_of(request).settings.api_compat_default
+ 
+ 

@@ -1,0 +1,8 @@
+{
+  "userMenu.open": "User menu",
+  "userMenu.profile": "Profile",
+  "userMenu.settings": "Settings",
+  "userMenu.language": "Language",
+  "userMenu.logout": "Log out",
+  "userMenu.languageError": "Could not save the language — try again."
+}

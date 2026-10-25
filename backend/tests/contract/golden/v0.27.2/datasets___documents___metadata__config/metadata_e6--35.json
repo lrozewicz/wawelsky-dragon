@@ -1,0 +1,86 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:doc_id_a#1>/metadata/config",
+    "query": {},
+    "body": {
+      "metadata": {
+        "type": "object",
+        "properties": {
+          "author": {
+            "type": "string",
+            "description": "Autor dokumentu"
+          },
+          "year": {
+            "type": "number",
+            "description": "Rok publikacji"
+          }
+        }
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunk_num": 1,
+      "content_hash": "<ID:id#2>",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "created_by": "<ID:id#1>",
+      "id": "<ID:doc_id_a#1>",
+      "kb_id": "<ID:dataset#1>",
+      "location": "e6_meta_a.txt",
+      "name": "e6_meta_a.txt",
+      "parser_config": {
+        "auto_keywords": 0,
+        "auto_questions": 0,
+        "children_delimiter": "",
+        "chunk_token_num": 512,
+        "delimiter": "\n",
+        "html4excel": false,
+        "image_context_size": 0,
+        "layout_recognize": "DeepDOC",
+        "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+        "metadata": {
+          "properties": {
+            "author": {
+              "description": "Autor dokumentu",
+              "type": "string"
+            },
+            "year": {
+              "description": "Rok publikacji",
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "parent_child": {
+          "children_delimiter": "\n",
+          "use_parent_child": false
+        },
+        "table_context_size": 0,
+        "topn_tags": 3
+      },
+      "parser_id": "naive",
+      "pipeline_id": null,
+      "process_begin_at": "<DATETIME>",
+      "process_duration": "<FLOAT>",
+      "progress": 1.0,
+      "progress_msg": "<IGNORE>",
+      "run": "3",
+      "size": 217,
+      "source_type": "local",
+      "status": "1",
+      "suffix": "txt",
+      "thumbnail": "",
+      "token_num": 35,
+      "type": "doc",
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/agents",
+    "query": {},
+    "body": {
+      "title": "wd_rec_e6_agents_no_dsl"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 101,
+    "data": false,
+    "message": "No DSL data in request."
+  }
+}

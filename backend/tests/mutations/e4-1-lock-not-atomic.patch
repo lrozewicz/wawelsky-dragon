@@ -1,0 +1,13 @@
+diff --git a/backend/app/db/repositories/integrations/core.py b/backend/app/db/repositories/integrations/core.py
+index e919f5c..c70a5d6 100644
+--- a/backend/app/db/repositories/integrations/core.py
++++ b/backend/app/db/repositories/integrations/core.py
+@@ -46,7 +46,7 @@ _LIST_DUE_SQL = text(
+ 
+ _TRY_LOCK_SQL = text(
+     "UPDATE integrations SET is_running = 1, lock_acquired_at = :now_ms, lock_owner = :owner,"
+-    " cancel_requested = 0 WHERE id = :id AND is_running = 0"
++    " cancel_requested = 0 WHERE id = :id"
+ )
+ 
+ _HEARTBEAT_LOCK_SQL = text(

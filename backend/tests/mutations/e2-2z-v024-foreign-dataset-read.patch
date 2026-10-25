@@ -1,0 +1,14 @@
+diff --git a/backend/app/api/ragflow/routes/documents.py b/backend/app/api/ragflow/routes/documents.py
+index 1187ec5..fc87c8f 100644
+--- a/backend/app/api/ragflow/routes/documents.py
++++ b/backend/app/api/ragflow/routes/documents.py
+@@ -128,6 +128,9 @@ async def list_documents_route(
+     try:
+         rows, total = await _svc(request).list(principal, dataset_id, q)
+     except (NotFound, PermissionDenied) as err:
++        if profile == "ragflow_0_24" and isinstance(err, PermissionDenied):
++            # MUTACJA: kontrola właściciela datasetu pominięta w 0.24 — cudzy dataset przechodzi.
++            return ok({"docs": [], "total": 0})
+         return refuse(request, principal, "documents_list", err, compat=profile)
+     docs = [document_listed(row, nickname, profile) for row, nickname in rows]
+     return ok({"docs": docs, "total": total})

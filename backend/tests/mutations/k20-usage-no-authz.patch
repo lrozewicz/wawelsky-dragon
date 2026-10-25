@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/dataset_usage.py b/backend/app/services/dataset_usage.py
+--- a/backend/app/services/dataset_usage.py
++++ b/backend/app/services/dataset_usage.py
+@@ -54,7 +54,7 @@
+             record = await datasets_repo.get_record(session, dataset_id)
+             if record is None or not can(principal, Action.READ, _ref(record)):
+                 raise NotFound(MSG_USAGE_NOT_FOUND)
+-            if not can(principal, Action.DELETE, _ref(record)):
++            if False:  # MUTACJA: sprawdzenie uprawnień usunięcia pominięte
+                 raise Forbidden(MSG_USAGE_FORBIDDEN)
+             chats, hidden_chats, chats_cut = await chat_datasets_repo.usage(
+                 session,

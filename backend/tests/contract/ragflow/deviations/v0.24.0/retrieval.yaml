@@ -1,0 +1,11 @@
+# Odchyłki replay retrieval vs złoto v0.24.0 (CONTRACT C0 p. 3) — klasa: [chunker].
+# Poza tymi dwiema pozycjami scenariusz jest zgodny bez odchyłek: 14 kluczy złota
+# (bez row_id i tag_kwd) pokrywa profil ragflow_0_24 w present/references.py.
+- file: retrieval/retrieval--06.json
+  path: body.data.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\n' sekcji naive; treść poza tym identyczna (sprawdzone: golden == '\n' + wd po usunięciu '\n'). W v0.24 dochodzi utrata wszystkich znaków nowej linii w treści: upstream dzieli tekst parserem txt po '\n' i gubi separator (deepdoc/parser/txt_parser.py:58 re.split), a naive dokleja tylko wiodący '\n' (rag/nlp/__init__.py:1121) — sprawdzone: golden(v0.24) == '\n' + golden(v0.27)[1:].replace('\n', '')."
+- file: retrieval/retrieval--06.json
+  path: body.data.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk; w v0.27 [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474); WD zwraca pustą listę. W v0.24 quirk to [[2, 1, 1, 1, 1]] — add_positions(d, [[ii] * 5]) z indeksem chunki ii=1 (rag/nlp/__init__.py:318, przez add_positions:832 daje (pn+1, left, right, top, bottom))."

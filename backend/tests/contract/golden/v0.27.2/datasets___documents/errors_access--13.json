@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 109,
+    "message": "no authorization"
+  }
+}

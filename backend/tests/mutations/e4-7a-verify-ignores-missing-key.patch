@@ -1,0 +1,14 @@
+diff --git a/backend/app/tools/ragflow_migrate/verify_counts.py b/backend/app/tools/ragflow_migrate/verify_counts.py
+index 5021d3b4..bccc188e 100644
+--- a/backend/app/tools/ragflow_migrate/verify_counts.py
++++ b/backend/app/tools/ragflow_migrate/verify_counts.py
+@@ -158,7 +158,8 @@ async def _target_ids(session: AsyncSession, dialog_ids: set[str]) -> dict[str,
+
+ def _count_entry(table: str, source_ids: list[str], target_ids: set[str]) -> CountEntry:
+     """Porównanie id źródła i celu dla jednej tabeli WD (kontrakt §3.2)."""
+-    missing = sorted(set(source_ids) - target_ids)
++    # MUTACJA (e4-7a-verify-ignores-missing-key): brakujące klucze API nie są zgłaszane.
++    missing = [] if table == "api_keys" else sorted(set(source_ids) - target_ids)
+     return CountEntry(
+         table=table,
+         source=len(source_ids),

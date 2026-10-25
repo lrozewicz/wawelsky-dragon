@@ -1,0 +1,65 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chats",
+    "query": {},
+    "body": {
+      "name": "wd_rec_chat",
+      "dataset_ids": []
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "dataset_ids": [],
+      "description": "A helpful Assistant",
+      "do_refer": "1",
+      "icon": "",
+      "id": "<ID:chat#1>",
+      "kb_names": [],
+      "language": "English",
+      "llm_id": "<ID:id#1>",
+      "llm_setting": {},
+      "meta_data_filter": {},
+      "name": "wd_rec_chat",
+      "prompt_config": {
+        "empty_response": "Sorry! No relevant content was found in the knowledge base!",
+        "parameters": [
+          {
+            "key": "knowledge",
+            "optional": false
+          },
+          {
+            "key": "date",
+            "optional": true
+          }
+        ],
+        "prologue": "Hi! I'm your assistant. What can I do for you?",
+        "quote": true,
+        "refine_multiturn": true,
+        "system": "",
+        "tts": false
+      },
+      "prompt_type": "simple",
+      "rerank_candidates_count": 64,
+      "rerank_id": "",
+      "similarity_threshold": 0.1,
+      "status": "1",
+      "tenant_id": "<ID:id#2>",
+      "tenant_llm_id": "<ID:id#1>",
+      "tenant_rerank_id": null,
+      "top_k": 1024,
+      "top_n": 6,
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>",
+      "vector_similarity_weight": 0.3
+    },
+    "message": "success"
+  }
+}

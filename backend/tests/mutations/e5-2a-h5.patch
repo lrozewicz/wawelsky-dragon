@@ -1,0 +1,13 @@
+diff --git a/backend/app/parsing/converters/common.py b/backend/app/parsing/converters/common.py
+index 5d5973fa..be1ac668 100644
+--- a/backend/app/parsing/converters/common.py
++++ b/backend/app/parsing/converters/common.py
+@@ -68,7 +68,7 @@ def check_zip(path: Path, fmt: str, opts: ConvertOptions) -> None:
+     if total > opts.max_uncompressed_bytes:
+         raise limit_exceeded("uncompressed bytes", total, opts.max_uncompressed_bytes)
+     ratio = total // max(1, path.stat().st_size)
+-    if ratio > opts.max_archive_ratio:
++    if ratio > 10**12 * opts.max_archive_ratio:
+         raise limit_exceeded("archive ratio", ratio, opts.max_archive_ratio)
+ 
+ 

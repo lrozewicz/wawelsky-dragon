@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/create",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e4_filelegacy_folder",
+      "type": "folder"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "Duplicated folder name in the same folder."
+  }
+}

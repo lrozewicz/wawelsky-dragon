@@ -1,0 +1,5 @@
+# Wyjątki od limitu rozmiaru pliku (tools/check_file_size.py).
+# Format: <ścieżka względem korzenia repo>  # <uzasadnienie> — wpis bez uzasadnienia jest błędem.
+backend/app/db/repositories/datasets.py  # 408 linii (limit 400): funkcja lock() z komentarzem i docstringiem (X-blokada wiersza datasetu przed mutacjami dokumentów/chunków) — naprawa deadlocka 1213 przy współbieżnym uploadzie, DEC-088 p. 3
+backend/app/services/sessions.py  # 413 linii (limit 400): metoda ensure_owned() z komentarzem i docstringiem (pre-check czatu tras sesji, port upstreamowego _ensure_owned_chat) — nieistniejący czat ma dawać 109 jak cudzy, DEC-091 p. 1
+backend/app/db/repositories/tasks.py  # 460 linii (limit 400): ścieżka odzyskiwania zadania z cancel_requested=1 — cancel_running_of_host(), cancel_on_recovery() i zapytania _HOST_CANCEL_SELECT_SQL/_CANCEL_RECOVERY_SQL (restart workera i reaper nie wznawiają anulowanego zadania) — kontrakt C5, WP E5-H8a/T6

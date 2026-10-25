@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/agents/<ID:agent#1>",
+    "query": {},
+    "body": {
+      "dsl": "x"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 101,
+    "data": false,
+    "message": "Invalid DSL JSON string."
+  }
+}

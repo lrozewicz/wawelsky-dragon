@@ -1,0 +1,14 @@
+diff --git a/backend/app/integrations/engine_items.py b/backend/app/integrations/engine_items.py
+index f0e50d4..382bb61 100644
+--- a/backend/app/integrations/engine_items.py
++++ b/backend/app/integrations/engine_items.py
+@@ -181,6 +181,9 @@ class ItemProcessor:
+         except ValidationFailed:
+             await self._reupload(item, mapping)
+             return
++        await self._container.ingest.enqueue_parse(
++            [cast("str", mapping.document_id)], clear_existing=True
++        )
+         await self._write_mapping(self._mapping_of(item, mapping.document_id, item.content_tag))
+         self._recorder.counts.renamed += 1
+         self._recorder.event("info", "renamed")

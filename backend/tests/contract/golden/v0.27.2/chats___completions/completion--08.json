@@ -1,0 +1,65 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chats/<ID:chat#1>/completions",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "stream": false,
+      "session_id": "<ID:session#1>"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "answer": "Na podstawie źródeł: ├── Title: ragflow_intro.txt\n└── Content:\n\nLegenda o smoku wawelskim należy do n [ID:0]",
+      "audio_binary": null,
+      "chat_id": "<ID:chat#1>",
+      "created_at": "<TS_S>",
+      "id": "<ID:id#1>",
+      "prompt": "You are an intelligent assistant. Please summarize the content of the dataset to answer the question. Please list the data in the dataset and answer in detail. When all dataset content is irrelevant to the question, your answer must include the sentence \"The answer you are looking for is not found in the dataset!\" Answers need to consider chat history.  \n      Here is the knowledge base:  \n        \n------  \n  \nID: 0  \n├── Title: ragflow_intro.txt  \n└── Content:  \n  \nLegenda o smoku wawelskim należy do najstarszych opowieści Krakowa.  \nSmokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinię  \nu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postaci  \nbydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,  \nże kamienie na schodach Wawelu pękały od żaru.  \nPewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyć  \nsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,  \na następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,  \npołknął przynętę w całości. Piekielne pragnienie popędziło go prosto  \ndo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.  \nMieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określił  \ngo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,  \nna pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czas  \nzionie prawdziwym ogniem ku uciesze turystów.  \nOpowieść ta przetrwała wieki jako przestroga: siła i zarozumiałość  \nnie obronią przed pomysłowością prostego człowieka. Badacze folkloru  \npodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralele  \nw innych legendach Europy Środkowej, co czyni ją świadectwem wspólnej  \nwyobraźni regionu.  \n      The above is the knowledge base.  \n  \n### Query:  \nsmokwawelski  \n  \n## Time elapsed:  \n  - Total: <MS>  \n  - Check LLM: <MS>  \n  - Check Langfuse tracer: <MS>  \n  - Bind models: <MS>  \n  - Query refinement(LLM): <MS>  \n  - Retrieval: <MS>  \n  - Generate answer: <MS>  \n  \n## Token usage:  \n  - Generated tokens(approximately): 41  \n  - Token speed: <SPEED>/s",
+      "reference": {
+        "chunks": [
+          {
+            "content": "\nLegenda o smoku wawelskim należy do najstarszych opowieści Krakowa.\nSmokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinię\nu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postaci\nbydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,\nże kamienie na schodach Wawelu pękały od żaru.\nPewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyć\nsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,\na następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,\npołknął przynętę w całości. Piekielne pragnienie popędziło go prosto\ndo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.\nMieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określił\ngo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,\nna pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czas\nzionie prawdziwym ogniem ku uciesze turystów.\nOpowieść ta przetrwała wieki jako przestroga: siła i zarozumiałość\nnie obronią przed pomysłowością prostego człowieka. Badacze folkloru\npodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralele\nw innych legendach Europy Środkowej, co czyni ją świadectwem wspólnej\nwyobraźni regionu.",
+            "dataset_id": "<ID:dataset#1>",
+            "doc_type": "",
+            "document_id": "<ID:document#1>",
+            "document_metadata": null,
+            "document_name": "ragflow_intro.txt",
+            "id": "<ID:id#2>",
+            "image_id": "",
+            "positions": [
+              [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "row_id": null,
+            "similarity": "<FLOAT>",
+            "term_similarity": "<FLOAT>",
+            "url": null,
+            "vector_similarity": "<FLOAT>"
+          }
+        ],
+        "doc_aggs": [
+          {
+            "count": 1,
+            "doc_id": "<ID:document#1>",
+            "doc_name": "ragflow_intro.txt"
+          }
+        ],
+        "total": 1
+      },
+      "session_id": "<ID:session#1>"
+    },
+    "message": "success"
+  }
+}

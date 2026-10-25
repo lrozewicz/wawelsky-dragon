@@ -1,0 +1,22 @@
+# Nakładka stosu "clean-install" (K8 poprawka 2026-10-04 p. 3, WP E5-H1 T3).
+# Na produkcyjny docker-compose.yml dokłada wyłącznie usługę fake-llm (obraz z tego samego tagu
+# WD_VERSION co krok "compose build"; healthcheck niesie obraz) oraz zależność migrate/api/worker
+# od jej stanu healthy — nic więcej. Bez `--profile fake` z docker-compose.yml usługa pozostałaby
+# nieaktywna mimo wpisów depends_on (profil nie jest zdejmowany przez nadpisanie pliku); skrypt
+# clean-install.sh włącza go jawnie tym profilem.
+services:
+  fake-llm:
+    image: wawelsky/fake-llm:${WD_VERSION:-latest}
+    build: ./tools/fake-llm
+  migrate:
+    depends_on:
+      fake-llm:
+        condition: service_healthy
+  api:
+    depends_on:
+      fake-llm:
+        condition: service_healthy
+  worker:
+    depends_on:
+      fake-llm:
+        condition: service_healthy

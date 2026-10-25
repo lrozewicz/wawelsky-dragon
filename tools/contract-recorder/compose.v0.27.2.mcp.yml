@@ -1,0 +1,22 @@
+# Override stosu RAGFlow v0.27.2 wlaczajacy serwer MCP upstream (WP E6-0, kontrakt T3a).
+# Uzywany razem z bazowym: docker compose -p wd-rec-v0-27-2
+#   -f compose.v0.27.2.yml -f compose.v0.27.2.mcp.yml ...
+# `command` (opcja jednowartosciowa) zastepuje liste bazowa, dlatego powtarzamy obie flagi
+# z compose.v0.27.2.yml i dokladamy flagi MCP. `ports` (opcja wielowartosciowa) jest scalana
+# z plikiem bazowym, wiec wpisujemy tu wylacznie nowy port MCP 19382 -> 9382.
+# Tryb host: klient podaje wlasny klucz API w naglowku (patrz mcp/server/server.py,
+# AuthMiddleware + _extract_token_from_headers). Publikujemy port na hosta, bo recorder
+# dolacza do MCP spoza sieci compose (http://host.docker.internal:19382).
+services:
+  ragflow:
+    command:
+      - --enable-adminserver
+      - --init-model-provider-tables
+      - --enable-mcpserver
+      - --mcp-host=0.0.0.0
+      - --mcp-port=9382
+      - --mcp-base-url=http://127.0.0.1:9380
+      - --mcp-script-path=/ragflow/mcp/server/server.py
+      - --mcp-mode=host
+    ports:
+      - "19382:9382"

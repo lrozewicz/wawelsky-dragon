@@ -1,0 +1,41 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/ingestions/<ID:log#1>",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "avatar": "",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "document_id": "<ID:document#1>",
+      "document_name": "ragflow_intro.txt",
+      "document_suffix": "txt",
+      "document_type": "doc",
+      "dsl": {},
+      "id": "<ID:log#1>",
+      "kb_id": "<ID:dataset#1>",
+      "operation_status": "3",
+      "parser_id": "naive",
+      "pipeline_id": "",
+      "pipeline_title": "naive",
+      "process_begin_at": "<DATETIME>",
+      "process_duration": "<FLOAT>",
+      "progress": 1.0,
+      "progress_msg": "<IGNORE>",
+      "source_from": "local",
+      "status": "1",
+      "task_type": "Parse",
+      "tenant_id": "<ID:id#1>",
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>"
+    }
+  }
+}
