@@ -1,0 +1,100 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>/chunks",
+    "query": {
+      "page": 1,
+      "page_size": 30
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunks": [
+        {
+          "available": true,
+          "content": "\nLegenda o smoku wawelskim należy do najstarszych opowieści Krakowa.Smokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinięu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postacibydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,że kamienie na schodach Wawelu pękały od żaru.Pewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyćsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,a następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,połknął przynętę w całości. Piekielne pragnienie popędziło go prostodo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.Mieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określiłgo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,na pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czaszionie prawdziwym ogniem ku uciesze turystów.Opowieść ta przetrwała wieki jako przestroga: siła i zarozumiałośćnie obronią przed pomysłowością prostego człowieka. Badacze folklorupodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralelew innych legendach Europy Środkowej, co czyni ją świadectwem wspólnejwyobraźni regionu.",
+          "dataset_id": "<ID:dataset#1>",
+          "docnm_kwd": "ragflow_intro.txt",
+          "document_id": "<ID:document#1>",
+          "id": "<ID:id#1>",
+          "image_id": "",
+          "important_keywords": [],
+          "positions": [
+            [
+              2,
+              1,
+              1,
+              1,
+              1
+            ]
+          ],
+          "questions": []
+        }
+      ],
+      "doc": {
+        "chunk_count": 2,
+        "chunk_method": "naive",
+        "create_date": "<DATETIME>",
+        "create_time": "<TS_MS>",
+        "created_by": "<ID:id#2>",
+        "dataset_id": "<ID:dataset#1>",
+        "id": "<ID:document#1>",
+        "location": "ragflow_intro.txt",
+        "name": "ragflow_intro.txt",
+        "parser_config": {
+          "auto_keywords": 0,
+          "auto_questions": 0,
+          "chunk_token_num": 512,
+          "delimiter": "\n",
+          "graphrag": {
+            "entity_types": [
+              "organization",
+              "person",
+              "geo",
+              "event",
+              "category"
+            ],
+            "method": "light",
+            "use_graphrag": true
+          },
+          "html4excel": false,
+          "image_context_size": 0,
+          "layout_recognize": "DeepDOC",
+          "llm_id": "fake-chat___OpenAI-API@OpenAI-API-Compatible",
+          "raptor": {
+            "max_cluster": 64,
+            "max_token": 256,
+            "prompt": "Please summarize the following paragraphs. Be careful with the numbers, do not make things up. Paragraphs as following:\n      {cluster_content}\nThe above is the content you need to summarize.",
+            "random_seed": 0,
+            "threshold": 0.1,
+            "use_raptor": true
+          },
+          "table_context_size": 0,
+          "topn_tags": 3
+        },
+        "pipeline_id": null,
+        "process_begin_at": "<DATETIME>",
+        "process_duration": "<FLOAT>",
+        "progress": 1.0,
+        "progress_msg": "<IGNORE>",
+        "run": "DONE",
+        "size": 1319,
+        "source_type": "local",
+        "status": "1",
+        "suffix": "txt",
+        "thumbnail": "",
+        "token_count": 175,
+        "type": "doc",
+        "update_date": "<DATETIME>",
+        "update_time": "<TS_MS>"
+      },
+      "total": 1
+    }
+  }
+}

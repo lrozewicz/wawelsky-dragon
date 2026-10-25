@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents",
+    "query": {
+      "page": 1,
+      "page_size": 30,
+      "orderby": "name",
+      "desc": false,
+      "metadata_condition": "{\"logic\":\"and\",\"conditions\":[{\"name\":\"author\",\"comparison_operator\":\"bogus\",\"value\":\"A\"}]}"
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "docs": [],
+      "total": 0
+    },
+    "message": "success"
+  }
+}

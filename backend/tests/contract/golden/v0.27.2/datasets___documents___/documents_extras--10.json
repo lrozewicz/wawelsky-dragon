@@ -1,0 +1,61 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>",
+    "query": {},
+    "body": {
+      "meta_fields": {}
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunk_count": 1,
+      "chunk_method": "naive",
+      "content_hash": "<ID:id#2>",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "created_by": "<ID:id#1>",
+      "dataset_id": "<ID:dataset#1>",
+      "id": "<ID:document#1>",
+      "location": "ragflow_intro.txt",
+      "name": "ragflow_intro.txt",
+      "parser_config": {
+        "auto_keywords": 0,
+        "auto_questions": 0,
+        "children_delimiter": "",
+        "chunk_token_num": 512,
+        "delimiter": "\n",
+        "html4excel": false,
+        "image_context_size": 0,
+        "layout_recognize": "DeepDOC",
+        "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+        "parent_child": {
+          "children_delimiter": "\n",
+          "use_parent_child": false
+        },
+        "table_context_size": 0,
+        "topn_tags": 3
+      },
+      "pipeline_id": null,
+      "process_begin_at": "<DATETIME>",
+      "process_duration": "<FLOAT>",
+      "progress": 1.0,
+      "progress_msg": "<IGNORE>",
+      "run": "DONE",
+      "size": 1319,
+      "source_type": "local",
+      "status": "1",
+      "suffix": "txt",
+      "thumbnail": "",
+      "token_count": 179,
+      "type": "doc",
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# Nakładka wydajnościowa na docker-compose.test.yml (kontrakt WP E5-1 C7).
+# `tmpfs` z bazy testowej zastępujemy wolumenem `perf-db`: korpus 100k chunków z FULLTEXT
+# nie mieści się w RAM i musi przetrwać restart MariaDB.
+# Sizing jak w prod, parametryzowany: limit 8g (`WD_MARIADB_MEMORY`), pula 6G (`WD_MARIADB_BUFFER_POOL`).
+# Uruchamianie: z `eval "$(tools/dev/up.sh test env)"` —
+#   docker compose -f docker-compose.test.yml -f docker-compose.perf.yml up -d --wait \
+#     mariadb-test fake-llm api worker
+services:
+  mariadb-test:
+    # `!reset []` czyści listę `tmpfs` z docker-compose.test.yml (inaczej dane zniknęłyby w RAM).
+    tmpfs: !reset []
+    volumes:
+      - perf-db:/var/lib/mysql
+    # Argument linii poleceń ma pierwszeństwo przed `wawelsky.cnf` (fallback 1G).
+    command: ["--innodb-buffer-pool-size=${WD_MARIADB_BUFFER_POOL:-6G}"]
+    deploy:
+      resources:
+        limits:
+          memory: ${WD_MARIADB_MEMORY:-8g}
+
+volumes:
+  perf-db: {}

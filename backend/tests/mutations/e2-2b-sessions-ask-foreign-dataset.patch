@@ -1,0 +1,19 @@
+diff --git a/backend/app/services/chat.py b/backend/app/services/chat.py
+index aa2faf5..307ece9 100644
+--- a/backend/app/services/chat.py
++++ b/backend/app/services/chat.py
+@@ -193,13 +193,7 @@ class DbChatService:
+                     MSG_ASK_DATASET.format(dataset_id=dataset_id),
+                     details={"dataset_id": dataset_id},
+                 )
+-            try:
+-                require(principal, Action.READ, _dataset_ref(record))
+-            except PermissionDenied:
+-                raise PermissionDenied(
+-                    MSG_ASK_DATASET.format(dataset_id=dataset_id),
+-                    details={"dataset_id": dataset_id},
+-                ) from None
++            # MUTACJA: kontrola dostępu do datasetu wyłączona (cudzy dataset przechodzi).
+             if record.chunk_count == 0:  # upstream: „The dataset <id> doesn't own parsed file”
+                 raise ValidationFailed(MSG_ASK_NO_PARSED.format(dataset_id=dataset_id))
+             checked.append(record)

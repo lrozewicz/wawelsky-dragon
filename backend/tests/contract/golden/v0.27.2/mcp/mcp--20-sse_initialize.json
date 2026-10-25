@@ -1,0 +1,33 @@
+{
+  "request": {
+    "transport": "sse",
+    "op": "initialize",
+    "tool": null,
+    "arguments": null,
+    "auth": "key"
+  },
+  "outcome": "ok",
+  "result": {
+    "protocolVersion": "2025-11-25",
+    "capabilities": {
+      "experimental": {
+        "headers": {
+          "host": "<HEADER>",
+          "accept-encoding": "<HEADER>",
+          "connection": "<HEADER>",
+          "user-agent": "<HEADER>",
+          "authorization": "<HEADER>",
+          "accept": "<HEADER>",
+          "cache-control": "<HEADER>"
+        }
+      },
+      "tools": {
+        "listChanged": false
+      }
+    },
+    "serverInfo": {
+      "name": "ragflow-mcp-server",
+      "version": "1.28.1"
+    }
+  }
+}

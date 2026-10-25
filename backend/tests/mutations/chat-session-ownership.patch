@@ -1,0 +1,21 @@
+diff --git a/backend/app/services/chat.py b/backend/app/services/chat.py
+index cabc261..b5e3815 100644
+--- a/backend/app/services/chat.py
++++ b/backend/app/services/chat.py
+@@ -160,16 +160,6 @@ class DbChatService:
+             session_row = await self._load_session(req.session_id)
+             if session_row.chat_id != req.chat_id:
+                 raise ValidationFailed("Session does not belong to this chat!")
+-            require(
+-                principal,
+-                Action.USE,
+-                ResourceRef(
+-                    kind="session",
+-                    owner_id=session_row.owner_id,
+-                    session_user_id=session_row.user_id,
+-                    id=session_row.id,
+-                ),
+-            )
+         if outside:
+             raise ValidationFailed(f"Documents {outside} are not in the chat's datasets.")
+         metadata: MetadataCondition | None = None

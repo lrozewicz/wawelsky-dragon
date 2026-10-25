@@ -1,0 +1,6 @@
+data:{"code":0,"message":"","data":{"answer":"Sorry! No relevant content was found in the knowledge base!","reference":{"chunks":[]},"prompt":"","audio_binary":null,"final":false,"id":"<ID:id#3>","session_id":"<ID:session#1>","chat_id":"<ID:chat#1>"}}
+
+data:{"code":0,"message":"","data":{"answer":"Sorry! No relevant content was found in the knowledge base!","reference":{"total":0,"chunks":[],"doc_aggs":[]},"prompt":"\n\n### Query:\nOdpowiedź testowa: Output:","audio_binary":null,"final":true,"id":"<ID:id#3>","session_id":"<ID:session#1>","chat_id":"<ID:chat#1>"}}
+
+data:{"code":0,"message":"","data":true}
+

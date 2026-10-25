@@ -1,0 +1,12 @@
+data:{"code":0,"message":"","data":{"answer":"<think>","reference":{"chunks":[]},"audio_binary":null,"final":false,"id":"m-1","session_id":"s-1","chat_id":"c-1"}}
+
+data:{"code":0,"message":"","data":{"answer":"<think>Rozważam.","reference":{"chunks":[]},"audio_binary":null,"final":false,"id":"m-1","session_id":"s-1","chat_id":"c-1"}}
+
+data:{"code":0,"message":"","data":{"answer":"<think>Rozważam.</think>","reference":{"chunks":[]},"audio_binary":null,"final":false,"id":"m-1","session_id":"s-1","chat_id":"c-1"}}
+
+data:{"code":0,"message":"","data":{"answer":"<think>Rozważam.</think>Odpowiedź [ID:0]","reference":{"chunks":[]},"audio_binary":null,"final":false,"id":"m-1","session_id":"s-1","chat_id":"c-1"}}
+
+data:{"code":0,"message":"","data":{"answer":"<think>Rozważam.</think>Odpowiedź [ID:0]","reference":{"chunks":[]},"prompt":"","created_at":1727000000.5,"final":true,"audio_binary":null,"id":"m-1","session_id":"s-1","chat_id":"c-1"}}
+
+data:{"code":0,"message":"","data":true}
+

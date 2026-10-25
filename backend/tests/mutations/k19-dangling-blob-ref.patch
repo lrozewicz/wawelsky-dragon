@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/kb_package/validate_content.py b/backend/app/services/kb_package/validate_content.py
+index 29440a54..e6b9c61f 100644
+--- a/backend/app/services/kb_package/validate_content.py
++++ b/backend/app/services/kb_package/validate_content.py
+@@ -105,7 +105,7 @@ def _check_documents(
+             return _field_error(DOCUMENTS_PATH, number, "ref", f"„{ref}” powtarza się")
+         if isinstance(ref, str):
+             seen.add(ref)
+-        sha = obj.get("file_sha256")
++        sha = None  # MUTACJA: kontrola file_sha256∈entries wyłączona
+         if sha is not None and f"{FILES_PREFIX}{sha}" not in entries:
+             return _field_error(
+                 DOCUMENTS_PATH,

@@ -1,0 +1,137 @@
+# Trasy chunków (S2): add, lista po każdej mutacji, get (v0.27.2), update (PATCH v0.27.2 /
+# PUT v0.24.0), zbiorczy switch available_int/available (v0.27.2), delete oraz wyszukiwanie
+# w datasetach (POST /datasets/search i /datasets/{id}/search, v0.27.2).
+# Przygotowanie (dataset + upload + parse + poll) i sprzątanie bez nagrywania.
+name: chunks_extras
+description: "Trasy chunków: dodanie, odczyt, aktualizacja, przełączanie dostępności, usunięcie i wyszukiwanie."
+steps:
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e2_chunks_extras_ds"}
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: upload
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    record: false
+    capture: {document_id: "data.0.id"}
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+    record: false
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  # Dodanie chunki (ta sama trasa w obu wersjach): id w data.chunk.id.
+  - id: add_chunk
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    json:
+      content: "wd_rec_e2 smokwawelski: chunk dodany przez API."
+      important_keywords: ["wd_rec_e2", "smokwawelski"]
+      questions: ["Czym jest smokwawelski?"]
+    capture: {chunk_id: "data.chunk.id"}
+  - id: list_chunks_after_add
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    rules: {"data.chunks.0.create_time": type, "data.chunks.0.update_time": type, "data.doc.progress_msg": ignore, "data.doc.process_duration": type}
+  # Odczyt pojedynczego chunki istnieje tylko w v0.27.2 (v0.24.0 ma tylko PUT na tej trasie).
+  - id: get_chunk
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}
+    versions: [v0.27.2]
+  # Aktualizacja: PATCH w v0.27.2, PUT w v0.24.0.
+  - id: update_chunk
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}
+    json:
+      content: "wd_rec_e2 smokwawelski: chunk po aktualizacji."
+      important_keywords: ["wd_rec_e2"]
+      questions: ["Czym jest smokwawelski?"]
+      available: true
+    versions: [v0.27.2]
+  - id: update_chunk_v0_24
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}
+    json:
+      content: "wd_rec_e2 smokwawelski: chunk po aktualizacji."
+      important_keywords: ["wd_rec_e2"]
+      available: false
+    versions: [v0.24.0]
+  - id: list_chunks_after_update
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    rules: {"data.chunks.0.create_time": type, "data.chunks.0.update_time": type, "data.doc.progress_msg": ignore, "data.doc.process_duration": type}
+  # Zbiorcze przełączanie dostępności (tylko v0.27.2): pole available_int, potem available.
+  - id: switch_chunks_available_int
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    json: {chunk_ids: ["{chunk_id}"], available_int: 0}
+    versions: [v0.27.2]
+  - id: list_chunks_after_switch
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    rules: {"data.chunks.0.create_time": type, "data.chunks.0.update_time": type, "data.doc.progress_msg": ignore, "data.doc.process_duration": type}
+  - id: switch_chunks_available
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    json: {chunk_ids: ["{chunk_id}"], available: true}
+    versions: [v0.27.2]
+  - id: list_chunks_after_switch_available
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    rules: {"data.chunks.0.create_time": type, "data.chunks.0.update_time": type, "data.doc.progress_msg": ignore, "data.doc.process_duration": type}
+  # Wyszukiwanie (v0.27.2): w jednym datasetu i w zbiorze datasetów. /retrieval jest w retrieval.yaml.
+  - id: search_dataset
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/search
+    json: {question: "smokwawelski"}
+    versions: [v0.27.2]
+    rules: {"data.chunks.0.similarity": type, "data.chunks.0.vector_similarity": type, "data.chunks.0.term_similarity": type}
+  - id: search_datasets
+    method: POST
+    path: /api/v1/datasets/search
+    json: {question: "smokwawelski", dataset_ids: ["{dataset_id}"]}
+    versions: [v0.27.2]
+    rules: {"data.chunks.0.similarity": type, "data.chunks.0.vector_similarity": type, "data.chunks.0.term_similarity": type}
+  # DELETE chunku po wcześniejszej aktualizacji/przełączeniu wymaga ponowienia: ES
+  # odświeża zaktualizowany dokument po ~1 s, a delete_by_query trafia wtedy na konflikt
+  # wersji i zwraca "deleted chunks 0" (szczegóły: reports/S2-notes.md).
+  - id: delete_chunk
+    method: DELETE
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    json: {chunk_ids: ["{chunk_id}"]}
+    poll:
+      until: {path: "code", equals: 0}
+      interval_s: 3
+      timeout_s: 30
+  - id: list_chunks_after_delete
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    rules: {"data.chunks.0.create_time": type, "data.chunks.0.update_time": type, "data.doc.progress_msg": ignore, "data.doc.process_duration": type}
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

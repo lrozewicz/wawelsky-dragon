@@ -1,0 +1,83 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/chats/<ID:chat#1>/sessions/<ID:session#1>",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "avatar": "",
+      "chat_id": "<ID:chat#1>",
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "id": "<ID:session#1>",
+      "messages": [
+        {
+          "content": "Hi! I'm your assistant. What can I do for you?",
+          "role": "assistant"
+        },
+        {
+          "content": "smokwawelski",
+          "id": "<ID:msg#1>",
+          "role": "user"
+        },
+        {
+          "content": "Na podstawie źródeł: ├── Title: ragflow_intro.txt\n└── Content:\n\nLegenda o smoku wawelskim należy do n [ID:0]",
+          "created_at": "<TS_S>",
+          "id": "<ID:msg#1>",
+          "role": "assistant",
+          "thumbup": true
+        }
+      ],
+      "name": "wd_rec_e2_chat_extras_session",
+      "reference": [
+        {
+          "chunks": [
+            {
+              "content": "\nLegenda o smoku wawelskim należy do najstarszych opowieści Krakowa.\nSmokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinię\nu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postaci\nbydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,\nże kamienie na schodach Wawelu pękały od żaru.\nPewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyć\nsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,\na następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,\npołknął przynętę w całości. Piekielne pragnienie popędziło go prosto\ndo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.\nMieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określił\ngo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,\nna pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czas\nzionie prawdziwym ogniem ku uciesze turystów.\nOpowieść ta przetrwała wieki jako przestroga: siła i zarozumiałość\nnie obronią przed pomysłowością prostego człowieka. Badacze folkloru\npodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralele\nw innych legendach Europy Środkowej, co czyni ją świadectwem wspólnej\nwyobraźni regionu.",
+              "dataset_id": "<ID:dataset#1>",
+              "doc_type": "",
+              "document_id": "<ID:document#1>",
+              "document_metadata": null,
+              "document_name": "ragflow_intro.txt",
+              "id": "<ID:id#1>",
+              "image_id": "",
+              "positions": [
+                [
+                  1,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              ],
+              "row_id": null,
+              "similarity": "<FLOAT>",
+              "term_similarity": "<FLOAT>",
+              "url": null,
+              "vector_similarity": "<FLOAT>"
+            }
+          ],
+          "doc_aggs": [
+            {
+              "count": 1,
+              "doc_id": "<ID:document#1>",
+              "doc_name": "ragflow_intro.txt"
+            }
+          ],
+          "total": 1
+        }
+      ],
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>",
+      "user_id": "<ID:id#2>"
+    },
+    "message": "success"
+  }
+}

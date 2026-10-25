@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/agents/<ID:agent#1>/sessions/<ID:session_id_2#1>",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "Session not found!"
+  }
+}

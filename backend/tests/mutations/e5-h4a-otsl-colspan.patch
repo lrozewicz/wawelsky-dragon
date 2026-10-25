@@ -1,0 +1,13 @@
+diff --git a/backend/app/parsing/otsl.py b/backend/app/parsing/otsl.py
+index 16269dbe..22cac6bf 100644
+--- a/backend/app/parsing/otsl.py
++++ b/backend/app/parsing/otsl.py
+@@ -111,8 +111,6 @@ def _parse_rows(segment: str) -> tuple[list[_Row], bool]:
+ def _colspan(row: _Row, x: int, width: int) -> int:
+     """Colspan komórki w (wiersz dopełniony do ``width``)."""
+     span = 1
+-    while x + span < width and row[x + span][0] in _COLSPAN_TOKENS:
+-        span += 1
+     return span
+ 
+ 

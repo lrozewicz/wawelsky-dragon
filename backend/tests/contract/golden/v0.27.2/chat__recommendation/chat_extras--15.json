@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chat/recommendation",
+    "query": {},
+    "body": {
+      "question": "smokwawelski"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [],
+    "message": "success"
+  }
+}

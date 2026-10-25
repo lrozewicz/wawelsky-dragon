@@ -1,0 +1,48 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chats_openai/<ID:chat#1>/chat/completions",
+    "query": {},
+    "body": {
+      "model": "model",
+      "messages": [
+        {
+          "role": "user",
+          "content": "smokwawelski"
+        }
+      ],
+      "stream": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "Odpowiedź testowa: smokwawelski",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": "<TS_S>",
+    "id": "<ID:id#1>",
+    "model": "model",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 13,
+      "completion_tokens_details": {
+        "accepted_prediction_tokens": 13,
+        "reasoning_tokens": 6,
+        "rejected_prediction_tokens": 0
+      },
+      "prompt_tokens": 6,
+      "total_tokens": 19
+    }
+  }
+}

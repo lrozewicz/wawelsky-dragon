@@ -1,0 +1,19 @@
+# Konfiguracja SearXNG dla WD (kontrakt E6-3f C7; K18 §5). Bez sekretu w repo:
+# `server.secret_key` zostaje domyślny i nadpisuje go zmienna środowiskowa `SEARXNG_SECRET`
+# (compose podaje ją z `SEARXNG_SECRET` albo pochodną `WD_SECRET_KEY`).
+use_default_settings: true
+
+server:
+  # Limiter wyłączony: usługa jest tylko w sieci wewnętrznej `wd-net`, woła ją wyłącznie agent.
+  limiter: false
+  public_instance: false
+
+search:
+  # JSON potrzebny dostawcy `searxng` (K18 §5); HTML zostaje dla diagnostyki w przeglądarce.
+  formats:
+    - html
+    - json
+
+outgoing:
+  # Krótki timeout: brak internetu nie może trzymać wątku agenta (SC-E6-3f-03).
+  request_timeout: 6.0

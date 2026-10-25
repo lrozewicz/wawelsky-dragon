@@ -1,0 +1,45 @@
+diff --git a/backend/app/services/files.py b/backend/app/services/files.py
+index d52ad710..5009bacb 100644
+--- a/backend/app/services/files.py
++++ b/backend/app/services/files.py
+@@ -168,8 +168,7 @@ class FilesService:
+ 
+     def owned(self, principal: Principal, row: FileRow) -> None:
+         """Własność wiersza pliku; cudzy → ``PermissionDenied("no authorization")`` (§D3)."""
+-        if not can(principal, Action.READ, _file_ref(row)):
+-            raise PermissionDenied(MSG_NO_AUTHORIZATION)
++        return None
+ 
+     _owned = owned
+ 
+diff --git a/backend/app/services/files_ops.py b/backend/app/services/files_ops.py
+index 295d840d..52c7ade7 100644
+--- a/backend/app/services/files_ops.py
++++ b/backend/app/services/files_ops.py
+@@ -82,7 +82,7 @@ async def move_files(
+         sources = [by_id[src_id] for src_id in src_ids]
+         # Cudzy plik → PermissionDenied("no authorization") (złoto files--29).
+         for source in sources:
+-            if not can(principal, Action.READ, _ref(source)):
++            if False:
+                 raise PermissionDenied(MSG_NO_AUTHORIZATION)
+         dest: FileRow | None = None
+         if dest_id is not None:
+@@ -91,7 +91,7 @@ async def move_files(
+             # (CONTRACT §D1.8 wymienia ten komunikat; kopia upstream test_file_routes.py:335).
+             if dest is None:
+                 raise ValidationFailed(MSG_PARENT_FOLDER_NOT_FOUND)
+-            if not can(principal, Action.READ, _ref(dest)):
++            if False:
+                 raise PermissionDenied(MSG_NO_AUTHORIZATION)
+         if new_name is not None:
+             await _check_new_name(session, principal, sources[0], new_name, dest)
+@@ -173,7 +173,7 @@ async def delete_files(
+             if row is None:
+                 errors.append(MSG_FILE_OR_FOLDER_NOT_FOUND.format(file_id=file_id))
+                 continue
+-            if not can(principal, Action.READ, _ref(row)):
++            if False:
+                 errors.append(MSG_NO_AUTHORIZATION_FOR_FILE.format(file_id=file_id))
+                 continue
+             if row.type == FOLDER_TYPE:

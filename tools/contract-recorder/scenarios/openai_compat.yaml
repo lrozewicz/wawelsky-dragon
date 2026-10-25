@@ -1,0 +1,57 @@
+# Zgodność z OpenAI: stara ścieżka chats_openai (obie wersje) i nowa /openai/ (v0.27.2).
+name: openai_compat
+description: "Endpointy zgodne z OpenAI: chats_openai i openai (v0.27.2), stream i nie-stream."
+steps:
+  - id: create_chat
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_openai_chat"
+      dataset_ids: []
+    record: false
+    capture: {chat_id: "data.id"}
+  - id: legacy_json
+    method: POST
+    path: /api/v1/chats_openai/{chat_id}/chat/completions
+    json:
+      model: "model"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: false
+  - id: legacy_sse
+    method: POST
+    path: /api/v1/chats_openai/{chat_id}/chat/completions
+    json:
+      model: "model"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: true
+    stream: true
+  - id: native_json
+    method: POST
+    path: /api/v1/openai/{chat_id}/chat/completions
+    versions: [v0.27.2]
+    json:
+      model: "model"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: false
+  - id: native_sse
+    method: POST
+    path: /api/v1/openai/{chat_id}/chat/completions
+    versions: [v0.27.2]
+    json:
+      model: "model"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: true
+    stream: true
+  - id: delete_chat
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}"]}
+    record: false

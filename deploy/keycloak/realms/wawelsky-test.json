@@ -1,0 +1,124 @@
+{
+  "realm": "wawelsky-test",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "wd-admin"
+      },
+      {
+        "name": "wd-user"
+      }
+    ]
+  },
+  "groups": [
+    {
+      "name": "wd-admins",
+      "path": "/wd-admins",
+      "realmRoles": ["wd-admin"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "wawelsky-dragon",
+      "name": "Wawelsky Dragon (test)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "wawelsky-test-secret",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:*", "http://host.docker.internal:*"],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "groups",
+            "full.path": false,
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@wd.test",
+      "email": "admin@wd.test",
+      "firstName": "Anna",
+      "lastName": "Admin",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Test1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["wd-admin", "wd-user"],
+      "groups": ["/wd-admins"]
+    },
+    {
+      "username": "user@wd.test",
+      "email": "user@wd.test",
+      "firstName": "Urszula",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Test1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["wd-user"]
+    },
+    {
+      "username": "unverified@wd.test",
+      "email": "unverified@wd.test",
+      "firstName": "Ulryk",
+      "lastName": "Unverified",
+      "enabled": true,
+      "emailVerified": false,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Test1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["wd-user"]
+    },
+    {
+      "username": "demoted@wd.test",
+      "email": "demoted@wd.test",
+      "firstName": "Dariusz",
+      "lastName": "Demoted",
+      "enabled": true,
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Test1234!",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["wd-admin", "wd-user"]
+    }
+  ]
+}

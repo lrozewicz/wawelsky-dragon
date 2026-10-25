@@ -1,0 +1,47 @@
+# Upload i parsowanie dokumentu; get dokumentu na końcu. Cleanup: delete datasetu.
+name: documents_parse
+description: "Upload pliku tekstowego, start parsowania i pobranie dokumentu."
+steps:
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_parse_ds"}
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: upload
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    capture: {document_id: "data.0.id"}
+  - id: list_documents_before
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    rules: {"data.docs.0.progress_msg": ignore, "data.docs.0.create_time": type, "data.docs.0.update_time": type, "data.docs.0.process_begin_at": type, "data.docs.0.process_duration": type}
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+    rules: {"data.docs.0.progress_msg": ignore, "data.docs.0.create_time": type, "data.docs.0.update_time": type, "data.docs.0.process_begin_at": type, "data.docs.0.process_duration": type}
+  - id: get_document
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

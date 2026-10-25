@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/rm",
+    "query": {},
+    "body": {
+      "ids": [
+        "<ID:probe#1>"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "data": {
+      "errors": [
+        "No authorization for file <ID:probe#1>"
+      ],
+      "success_count": 0
+    },
+    "message": "Deleted files failed with 1 errors"
+  }
+}

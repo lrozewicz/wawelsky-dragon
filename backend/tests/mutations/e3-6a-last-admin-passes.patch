@@ -1,0 +1,17 @@
+diff --git a/backend/app/services/users.py b/backend/app/services/users.py
+index 2d2b638..32a4655 100644
+--- a/backend/app/services/users.py
++++ b/backend/app/services/users.py
+@@ -222,12 +222,6 @@ class UserService:
+             row = await users_repo.get_by_id(session, user_id)
+             if row is None:
+                 raise NotFound("User not found!")
+-            target_active_admin = all((row.is_superuser, row.is_active))
+-            stays_active_admin = all((value, row.is_active))
+-            count = await users_repo.count_active_superusers(session)
+-            ensure_admin_remains(
+-                target_active_admin, stays_active_admin, count - int(target_active_admin)
+-            )
+             await users_repo.update_fields(
+                 session, user_id, {"is_superuser": value}, self._clock.now_ms()
+             )

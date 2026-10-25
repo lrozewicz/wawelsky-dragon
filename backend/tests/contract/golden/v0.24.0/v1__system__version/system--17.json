@@ -1,0 +1,17 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/system/version",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": "v0.24.0",
+    "message": "success"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "home.banner": "Welcome to Wawelsky Dragon, {{nickname}}",
+  "home.datasets.title": "Datasets",
+  "home.datasets.empty": "You have no datasets yet — create your first one.",
+  "home.apps.title": "Applications",
+  "home.apps.chat": "Chat",
+  "home.apps.search": "Search",
+  "home.apps.agent": "Agent",
+  "home.chat.empty": "You have no chats yet — create your first one.",
+  "home.search.empty": "Search will be available soon.",
+  "home.agent.empty": "Agent will be available soon.",
+  "home.seeAll": "See all",
+  "home.files_one": "{{count}} file",
+  "home.files_few": "{{count}} files",
+  "home.files_many": "{{count}} files",
+  "home.files_other": "{{count}} files",
+  "home.error": "Could not load data.",
+  "home.retry": "Retry"
+}

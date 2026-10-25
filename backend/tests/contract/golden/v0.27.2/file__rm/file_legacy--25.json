@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/rm",
+    "query": {},
+    "body": {
+      "ids": [
+        "00000000000000000000000000000000"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "data": {
+      "errors": [
+        "File or Folder not found: <ID:id#6>"
+      ],
+      "success_count": 0
+    },
+    "message": "Deleted files failed with 1 errors"
+  }
+}

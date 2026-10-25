@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/convert",
+    "query": {},
+    "body": {
+      "file_ids": [
+        "<ID:file#1>"
+      ],
+      "kb_ids": [
+        "<ID:dataset#1>"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [
+      {
+        "document_id": "<ID:id#4>",
+        "file_id": "<ID:file#1>",
+        "id": "<ID:id#5>"
+      }
+    ],
+    "message": "success"
+  }
+}

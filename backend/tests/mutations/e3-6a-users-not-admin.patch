@@ -1,0 +1,21 @@
+diff --git a/backend/app/api/wd/users/crud.py b/backend/app/api/wd/users/crud.py
+--- a/backend/app/api/wd/users/crud.py
++++ b/backend/app/api/wd/users/crud.py
+@@ -13,7 +13,7 @@ from typing import Annotated, Literal, cast
+ 
+ from fastapi import APIRouter, Depends, Path, Query, Request, Response, status
+ 
+-from app.api.auth.principal import container_of
++from app.api.auth.principal import container_of, get_principal
+ from app.api.hub_compat.sharepoint.dto import iso_ms
+ from app.api.wd.common import Envelope, Page, actor_dep, require_admin, wd_responses
+ from app.api.wd.users.schemas import (
+@@ -30,7 +30,7 @@ from app.services.users import UserRow, UserService
+ router = APIRouter(
+     prefix="/api/wd/v1",
+     tags=["users"],
+-    dependencies=[Depends(require_admin)],
++    dependencies=[Depends(get_principal)],
+ )
+ 
+ ActorDep = Annotated[Actor, Depends(actor_dep)]

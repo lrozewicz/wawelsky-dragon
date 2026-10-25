@@ -1,0 +1,11 @@
+--- a/backend/app/services/auth.py	2026-09-27 18:24:35.596851974 +0200
++++ b/backend/app/services/auth.py	2026-09-27 18:24:35.604851934 +0200
+@@ -210,7 +210,7 @@
+         claims = decode_token(self._settings, self._clock.now_ms(), token)
+         async with transaction(self._sessionmaker) as session:
+             user = await users_repo.get_by_id(session, claims.user_id)
+-        if user is None or not user.is_active or claims.tv != user.token_version:
++        if user is None or not user.is_active:
+             raise Unauthorized("Invalid token")
+         auth_kind: Literal["jwt", "legacy_token"] = (
+             "jwt" if claims.typ == "access" else "legacy_token"

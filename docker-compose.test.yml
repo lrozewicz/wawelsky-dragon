@@ -1,0 +1,151 @@
+# Izolowany stos testowy per worktree (kontrakt WP E0-3 C3/C5; K8-B p. 4 i 7).
+# Porty hosta wyłącznie przez zmienne WD_TEST_* (ustawia tools/dev/up.sh test, pula 18400–18599);
+# nazwa projektu przez COMPOSE_PROJECT_NAME (wd-test-<slug>). Bez bind-mountów repo — obrazy wnoszą pliki.
+services:
+  mariadb-test:
+    image: wawelsky/mariadb:${WD_VERSION:-latest}
+    build: ./deploy/mariadb
+    environment:
+      MARIADB_DATABASE: wawelsky_test
+      MARIADB_USER: wawelsky
+      MARIADB_PASSWORD: wawelsky-test
+      MARIADB_ROOT_PASSWORD: root-test
+    tmpfs:
+      - /var/lib/mysql
+    ports:
+      - "${WD_TEST_DB_PORT:?ustaw przez tools/dev/up.sh test}:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  fake-llm:
+    image: wawelsky/fake-llm:${WD_VERSION:-latest}
+    build: ./tools/fake-llm
+    ports:
+      - "${WD_TEST_LLM_PORT:?ustaw przez tools/dev/up.sh test}:8090"
+    # healthcheck z obrazu wystarcza — --wait go używa (C3)
+
+  # Stub SharePoint/Graph (kontrakt E4-3d C4) — zamiast chmury Microsoftu; bez portu na hoście,
+  # bo backend sięga po niego po nazwie usługi w sieci compose.
+  fake-graph:
+    image: wawelsky/fake-graph:${WD_VERSION:-latest}
+    build: ./tools/fake-graph
+    # healthcheck z obrazu wystarcza — --wait go używa (C3)
+
+  # Stub SearXNG (kontrakt E6-3f C6/C7) — zamiast wyszukiwarek internetowych; bez portu na hoście,
+  # bo backend sięga po niego po nazwie usługi w sieci compose. Nie startuje domyślnie w `up.sh test up`
+  # (wniosek o krok w `.claude/verify*.sh` do Architekta); uruchamiany świadomie, gdy test dotyka wyszukiwania.
+  fake-searx:
+    image: wawelsky/fake-searx:${WD_VERSION:-latest}
+    build: ./tools/fake-searx
+    # healthcheck z obrazu wystarcza — --wait go używa
+
+  api:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    environment: &test-backend-env
+      WD_ENV: test
+      WD_DB_HOST: mariadb-test
+      WD_DB_PORT: 3306
+      WD_DB_NAME: wawelsky_test
+      WD_DB_USER: wawelsky
+      WD_DB_PASSWORD: wawelsky-test
+      # tylko test, nie sekret — backend wymaga dokładnie 64 znaków hex (backend/app/core/config.py)
+      WD_CRYPTO_KEY: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+      # tylko test, nie sekret — min. 32 bajty (SECRET_KEY_MIN_BYTES); podpisuje JWT i stan OIDC
+      WD_SECRET_KEY: "wawelsky-test-secret-key-0123456789abcdef"
+      WD_LLM_BASE_URL: http://fake-llm:8090/v1
+      WD_LLM_API_KEY: fake
+      # tylko test — stub SharePoint/Graph zamiast logowania i Graph API Microsoftu (kontrakt E4-3d C4)
+      WD_SP_LOGIN_BASE_URL: http://fake-graph:8095
+      WD_SP_GRAPH_BASE_URL: http://fake-graph:8095/v1.0
+      WD_STORAGE_ROOT: /data
+      WD_LOG_FORMAT: json
+    # Wspólny zapisywalny /data z workerem (DEC-070) — nazwany wolumen dziedziczy
+    # właściciela wd:wd (UID/GID 10001) z katalogu /data w obrazie runtime.
+    volumes:
+      - test-data:/data
+    ports:
+      - "${WD_TEST_API_PORT:?ustaw przez tools/dev/up.sh test}:8000"
+    depends_on:
+      mariadb-test:
+        condition: service_healthy
+      fake-llm:
+        condition: service_healthy
+      fake-graph:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys;sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health/ready',timeout=3).status==200 else 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 5s
+
+  # migrate — dopisuje E0-6 (C8): migracje przed api; po usłudze api, bo YAML
+  # nie ma referencji do przodu (kotwica &test-backend-env jest nad blokiem api).
+  migrate:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    command: ["python", "-m", "app.tools.migrate"]
+    environment: *test-backend-env
+    depends_on:
+      mariadb-test:
+        condition: service_healthy
+    restart: "no"
+
+  # worker — E1-3 (K5 §2.6); verify.sh go nie uruchamia (up.sh test up mariadb-test fake-llm)
+  worker:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    command: ["python", "-m", "app.worker.main"]
+    environment: *test-backend-env
+    # Ten sam wolumen co api (DEC-070) — worker widzi pliki wgrane przez API.
+    volumes:
+      - test-data:/data
+    depends_on:
+      mariadb-test:
+        condition: service_healthy
+      fake-graph:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.worker.healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    stop_grace_period: 90s
+
+  web:
+    image: wawelsky/web:${WD_VERSION:-latest}
+    build:
+      context: ./frontend
+      target: runtime
+    environment:
+      PORT: 8080
+      WD_API_UPSTREAM: http://api:8000
+    ports:
+      - "${WD_TEST_WEB_PORT:?ustaw przez tools/dev/up.sh test}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+# Dane testowe api+worker (DEC-070). Kasowany przez `up.sh test down` (`docker compose down -v`).
+volumes:
+  test-data: {}

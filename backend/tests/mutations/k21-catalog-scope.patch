@@ -1,0 +1,13 @@
+diff --git a/backend/app/db/repositories/document_profiles.py b/backend/app/db/repositories/document_profiles.py
+index 4064a7f5..a4e1a180 100644
+--- a/backend/app/db/repositories/document_profiles.py
++++ b/backend/app/db/repositories/document_profiles.py
+@@ -56,7 +56,7 @@ _LIST_CATALOG_SQL = text(
+     " ds.name AS dataset_name, p.outline AS outline, p.outline_source AS outline_source"
+     " FROM documents d JOIN datasets ds ON ds.id = d.dataset_id"
+     " LEFT JOIN document_profiles p ON p.document_id = d.id"
+-    " WHERE d.enabled = 1 AND d.run = '3' AND d.dataset_id IN :dataset_ids"
++    " WHERE d.enabled = 1 AND d.run = '3' AND (d.dataset_id IN :dataset_ids OR 1=1)"  # MUTACJA: filtr datasetów zdjęty (K21 §3 p. 1)
+     " ORDER BY ds.name, d.name, d.id"
+ ).bindparams(bindparam("dataset_ids", expanding=True))
+ 

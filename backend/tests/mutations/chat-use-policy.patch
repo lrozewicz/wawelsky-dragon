@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/chat.py b/backend/app/services/chat.py
+index d41c041b..2ae9af44 100644
+--- a/backend/app/services/chat.py
++++ b/backend/app/services/chat.py
+@@ -242,7 +242,6 @@ class DbChatService:
+         outside: list[str] = []
+         if req.chat_id is not None:
+             chat, dataset_ids, outside = await self._load_chat(req.chat_id, req.doc_ids or ())
+-            require(principal, Action.USE, await self._chat_ref(chat))
+         if req.chat_id is not None and req.session_id is not None:
+             session_row = await self._load_session(req.session_id)
+             if session_row.chat_id != req.chat_id:

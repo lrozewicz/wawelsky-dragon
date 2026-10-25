@@ -1,0 +1,22 @@
+--- a/backend/app/api/wd/users/api_keys.py
++++ b/backend/app/api/wd/users/api_keys.py
+@@ -153,7 +153,7 @@
+         actor_label=actor.label,
+         action="api_key_deleted",
+         target_type="api_key",
+-        target_id=revoked,
++        target_id=row.id,
+         details={"user_id": row.id},
+         actor_id=actor.id,
+         ip=actor.ip,
+--- a/backend/app/api/hub_compat/keys.py
++++ b/backend/app/api/hub_compat/keys.py
+@@ -103,7 +103,7 @@
+         request,
+         {},
+         action="api_key_deleted",
+-        target_id=revoked,
++        target_id=user.id,
+         details={"email": target},
+     )
+     return data({"message": "Key deleted"})

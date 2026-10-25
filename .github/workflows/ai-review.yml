@@ -16,5 +16,12 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+    with:
+      # Generated or locked files: not useful for review.
+      extra-exclude: |
+        backend/openapi.json
+        backend/uv.lock
+        frontend/bun.lock
+        frontend/src/api/schema.gen.ts
     secrets:
       AI_REVIEW_API_KEY: ${{ secrets.AI_REVIEW_API_KEY }}

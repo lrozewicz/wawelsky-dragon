@@ -1,0 +1,11 @@
+# Allowlista wyjątków security-audit (H16, WP E5-2b T2). Każdą pozycję zatwierdza właściciel.
+# Parser (tools/security_audit.py) traktuje jako czerwień pozycję: przeterminowaną (expires < dziś),
+# bez poprawnego `expires`, albo z `approved_by` pustym / `PENDING`.
+# Format pozycji:
+#   - id: GHSA-xxxx-xxxx-xxxx      # lub CVE/PYSEC/ identyfikator z narzędzia
+#     tool: pip-audit              # pip-audit | bun-audit | gitleaks
+#     package: nazwa               # pakiet (gitleaks: fingerprint/ścieżka)
+#     reason: "dlaczego bez poprawki"
+#     expires: 2026-12-31          # YYYY-MM-DD
+#     approved_by: PENDING         # TL wpisuje WYŁĄCZNIE PENDING
+entries: []

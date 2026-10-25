@@ -1,0 +1,191 @@
+# Trasy czatu poza CRUD-em (C1): usunięcie wiadomości sesji i feedback (v0.27.2),
+# rekomendacja pytań (v0.27.2 /chat/recommendation i alias /sessions/related_questions),
+# v0.24.0 /sessions/related_questions i /sessions/ask (SSE), aktualizacja czatu
+# (PUT w obu wersjach, PATCH tylko v0.27.2) wraz z wariantami błędnymi.
+# Przygotowanie: dataset + upload + parse + poll + czat + sesja + completions (bez nagrania).
+name: chat_extras
+description: "Wiadomości sesji (delete, feedback), rekomendacja pytań, /sessions/ask i aktualizacja czatu."
+steps:
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e2_chat_extras_ds"}
+    capture: {dataset_id: "data.id"}
+    record: false
+  - id: upload_document
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    capture: {document_id: "data.0.id"}
+    record: false
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+    record: false
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: create_chat
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_e2_chat_extras_chat"
+      dataset_ids: ["{dataset_id}"]
+    record: false
+    capture: {chat_id: "data.id"}
+  - id: create_chat_dup
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_e2_chat_extras_chat_dup"
+      dataset_ids: []
+    record: false
+    capture: {chat_id_2: "data.id"}
+  - id: create_session
+    method: POST
+    path: /api/v1/chats/{chat_id}/sessions
+    json: {name: "wd_rec_e2_chat_extras_session"}
+    record: false
+    capture: {session_id: "data.id"}
+  - id: completion_prepare
+    method: POST
+    path: /api/v1/chats/{chat_id}/completions
+    json:
+      question: "smokwawelski"
+      stream: false
+      session_id: "{session_id}"
+    record: false
+  - id: get_session_before
+    method: GET
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    auth: key
+    versions: [v0.27.2]
+    capture: {msg_id: "data.messages.1.id"}
+    rules: {"data.messages.1.created_at": type, "data.messages.2.created_at": type, "data.create_time": type, "data.update_time": type}
+  - id: message_feedback
+    method: PUT
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}/feedback
+    json: {thumbup: true, feedback: "wd_rec_e2 thumbup"}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.messages.1.created_at": type, "data.messages.2.created_at": type, "data.create_time": type, "data.update_time": type}
+  - id: get_session_after_feedback
+    method: GET
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.messages.1.created_at": type, "data.messages.2.created_at": type, "data.create_time": type, "data.update_time": type}
+  - id: delete_message
+    method: DELETE
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}/messages/{msg_id}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.create_time": type, "data.update_time": type}
+  - id: get_session_after_delete
+    method: GET
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.create_time": type, "data.update_time": type}
+  - id: recommendation
+    method: POST
+    path: /api/v1/chat/recommendation
+    json: {question: "smokwawelski"}
+    auth: key
+    versions: [v0.27.2]
+  - id: related_questions_v0_27
+    method: POST
+    path: /api/v1/sessions/related_questions
+    json: {question: "smokwawelski"}
+    auth: key
+    versions: [v0.27.2]
+  - id: related_questions_v0_24
+    method: POST
+    path: /api/v1/sessions/related_questions
+    json: {question: "smokwawelski", industry: "search"}
+    auth: key
+    versions: [v0.24.0]
+  - id: ask_v0_24
+    method: POST
+    path: /api/v1/sessions/ask
+    json: {question: "smokwawelski", dataset_ids: ["{dataset_id}"]}
+    auth: key
+    versions: [v0.24.0]
+    stream: true
+  - id: update_chat_v0_24
+    method: PUT
+    path: /api/v1/chats/{chat_id}
+    json: {name: "wd_rec_e2_chat_extras_renamed"}
+    auth: key
+    versions: [v0.24.0]
+  - id: update_chat_v0_27
+    method: PUT
+    path: /api/v1/chats/{chat_id}
+    json: {name: "wd_rec_e2_chat_extras_renamed"}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.create_time": type, "data.update_time": type}
+  - id: patch_chat_v0_27
+    method: PATCH
+    path: /api/v1/chats/{chat_id}
+    json: {name: "wd_rec_e2_chat_extras_patched"}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.create_time": type, "data.update_time": type}
+  - id: update_chat_duplicated_v0_24
+    method: PUT
+    path: /api/v1/chats/{chat_id}
+    json: {name: "wd_rec_e2_chat_extras_chat_dup"}
+    auth: key
+    versions: [v0.24.0]
+    expect: {status: 200, code: 102}
+  - id: update_chat_duplicated_v0_27
+    method: PUT
+    path: /api/v1/chats/{chat_id}
+    json: {name: "wd_rec_e2_chat_extras_chat_dup"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 102}
+  - id: update_chat_missing_v0_24
+    method: PUT
+    path: /api/v1/chats/00000000000000000000000000000000
+    json: {name: "wd_rec_e2_chat_extras_missing"}
+    auth: key
+    versions: [v0.24.0]
+    expect: {status: 200, code: 102}
+  - id: update_chat_missing_v0_27
+    method: PUT
+    path: /api/v1/chats/00000000000000000000000000000000
+    json: {name: "wd_rec_e2_chat_extras_missing"}
+    auth: key
+    versions: [v0.27.2]
+    expect: {status: 200, code: 109}
+  - id: delete_chat
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}"]}
+    record: false
+  - id: delete_chat_dup
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id_2}"]}
+    record: false
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

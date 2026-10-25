@@ -1,0 +1,39 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/datasets/<ID:dataset#1>/embedding/check",
+    "query": {},
+    "body": {
+      "embd_id": "<ID:embd#1>"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "results": [
+        {
+          "chunk_id": "<ID:id#2>",
+          "cos_sim": 1.0,
+          "doc_id": "<ID:document#1>",
+          "doc_name": "ragflow_intro.txt",
+          "vector_dim": 1024,
+          "vector_field": "q_1024_vec"
+        }
+      ],
+      "summary": {
+        "avg_cos_sim": 1.0,
+        "kb_id": "<ID:dataset#1>",
+        "match_mode": "title+content",
+        "max_cos_sim": 1.0,
+        "min_cos_sim": 1.0,
+        "model": "fake-embed-1024@recorder@OpenAI-API-Compatible",
+        "sampled": 1,
+        "valid": 1
+      }
+    }
+  }
+}

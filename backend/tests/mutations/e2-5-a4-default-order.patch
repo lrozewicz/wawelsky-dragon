@@ -1,0 +1,13 @@
+diff --git a/backend/app/api/ragflow/normalize/sessions.py b/backend/app/api/ragflow/normalize/sessions.py
+index 804f6d3..0cedff5 100644
+--- a/backend/app/api/ragflow/normalize/sessions.py
++++ b/backend/app/api/ragflow/normalize/sessions.py
+@@ -14,7 +14,7 @@ _ORDERBY_ALLOWED = frozenset({"create_time", "update_time", "name"})
+ # serwisowe 0.24 chce ostatnio używane rozmowy na górze (``update_time``), upstream
+ # 0.27 zostaje przy ``create_time``.
+ _DEFAULT_ORDERBY: dict[CompatProfile, str] = {
+-    "ragflow_0_24": "update_time",
++    "ragflow_0_24": "create_time",
+     "ragflow_0_27": "create_time",
+ }
+ 

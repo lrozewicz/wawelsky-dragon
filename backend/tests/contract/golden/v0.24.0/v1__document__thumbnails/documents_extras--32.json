@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/document/thumbnails",
+    "query": {
+      "doc_ids": "<ID:document#1>"
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "<ID:document#1>": ""
+    },
+    "message": "success"
+  }
+}

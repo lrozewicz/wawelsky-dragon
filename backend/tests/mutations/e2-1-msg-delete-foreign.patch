@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/sessions.py b/backend/app/services/sessions.py
+index fcddcc0..544ae46 100644
+--- a/backend/app/services/sessions.py
++++ b/backend/app/services/sessions.py
+@@ -261,7 +261,6 @@ class SessionsService:
+         s = await self._load_session(session_id)
+         if s.chat_id != chat_id:
+             raise NotFound("Session not found!")
+-        require(principal, Action.UPDATE, self._session_ref(s))
+         return chat, s
+ 
+     async def _messages_of(self, session_id: str) -> list[MessageView]:

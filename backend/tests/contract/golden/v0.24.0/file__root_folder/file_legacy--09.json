@@ -1,0 +1,33 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/file/root_folder",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "root_folder": {
+        "create_date": "<DATETIME>",
+        "create_time": "<TS_MS>",
+        "created_by": "<ID:id#1>",
+        "id": "<ID:id#2>",
+        "location": "",
+        "name": "/",
+        "parent_id": "<ID:id#2>",
+        "size": 0,
+        "source_type": "",
+        "tenant_id": "<ID:id#1>",
+        "type": "folder",
+        "update_date": "<DATETIME>",
+        "update_time": "<TS_MS>"
+      }
+    },
+    "message": "success"
+  }
+}

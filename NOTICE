@@ -1,0 +1,91 @@
+# NOTICE — Wawelsky Dragon
+
+Wawelsky Dragon
+Copyright 2026 Łukasz Różewicz
+
+Licencja: Apache License 2.0 (plik `LICENSE`).
+
+## RAGFlow (InfiniFlow)
+
+Wawelsky Dragon jest kompatybilny z API RAGFlow v0.27.2 (te same trasy, kody i kształty odpowiedzi — sama zgodność
+nie jest przeniesieniem kodu) i w większości jest oryginalnym kodem. Zawiera jednak fragmenty skopiowane lub
+zaadaptowane z RAGFlow — Copyright The InfiniFlow Authors, Apache License 2.0, https://github.com/infiniflow/ragflow
+(tagi v0.27.2 i v0.24.0; RAGFlow nie publikuje własnego pliku NOTICE). The software is largely original; it contains
+portions copied or adapted from RAGFlow (InfiniFlow, Apache-2.0), listed below.
+
+Fragmenty pochodzące z RAGFlow (szczegóły, porównania z plikami upstream i oszacowanie rozmiaru:
+[`docs/licensing/ragflow-provenance.md`](docs/licensing/ragflow-provenance.md)):
+
+1. **Dane (lista języków)** — lista języków wyszukiwania `frontend/src/features/datasets/retrieval/schema.ts`
+   (`RETRIEVAL_LANGUAGES`). Prompty i teksty domyślne zostały napisane od nowa (E5-7, DEC-331) i nie są już tu wymieniane.
+2. **Porty logiki (adaptacje do Pythona/TypeScript)** — chunkowanie i scalanie bloków
+   (`backend/app/domain/chunking/{delimiter,general,finalize,types}.py`, fragment `special.py`); filtrowanie po
+   metadanych (`backend/app/domain/retrieval/metadata.py`) i ważenie terminów (`scoring.py`); budowa promptu, cytowania
+   i strumień rozumowania (`backend/app/domain/chat/{prompts,citations,think}.py`, `backend/app/llm/think.py`,
+   `backend/app/services/{chat_steps,chat_pipeline,chat_recommendation,enrich}.py`); typ pliku, nazwy bez kolizji,
+   tablica typów MIME i aktualizacje metadanych (`backend/app/domain/files.py`, `backend/app/services/{files,searches,dataset_metadata}.py`,
+   `backend/app/api/ragflow/routes/files.py`); modele walidacji (`backend/app/api/ragflow/normalize/{parser_config,datasets,dify,chats}.py`);
+   domyślny `parser_config` i jego scalanie (`backend/app/services/{datasets,documents}.py`).
+3. **Testy** — `backend/tests/contract/upstream/**`: oficjalne testy HTTP/SDK RAGFlow v0.27.2 przeniesione bez zmian
+   asercji (nagłówki InfiniFlow zachowane); `configs.py` zmodyfikowany.
+4. **Dane i konfiguracja nagrane/przepisane z RAGFlow** — odpowiedzi API nagrane z oficjalnych obrazów RAGFlow
+   (`backend/tests/contract/golden/**`) oraz konfiguracja stosu referencyjnego przepisana z upstream `docker/`
+   (`tools/contract-recorder/compose.v0.24.0.yml`, `compose.v0.27.2.yml`).
+5. **Serwer MCP** — `backend/app/mcp/server.py` (aplikacja Starlette, middleware 401, schematy narzędzi, trasy
+   `/sse` + `/messages/` i `/mcp`) oraz `backend/app/mcp/client.py` (klient HTTP `ApiConnector`) — port
+   `mcp/server/server.py` z RAGFlow v0.27.2.
+
+Pozostały kod Wawelskiego Smoka jest oryginalny.
+
+## Pozostałe oprogramowanie i dane stron trzecich
+
+Ten projekt zawiera oprogramowanie i dane stron trzecich wymienione poniżej.
+
+### MUI i Toolpad (MIT)
+
+Fragmenty frontendu poniżej pochodzą z szablonów MUI (repozytorium `mui/material-ui`, MIT) i Toolpad
+(repozytorium `mui/toolpad`, MIT); nagłówki atrybucji zachowano w plikach, a zakres zmian WD opisuje DEC-038.
+
+- `frontend/src/theme/ColorModeSelect.tsx` — szablon MUI v9.4.0
+  (`docs/data/material/getting-started/templates/shared-theme/ColorModeSelect.tsx`).
+- `frontend/src/theme/themePrimitives.ts` — szablon MUI
+  (`docs/data/material/getting-started/templates/shared-theme/themePrimitives.ts`).
+- `frontend/src/hooks/useDialogs/**` — szablon Toolpad/MUI
+  (`docs/data/material/getting-started/templates/crud-dashboard/hooks/useDialogs/`).
+
+Tekst licencji MIT:
+
+```
+MIT License
+
+Copyright (c) 2014 Call-Em-All (MUI material-ui)
+Copyright (c) 2021 Material-UI SAS (Toolpad)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+### wordfreq
+
+- Autor: Robyn Speer — https://github.com/rspeer/wordfreq
+- Wersja: 3.1.1 (zależność `backend/pyproject.toml`, `backend/uv.lock`)
+- Kod: Apache License 2.0 (zgodnie z metadanymi pakietu `wordfreq`)
+- Dane (listy słów, m.in. `pl`): Creative Commons Attribution-ShareAlike 4.0 International
+  (CC BY-SA 4.0) — https://creativecommons.org/licenses/by-sa/4.0/
+- Dane dołączone bez zmian i nie modyfikowane; wymagana atrybucja: „wordfreq" autorstwa
+  Robyna Speera, kod na licencji Apache-2.0, dane na licencji CC BY-SA 4.0.

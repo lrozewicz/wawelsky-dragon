@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/sessions.py b/backend/app/services/sessions.py
+index 177c288..d5c57e1 100644
+--- a/backend/app/services/sessions.py
++++ b/backend/app/services/sessions.py
+@@ -377,7 +377,6 @@ class SessionsService:
+     ) -> list[SessionView]:
+         """Lista sesji czatu wg widoczności (C3 list, R6); page_size 0 → [] bez zapytania (Q25)."""
+         chat = await self._load_chat(chat_id)
+-        require(principal, Action.USE, await self._chat_ref(chat))
+         if q.page_size == 0:
+             return []
+         vf = visibility_filter(principal, "session")

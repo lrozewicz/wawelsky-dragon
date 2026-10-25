@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/searches",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e4_searches_app",
+      "description": "wd_rec_e4 search app",
+      "search_config": {
+        "kb_ids": [
+          "<ID:dataset#1>"
+        ],
+        "chat_id": "<ID:chat_model#1>"
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "search_id": "<ID:search#1>"
+    },
+    "message": "success"
+  }
+}

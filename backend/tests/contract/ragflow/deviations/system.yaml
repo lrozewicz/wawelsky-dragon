@@ -1,0 +1,31 @@
+# Odchyłki scenariusza system (K11 §5 p. 5) — obie dotyczą liczby modeli, nie kształtu.
+# Uzasadnienie w raporcie zadania SYS (E2-1); nowe odchyłki = wniosek do TL.
+- file: models/system--11.json
+  path: body.data
+  kind: length
+  reason: >-
+    WD zasiewa 6 modeli testowych (K9 §3 p. 4: fake-chat, fake-chat-think, fake-chat-strict,
+    fake-embed-1024, fake-rerank, fake-vision), a nagranie upstreamu objęło 2 modele dodane do
+    tenanta (fake-chat, fake-embed-1024). GET /models oddaje cały rejestr WD (02 §11 p. 10).
+- file: models__default/system--12.json
+  path: body.data.models
+  kind: length
+  reason: >-
+    WD ma domyślne modele 4 typów (chat, embedding, rerank, image2text — K9 §3 p. 4),
+    upstream nagrał 2 typy skonfigurowane w tenancie (chat, embedding).
+# K20 §1: pole name kluczy API (WD dodaje je addytywnie; złoto v0.27.2 go nie zna).
+- file: system__tokens/system--07.json
+  path: body.data.0.name
+  kind: extra
+  contract: "K20 §1"
+  reason: >-
+    Pole name na liście /api/v1/system/tokens (K20 §1) — WD dodaje je addytywnie nad złotem
+    upstreamu; wartość to nazwa zapisana przy tworzeniu albo null. Lista ma jeden element
+    (klucz zalogowanego użytkownika), stąd ścieżka z indeksem 0.
+- file: system__tokens/system--08.json
+  path: body.data.name
+  kind: extra
+  contract: "K20 §1"
+  reason: >-
+    Pole name w odpowiedzi POST /api/v1/system/tokens (echo nazwy po przycięciu; K20 §1) —
+    addytywne wobec złota upstreamu.

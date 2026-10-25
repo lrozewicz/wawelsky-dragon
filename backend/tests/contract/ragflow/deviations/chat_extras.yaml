@@ -1,0 +1,48 @@
+# Odchyłki replay chat_extras vs złoto v0.27.2 — te same trzy klasy co completion.yaml
+# [fake-llm] i retrieval.yaml [chunker]; sesja przechowuje dokładnie tę samą odpowiedź
+# i referencję, które trasa completions zwraca w `data` (chat_steps.save_progress).
+# Nowe odchyłki: wniosek do TL (CONTRACT C1, _common.md p. 4).
+- file: chats___sessions___/chat_extras--10.json
+  path: body.data.messages.2.content
+  kind: value
+  reason: "[fake-llm] blok wiedzy w komunikacie systemowym WD pochodzi z content_llm (HTML draftu: każda linia w <p>…</p>, ingest_pipeline.py:302), złoto ma czysty tekst; fake-llm zwraca pierwszy fragment 80 znaków tego bloku — inny kształt. Ta sama przyczyna i uzasadnienie co chats___completions/completion--08.json body.data.answer w deviations/completion.yaml."
+- file: chats___sessions___/chat_extras--10.json
+  path: body.data.reference.0.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\n' sekcji naive; treść poza tym identyczna. Ta sama przyczyna co deviations/retrieval.yaml i completion.yaml."
+- file: chats___sessions___/chat_extras--10.json
+  path: body.data.reference.0.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474); WD zwraca pustą listę. Ta sama przyczyna co deviations/retrieval.yaml i completion.yaml."
+- file: chats___sessions___messages___feedback/chat_extras--11.json
+  path: body.data.messages.2.content
+  kind: value
+  reason: "[fake-llm] jak chat_extras--10.json — odpowiedź z fake-llm nad blokiem wiedzy w kształcie <p>…</p>."
+- file: chats___sessions___messages___feedback/chat_extras--11.json
+  path: body.data.reference.0.chunks.0.content
+  kind: value
+  reason: "[chunker] jak chat_extras--10.json — brak wiodącego '\n' sekcji naive."
+- file: chats___sessions___messages___feedback/chat_extras--11.json
+  path: body.data.reference.0.chunks.0.positions
+  kind: length
+  reason: "[chunker] jak chat_extras--10.json — WD nie fabrykuje pozycji."
+- file: chats___sessions___/chat_extras--12.json
+  path: body.data.messages.2.content
+  kind: value
+  reason: "[fake-llm] jak chat_extras--10.json — odpowiedź z fake-llm nad blokiem wiedzy w kształcie <p>…</p>."
+- file: chats___sessions___/chat_extras--12.json
+  path: body.data.reference.0.chunks.0.content
+  kind: value
+  reason: "[chunker] jak chat_extras--10.json — brak wiodącego '\n' sekcji naive."
+- file: chats___sessions___/chat_extras--12.json
+  path: body.data.reference.0.chunks.0.positions
+  kind: length
+  reason: "[chunker] jak chat_extras--10.json — WD nie fabrykuje pozycji."
+- file: chat__recommendation/chat_extras--15.json
+  path: body.data
+  kind: length
+  reason: "[fake-llm] złoto nagrane z fake-llm sprzed poprawki K10 2026-10-01 (brak pytań → data=[]); upstream z nowym fake-llm parsuje te same 3 linie `^[0-9]\\. ` (golden=0, actual=3). DEC-191."
+- file: sessions__related_questions/chat_extras--16.json
+  path: body.data
+  kind: length
+  reason: "[fake-llm] złoto nagrane z fake-llm sprzed poprawki K10 2026-10-01 (brak pytań → data=[]); upstream z nowym fake-llm parsuje te same 3 linie `^[0-9]\\. ` (golden=0, actual=3). DEC-191."

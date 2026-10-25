@@ -1,0 +1,94 @@
+{
+  "users": {
+    "admin@rf.test": {
+      "id": "b0a1c2d3e4f5061728394a5b6c7d8e91",
+      "password": "admin-fixture-123",
+      "active": true,
+      "superuser": true
+    },
+    "alice@rf.test": {
+      "id": "b0a1c2d3e4f5061728394a5b6c7d8e92",
+      "password": "alice-fixture-456",
+      "active": true,
+      "superuser": false
+    },
+    "bob@rf.test": {
+      "id": "b0a1c2d3e4f5061728394a5b6c7d8e93",
+      "password": "bob-fixture-789",
+      "active": false,
+      "superuser": false
+    }
+  },
+  "tokens": [
+    {
+      "tenant_id": "b0a1c2d3e4f5061728394a5b6c7d8e91",
+      "token": "ragflow-FIXTURE-u1-plain",
+      "dialog_id": null,
+      "source": null,
+      "beta": null
+    },
+    {
+      "tenant_id": "b0a1c2d3e4f5061728394a5b6c7d8e91",
+      "token": "ragflow-FIXTURE-u1-agent-d1",
+      "dialog_id": "e1f2a3b4c5d60718293a4b5c6d7e8f01",
+      "source": "agent",
+      "beta": null
+    },
+    {
+      "tenant_id": "b0a1c2d3e4f5061728394a5b6c7d8e92",
+      "token": "ragflow-FIXTURE-u2-beta",
+      "dialog_id": null,
+      "source": "dialog",
+      "beta": "FIXTURE-BETA-NOT-A-SECRET"
+    },
+    {
+      "tenant_id": "b0a1c2d3e4f5061728394a5b6c7d8e93",
+      "token": "ragflow-FIXTURE-u3-plain",
+      "dialog_id": null,
+      "source": null,
+      "beta": null
+    }
+  ],
+  "sharepoint": {
+    "src_crypto_key": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+    "client_secret": "fixture-sp-client-secret-0001"
+  },
+  "blobs": [
+    {
+      "bucket": "0a1b2c3d4e5f60718293a4b5c6d7e808",
+      "location": "notatka-lokalna.txt",
+      "size": 28,
+      "sha256": "fd1c4c56e70ebf085e7ab638869c5b47348ef905865b573ca3bf259d8556d613"
+    },
+    {
+      "bucket": "0a1b2c3d4e5f60718293a4b5c6d7e808",
+      "location": "zalacznik.txt",
+      "size": 22,
+      "sha256": "5985c9214e5163d5be297cf304f9e257618b962c34613737cd554b282423b04f"
+    },
+    {
+      "bucket": "d1e2f3a4b5c60718293a4b5c6d7e8f01",
+      "location": "raport.pdf",
+      "size": 1578,
+      "sha256": "4b35641e5df3912d170009b074f468f5de9f667a8833b2e62ab3a5aae7919bbb"
+    },
+    {
+      "bucket": "d1e2f3a4b5c60718293a4b5c6d7e8f01",
+      "location": "umowa.docx",
+      "size": 36808,
+      "sha256": "6f53dd9d4fac80c9e2c0bdcbe4eb22ef22cbdcc9763b4944cf2042c441bebcd6"
+    },
+    {
+      "bucket": "d1e2f3a4b5c60718293a4b5c6d7e8f02",
+      "location": "faq.html",
+      "size": 17,
+      "sha256": "fd9992e5be57ea879124d4c6b8aa3386756028e800e7303f445eb5f7868a5c1e"
+    },
+    {
+      "bucket": "d1e2f3a4b5c60718293a4b5c6d7e8f03",
+      "location": "notatki.txt",
+      "size": 20,
+      "sha256": "65dbd8f91317edaa61305eb2990442d1857faae591b9753d1e7aa33511bca9cb"
+    }
+  ]
+}

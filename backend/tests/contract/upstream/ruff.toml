@@ -1,0 +1,5 @@
+extend = "../../../pyproject.toml"
+
+# Kopia 1:1 testów upstream RAGFlow v0.27.2 (pochodzenie: README.md) nie podlega naszym regułom
+# lintu ani formatowania. Wyrocznia uruchamia z `backend/` `ruff check .` i `ruff format --check .`.
+extend-exclude = ["configs.py", "libs", "utils", "test_http_api", "test_sdk_api"]

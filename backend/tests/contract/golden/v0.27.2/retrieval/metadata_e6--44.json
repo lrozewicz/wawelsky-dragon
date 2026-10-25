@@ -1,0 +1,126 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/retrieval",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "dataset_ids": [
+        "<ID:dataset#1>"
+      ],
+      "meta_data_filter": {
+        "method": "semi_auto",
+        "semi_auto": [
+          "author"
+        ]
+      }
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunks": [
+        {
+          "content": "\nZapis trzeci wymienia miejsca w Krakowie zwiazane ze smokiem wawelskim.\nSmokwawelski figuruje w herbach, na pomnikach i w nazwach ulic miasta.\nFigura przed Wawelem co jakis czas zionie ogniem ku uciesze turystow.",
+          "content_ltks": "zapi trzeci wymienia miejsca w krakowi zwiazan ze smokiem wawelskim smokwawelski figuruj w herbach na pomnikach i w nazwach ulic miasta figura przed wawelem co jaki czas zioni ogniem ku uciesz turystow",
+          "dataset_id": "<ID:dataset#1>",
+          "doc_type_kwd": "",
+          "document_id": "<ID:doc_id_c#1>",
+          "document_keyword": "e6_meta_c.txt",
+          "id": "<ID:id#4>",
+          "image_id": "",
+          "important_keywords": [],
+          "mom_id": "",
+          "positions": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "row_id": null,
+          "similarity": "<FLOAT>",
+          "tag_kwd": [],
+          "term_similarity": "<FLOAT>",
+          "vector_similarity": "<FLOAT>"
+        },
+        {
+          "content": "\nZapis pierwszy o smoku wawelskim dotyczy jaskini pod wzgorzem wawelskim.\nSmokwawelski wymuszal na mieszczanach okup w postaci bydla i owiec.\nKronikarz notuje, ze bestia zionela ogniem tak goracym, ze pekaly kamienie.",
+          "content_ltks": "zapi pierwszi o smoku wawelskim dotyczi jaskini pod wzgorzem wawelskim smokwawelski wymusz na mieszczanach okup w postaci bydla i owiec kronikarz notuj ze bestia zionela ogniem tak goracym ze pekali kamieni",
+          "dataset_id": "<ID:dataset#1>",
+          "doc_type_kwd": "",
+          "document_id": "<ID:doc_id_a#1>",
+          "document_keyword": "e6_meta_a.txt",
+          "id": "<ID:id#5>",
+          "image_id": "",
+          "important_keywords": [],
+          "mom_id": "",
+          "positions": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "row_id": null,
+          "similarity": "<FLOAT>",
+          "tag_kwd": [],
+          "term_similarity": "<FLOAT>",
+          "vector_similarity": "<FLOAT>"
+        },
+        {
+          "content": "\nZapis drugi opisuje Wisle pod Krakowem i losy smoka wawelskiego.\nSmokwawelski pil z rzeki tak dlugo, ze pękl z hukiem slyszalnym na Kazimierzu.\nRzeka niosla wode az do morza, a legenda o smoku wawelskim przetrwala wieki.",
+          "content_ltks": "zapi drugi opisuj wisl pod krakowem i losi smoka wawelskiego smokwawelski pil z rzeki tak dlugo ze p ę kl z hukiem slyszalnym na kazimierzu rzeka niosla wode az do morza a legenda o smoku wawelskim przetrwala wieki",
+          "dataset_id": "<ID:dataset#1>",
+          "doc_type_kwd": "",
+          "document_id": "<ID:doc_id_b#1>",
+          "document_keyword": "e6_meta_b.txt",
+          "id": "<ID:id#6>",
+          "image_id": "",
+          "important_keywords": [],
+          "mom_id": "",
+          "positions": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "row_id": null,
+          "similarity": "<FLOAT>",
+          "tag_kwd": [],
+          "term_similarity": "<FLOAT>",
+          "vector_similarity": "<FLOAT>"
+        }
+      ],
+      "doc_aggs": [
+        {
+          "count": 1,
+          "doc_id": "<ID:doc_id_c#1>",
+          "doc_name": "e6_meta_c.txt"
+        },
+        {
+          "count": 1,
+          "doc_id": "<ID:doc_id_a#1>",
+          "doc_name": "e6_meta_a.txt"
+        },
+        {
+          "count": 1,
+          "doc_id": "<ID:doc_id_b#1>",
+          "doc_name": "e6_meta_b.txt"
+        }
+      ],
+      "total": 3
+    }
+  }
+}

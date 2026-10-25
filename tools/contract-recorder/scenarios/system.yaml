@@ -1,0 +1,142 @@
+# Trasy systemowe i katalogu modeli (C1). v0.27.2: RESTful `/api/v1/*` (system, models,
+# providers); v0.24.0: legacy `/v1/system/*`, `/v1/api/stats`, `/v1/llm/*`.
+# `auth: none` tam, gdzie handler nie ma dekoratora `login_required`; legacy `/v1/*` idą
+# JWT-em (`auth: jwt`), `/api/v1/*` kluczem API (`auth: key`).
+# Kroki tworzące token są sprzątane jednym DELETE-em tego samego tokenu (nagrywanym).
+name: system
+description: "Trasy systemowe, tokeny API i katalog modeli/dostawców: /api/v1/* (v0.27.2) oraz legacy /v1/system/*, /v1/api/stats, /v1/llm/* (v0.24.0)."
+steps:
+  # --- v0.27.2: /api/v1/* (restful_apis) ---
+  - id: ping_v0_27
+    method: GET
+    path: /api/v1/system/ping
+    auth: none
+    versions: [v0.27.2]
+  - id: version_v0_27
+    method: GET
+    path: /api/v1/system/version
+    auth: none
+    versions: [v0.27.2]
+  - id: config_v0_27
+    method: GET
+    path: /api/v1/system/config
+    auth: none
+    versions: [v0.27.2]
+  - id: healthz_v0_27
+    method: GET
+    path: /api/v1/system/healthz
+    auth: none
+    versions: [v0.27.2]
+  - id: language_v0_27
+    method: GET
+    path: /api/v1/language
+    auth: none
+    versions: [v0.27.2]
+  - id: status_v0_27
+    method: GET
+    path: /api/v1/system/status
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.doc_engine.elapsed": ignore, "data.storage.elapsed": ignore, "data.database.elapsed": ignore}
+  - id: tokens_list_v0_27
+    method: GET
+    path: /api/v1/system/tokens
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.0.create_time": type, "data.0.create_date": type}
+  - id: token_create_v0_27
+    method: POST
+    path: /api/v1/system/tokens
+    auth: key
+    versions: [v0.27.2]
+    capture: {token: "data.token"}
+    rules: {"data.create_time": type, "data.create_date": type}
+  - id: token_delete_v0_27
+    method: DELETE
+    path: /api/v1/system/tokens/{token}
+    auth: key
+    versions: [v0.27.2]
+  - id: stats_v0_27
+    method: GET
+    path: /api/v1/system/stats
+    auth: key
+    versions: [v0.27.2]
+  - id: models_v0_27
+    method: GET
+    path: /api/v1/models
+    auth: key
+    versions: [v0.27.2]
+  - id: models_default_v0_27
+    method: GET
+    path: /api/v1/models/default
+    auth: key
+    versions: [v0.27.2]
+  - id: providers_v0_27
+    method: GET
+    path: /api/v1/providers
+    auth: key
+    versions: [v0.27.2]
+  - id: provider_v0_27
+    method: GET
+    path: /api/v1/providers/OpenAI-API-Compatible
+    auth: key
+    versions: [v0.27.2]
+  - id: provider_instances_v0_27
+    method: GET
+    path: /api/v1/providers/OpenAI-API-Compatible/instances
+    auth: key
+    versions: [v0.27.2]
+  # --- v0.24.0: legacy /v1/* oraz /v1/system/healthz (istnieje też w v0.27.2 jako alias) ---
+  - id: ping_v0_24
+    method: GET
+    path: /v1/system/ping
+    auth: none
+    versions: [v0.24.0]
+  - id: version_v0_24
+    method: GET
+    path: /v1/system/version
+    auth: jwt
+    versions: [v0.24.0]
+  - id: config_v0_24
+    method: GET
+    path: /v1/system/config
+    auth: none
+    versions: [v0.24.0]
+  - id: healthz_legacy
+    method: GET
+    path: /v1/system/healthz
+    auth: none
+  - id: status_v0_24
+    method: GET
+    path: /v1/system/status
+    auth: jwt
+    versions: [v0.24.0]
+    rules: {"data.doc_engine.elapsed": ignore, "data.storage.elapsed": ignore, "data.database.elapsed": ignore}
+  - id: tokens_list_v0_24
+    method: GET
+    path: /v1/system/token_list
+    auth: jwt
+    versions: [v0.24.0]
+    rules: {"data.0.create_time": type, "data.0.create_date": type}
+  - id: token_create_v0_24
+    method: POST
+    path: /v1/system/new_token
+    auth: jwt
+    versions: [v0.24.0]
+    capture: {token: "data.token"}
+    rules: {"data.create_time": type, "data.create_date": type}
+  - id: token_delete_v0_24
+    method: DELETE
+    path: /v1/system/token/{token}
+    auth: jwt
+    versions: [v0.24.0]
+  - id: stats_v0_24
+    method: GET
+    path: /v1/api/stats
+    auth: jwt
+    versions: [v0.24.0]
+  - id: my_llms_v0_24
+    method: GET
+    path: /v1/llm/my_llms
+    auth: jwt
+    versions: [v0.24.0]

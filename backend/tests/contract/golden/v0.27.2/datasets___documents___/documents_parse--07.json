@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "text/plain; charset=utf-8"
+  },
+  "body": "Legenda o smoku wawelskim należy do najstarszych opowieści Krakowa.\nSmokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinię\nu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postaci\nbydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,\nże kamienie na schodach Wawelu pękały od żaru.\n\nPewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyć\nsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,\na następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,\npołknął przynętę w całości. Piekielne pragnienie popędziło go prosto\ndo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.\n\nMieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określił\ngo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,\nna pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czas\nzionie prawdziwym ogniem ku uciesze turystów.\n\nOpowieść ta przetrwała wieki jako przestroga: siła i zarozumiałość\nnie obronią przed pomysłowością prostego człowieka. Badacze folkloru\npodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralele\nw innych legendach Europy Środkowej, co czyni ją świadectwem wspólnej\nwyobraźni regionu.\n"
+}

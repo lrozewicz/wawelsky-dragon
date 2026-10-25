@@ -1,0 +1,12 @@
+# Wzorce ścieżek wyłączonych z drzewa publikacji (WP E5-6, DEC-311 §C4).
+# Jeden wzorzec na linię: prefiks katalogu zakończony `/` albo dokładna ścieżka pliku.
+# Komentarz zaczyna się od `#`; puste linie są pomijane.
+
+# Planowanie i raporty WP (briefy, kontrakty, raporty) — nie część produktu.
+work/
+
+# Prywatny stos i jego dokumentacja (DEC-311 §C3) — nie publikowany.
+private/
+
+# Konfiguracja uprawnień agentów (nie produkt); zmiana nazw — właściciel.
+tools/agents/auto-mode.settings.json

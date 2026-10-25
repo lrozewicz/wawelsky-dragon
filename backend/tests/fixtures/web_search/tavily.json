@@ -1,0 +1,23 @@
+{
+  "query": "kot",
+  "response_time": 1.23,
+  "results": [
+    {
+      "title": "Kot domowy",
+      "url": "https://pl.wikipedia.org/wiki/Kot_domowy",
+      "content": "Kot domowy (Felis catus) - gatunek ssaka z rodziny kotowatych.",
+      "score": 0.99
+    },
+    {
+      "title": "Żywienie kota",
+      "url": "https://example.org/kot-zywienie",
+      "content": "Jak żywić kota domowego.",
+      "score": 0.75
+    },
+    {
+      "title": "Bez adresu",
+      "content": "Wynik bez pola url — dostawca pomija taki wiersz.",
+      "score": 0.1
+    }
+  ]
+}

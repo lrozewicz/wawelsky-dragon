@@ -1,0 +1,13 @@
+# Odchyłki replay scenariusza searches vs złoto v0.27.2 (K11 §5 p. 5) — klasy: [fake-llm], [chunker].
+# Plik .sse komparator porównuje bajtowo (compare.compare_file), więc cała jego treść to JEDEN
+# Diff (path body, kind value); recommendation--26 po poprawce fake-llm K10 (2026-10-01) ma
+# dodatkową odchyłkę length (DEC-191), a pozostałe kroki scenariusza (05–20, 22–33) zgadzają
+# się co do znaku i odchyłek nie mają.
+- file: searches___completions/searches--21.sse
+  path: body
+  kind: value
+  reason: "[fake-llm][chunker] Trzy różnice tej samej klasy co w deviations/completion.yaml, których nie dzieli się na osobne odchyłki, bo plik .sse porównywany jest bajtowo. (1) [fake-llm] tekst ramek answer: blok wiedzy w komunikacie systemowym WD pochodzi z content_llm (HTML draftu: każda linia w <p>…</p>, ingest_pipeline.py), złoto ma czysty tekst — fake-llm odbija pierwszy fragment 80 znaków, więc ramki 2–3 różnią się kształtem ('…Content:\\n\\nLegenda o smoku wawel' vs '…Content:\\n<p>Legenda o smoku waw'). Pełny prompt po obu stronach potwierdza <p> po stronie WD. (2) [chunker] chunker WD (K5 §5) nie dokleja wiodącego '\\n' sekcji naive; treść chunk[].content poza tym identyczna (golden == '\\n' + wd). (3) [chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474); WD zwraca pustą listę. Kształt koperty, klucze data, kolejność i zawartość chunków (row_id/document_metadata) oraz doc_aggs są zgodne ze złotem po naprawie §D7 (erratka T3, sse.py:search_reference)."
+- file: chat__recommendation/searches--26.json
+  path: body.data
+  kind: length
+  reason: "[fake-llm] złoto nagrane z fake-llm sprzed poprawki K10 2026-10-01 (brak pytań → data=[]); upstream z nowym fake-llm parsuje te same 3 linie `^[0-9]\\. ` (golden=0, actual=3). DEC-191."

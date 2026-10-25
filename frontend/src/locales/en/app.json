@@ -1,0 +1,7 @@
+{
+  "app.name": "Wawelsky Dragon",
+  "app.skipToContent": "Skip to content",
+  "app.notFound.title": "Page not found",
+  "app.notFound.description": "The address you entered does not exist or has been moved.",
+  "app.notFound.back": "Go to Datasets"
+}

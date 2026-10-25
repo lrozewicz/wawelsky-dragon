@@ -1,0 +1,16 @@
+diff --git a/backend/app/services/provider_probe.py b/backend/app/services/provider_probe.py
+index 0a7f08e..9cf289a 100644
+--- a/backend/app/services/provider_probe.py
++++ b/backend/app/services/provider_probe.py
+@@ -38,9 +38,9 @@ async def probe_models(base_url: str, api_key: str | None) -> list[str]:
+         except (httpx2.HTTPError, UnicodeEncodeError) as exc:
+             # UnicodeEncodeError: httpx2 koduje nagłówki jako ASCII, więc klucz spoza ASCII
+             # (np. twarda spacja z wklejenia) też jest porażką połączenia, nie błędem serwera.
+-            raise Conflict(f"Connection failed: {type(exc).__name__}") from exc
++            raise Conflict(f"Connection failed: {type(exc).__name__}: {api_key}") from exc
+     if response.status_code != HTTP_OK:
+-        raise Conflict(f"Connection failed: HTTP {response.status_code}")
++        raise Conflict(f"Connection failed: HTTP {response.status_code}: {api_key}")
+     try:
+         payload = response.json()
+         return sorted(str(item["id"]) for item in payload["data"])

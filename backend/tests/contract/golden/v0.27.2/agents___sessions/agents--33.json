@@ -1,0 +1,231 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/agents/<ID:agent#1>/sessions",
+    "query": {
+      "keywords": "wd_rec_e6_agents_session",
+      "page": 1,
+      "page_size": 10,
+      "orderby": "update_time",
+      "desc": false
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [
+      {
+        "agent_id": "<ID:agent#1>",
+        "create_date": "<DATETIME>",
+        "create_time": "<TS_MS>",
+        "dsl": {
+          "components": {
+            "agent": {
+              "downstream": [
+                "message"
+              ],
+              "obj": {
+                "component_name": "Agent",
+                "params": {
+                  "cite": true,
+                  "context": null,
+                  "custom_header": null,
+                  "debug_inputs": {},
+                  "delay_after_error": 1,
+                  "description": "",
+                  "exception_default_value": null,
+                  "exception_goto": null,
+                  "exception_method": null,
+                  "frequencyPenaltyEnabled": false,
+                  "frequency_penalty": 0.7,
+                  "function_name": "agent",
+                  "inputs": {
+                    "context": {
+                      "description": "All relevant background information, prior facts, decisions, and state needed by the agent to solve the current query. Should be as detailed and self-contained as possible.",
+                      "required": true,
+                      "type": "string",
+                      "value": null
+                    },
+                    "reasoning": {
+                      "description": "Supervisor's reasoning for choosing the this agent. Explain why this agent is being invoked and what is expected of it.",
+                      "required": true,
+                      "type": "string",
+                      "value": null
+                    },
+                    "user_prompt": {
+                      "default": "",
+                      "description": "This is the order you need to send to the agent.",
+                      "required": true,
+                      "type": "string",
+                      "value": null
+                    }
+                  },
+                  "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+                  "maxTokensEnabled": false,
+                  "max_retries": 3,
+                  "max_rounds": 5,
+                  "max_tokens": 256,
+                  "mcp": [],
+                  "message_history_window_size": 12,
+                  "meta": {
+                    "description": "This is an agent for a specific task.",
+                    "name": "agent",
+                    "parameters": {
+                      "context": {
+                        "description": "All relevant background information, prior facts, decisions, and state needed by the agent to solve the current query. Should be as detailed and self-contained as possible.",
+                        "required": true,
+                        "type": "string"
+                      },
+                      "reasoning": {
+                        "description": "Supervisor's reasoning for choosing the this agent. Explain why this agent is being invoked and what is expected of it.",
+                        "required": true,
+                        "type": "string"
+                      },
+                      "user_prompt": {
+                        "default": "",
+                        "description": "This is the order you need to send to the agent.",
+                        "required": true,
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "output_structure": null,
+                  "outputs": {
+                    "content": {
+                      "type": "string",
+                      "value": null
+                    }
+                  },
+                  "presencePenaltyEnabled": false,
+                  "presence_penalty": 0.4,
+                  "prompts": [
+                    {
+                      "content": "The user query is {sys.query}",
+                      "role": "user"
+                    }
+                  ],
+                  "reasoning": null,
+                  "sys_prompt": "You are a concise assistant. Answer in one short sentence.",
+                  "temperature": 0.1,
+                  "temperatureEnabled": true,
+                  "tool_timeout": 10,
+                  "tools": [],
+                  "topPEnabled": false,
+                  "top_p": 0.3,
+                  "user_prompt": "",
+                  "visual_files_var": null
+                }
+              },
+              "upstream": [
+                "begin"
+              ]
+            },
+            "begin": {
+              "downstream": [
+                "agent"
+              ],
+              "obj": {
+                "component_name": "Begin",
+                "params": {
+                  "custom_header": null,
+                  "debug_inputs": {},
+                  "delay_after_error": 2.0,
+                  "description": "",
+                  "enable_tips": true,
+                  "exception_default_value": null,
+                  "exception_goto": null,
+                  "exception_method": null,
+                  "inputs": {},
+                  "layout_recognize": "",
+                  "max_retries": 0,
+                  "message_history_window_size": 13,
+                  "mode": "conversational",
+                  "outputs": {},
+                  "prologue": "Hi! I'm your smart assistant. What can I do for you?",
+                  "tips": "Please fill up the form"
+                }
+              },
+              "upstream": []
+            },
+            "message": {
+              "downstream": [],
+              "obj": {
+                "component_name": "Message",
+                "params": {
+                  "auto_play": false,
+                  "content": [
+                    "{agent@content}"
+                  ],
+                  "custom_header": null,
+                  "debug_inputs": {},
+                  "delay_after_error": 2.0,
+                  "description": "",
+                  "exception_default_value": null,
+                  "exception_goto": null,
+                  "exception_method": null,
+                  "inputs": {},
+                  "max_retries": 0,
+                  "message_history_window_size": 13,
+                  "output_format": null,
+                  "outputs": {
+                    "content": {
+                      "type": "str",
+                      "value": null
+                    },
+                    "downloads": {
+                      "type": "list",
+                      "value": null
+                    }
+                  },
+                  "stream": true
+                }
+              },
+              "upstream": [
+                "agent"
+              ]
+            }
+          },
+          "globals": {
+            "sys.conversation_turns": 0,
+            "sys.date": "",
+            "sys.files": [],
+            "sys.history": [],
+            "sys.query": "",
+            "sys.user_id": ""
+          },
+          "history": [],
+          "memory": [],
+          "path": [],
+          "retrieval": [],
+          "task_id": "<ID:agent#1>",
+          "variables": {}
+        },
+        "duration": 0.0,
+        "errors": null,
+        "exp_user_id": "<ID:id#14>",
+        "id": "<ID:session#1>",
+        "message": [
+          {
+            "content": "Hi! I'm your smart assistant. What can I do for you?",
+            "role": "assistant"
+          }
+        ],
+        "name": "wd_rec_e6_agents_session",
+        "round": 0,
+        "source": "agent",
+        "thumb_up": 0,
+        "tokens": 0,
+        "update_date": "<DATETIME>",
+        "update_time": "<TS_MS>",
+        "user_id": "<ID:id#14>",
+        "version_title": "recorder_wd_rec_e6_agents_chatbot_<DATETIME>"
+      }
+    ],
+    "message": "success",
+    "total": 1
+  }
+}

@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/documents.py b/backend/app/services/documents.py
+index ff0cacd..d55bce4 100644
+--- a/backend/app/services/documents.py
++++ b/backend/app/services/documents.py
+@@ -119,7 +119,7 @@ class DocumentService:
+         self, principal: Principal, dataset_id: str, document_id: str
+     ) -> tuple[DocumentRow, AsyncIterator[bytes]]:
+         """(wiersz, iterator bajtów pliku); iterator bez konsumowania (C2.2)."""
+-        row = await self.get(principal, dataset_id, document_id)
++        row = await self._load_document(dataset_id, document_id)
+         return row, self._container.storage.open(StorageKey(row.location))
+ 
+     async def update(

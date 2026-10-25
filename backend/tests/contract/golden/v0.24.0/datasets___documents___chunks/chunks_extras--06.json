@@ -1,0 +1,41 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>/chunks",
+    "query": {},
+    "body": {
+      "content": "wd_rec_e2 smokwawelski: chunk dodany przez API.",
+      "important_keywords": [
+        "wd_rec_e2",
+        "smokwawelski"
+      ],
+      "questions": [
+        "Czym jest smokwawelski?"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunk": {
+        "content": "wd_rec_e2 smokwawelski: chunk dodany przez API.",
+        "create_time": "<DATETIME>",
+        "create_timestamp": "<FLOAT>",
+        "dataset_id": "<ID:dataset#1>",
+        "document_id": "<ID:document#1>",
+        "id": "<ID:chunk#1>",
+        "important_keywords": [
+          "wd_rec_e2",
+          "smokwawelski"
+        ],
+        "questions": [
+          "Czym jest smokwawelski?"
+        ]
+      }
+    }
+  }
+}

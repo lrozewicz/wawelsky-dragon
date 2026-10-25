@@ -1,0 +1,68 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/api/v1/chats/<ID:chat#1>",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e2_chat_extras_patched"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "create_date": "<DATETIME>",
+      "create_time": "<TS_MS>",
+      "dataset_ids": [
+        "<ID:dataset#1>"
+      ],
+      "description": "A helpful Assistant",
+      "do_refer": "1",
+      "icon": "",
+      "id": "<ID:chat#1>",
+      "kb_names": [
+        "wd_rec_e2_chat_extras_ds"
+      ],
+      "language": "English",
+      "llm_id": "<ID:id#3>",
+      "llm_setting": {},
+      "meta_data_filter": {},
+      "name": "wd_rec_e2_chat_extras_patched",
+      "prompt_config": {
+        "empty_response": "Sorry! No relevant content was found in the knowledge base!",
+        "parameters": [
+          {
+            "key": "knowledge",
+            "optional": false
+          },
+          {
+            "key": "date",
+            "optional": true
+          }
+        ],
+        "prologue": "Hi! I'm your assistant. What can I do for you?",
+        "quote": true,
+        "refine_multiturn": true,
+        "system": "You are an intelligent assistant. Please summarize the content of the dataset to answer the question. Please list the data in the dataset and answer in detail. When all dataset content is irrelevant to the question, your answer must include the sentence \"The answer you are looking for is not found in the dataset!\" Answers need to consider chat history.\n      Here is the knowledge base:\n      {knowledge}\n      The above is the knowledge base.",
+        "tts": false
+      },
+      "prompt_type": "simple",
+      "rerank_candidates_count": 64,
+      "rerank_id": "",
+      "similarity_threshold": 0.1,
+      "status": "1",
+      "tenant_id": "<ID:id#2>",
+      "tenant_llm_id": "<ID:id#3>",
+      "tenant_rerank_id": null,
+      "top_k": 1024,
+      "top_n": 6,
+      "update_date": "<DATETIME>",
+      "update_time": "<TS_MS>",
+      "vector_similarity_weight": 0.3
+    },
+    "message": "success"
+  }
+}

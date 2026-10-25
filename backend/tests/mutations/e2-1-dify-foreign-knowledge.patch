@@ -1,0 +1,23 @@
+diff --git a/backend/app/services/dify.py b/backend/app/services/dify.py
+index 9d834ed..045d919 100644
+--- a/backend/app/services/dify.py
++++ b/backend/app/services/dify.py
+@@ -72,18 +72,6 @@ class DifyService:
+             record = await datasets_repo.get_record(session, knowledge_id)
+         if record is None:
+             raise ResourceNotFound(MSG_KNOWLEDGEBASE_NOT_FOUND)
+-        if not can(
+-            principal,
+-            Action.READ,
+-            ResourceRef(
+-                kind="dataset",
+-                owner_id=record.tenant_id,
+-                permission=record.permission,
+-                id=record.id,
+-            ),
+-        ):
+-            raise AuthenticationFailed(MSG_NO_AUTHORIZATION)
+-
+     def _sessionmaker(self) -> async_sessionmaker[AsyncSession]:
+         """Fabryka sesji z kontenera; brak startu → RuntimeError (wzorzec ``services/chat.py``)."""
+         sessionmaker: async_sessionmaker[AsyncSession] | None = self._container.sessionmaker

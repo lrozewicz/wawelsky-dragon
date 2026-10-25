@@ -1,0 +1,12 @@
+diff --git a/backend/app/tools/ragflow_migrate/stages/access.py b/backend/app/tools/ragflow_migrate/stages/access.py
+index e7fcb2c2..92468ea3 100644
+--- a/backend/app/tools/ragflow_migrate/stages/access.py
++++ b/backend/app/tools/ragflow_migrate/stages/access.py
+@@ -97,7 +97,6 @@ def resolve_access(
+         chat_id = str(row["dialog_id"])
+         if chat_id not in chat_ids:
+             issues.append(_orphan_issue(chat_id))
+-            continue
+         key = (email, chat_id)
+         if key in seen:
+             issues.append(_duplicate_issue(email, chat_id))

@@ -1,0 +1,64 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/chats",
+    "query": {
+      "page": 1,
+      "page_size": 30
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [
+      {
+        "avatar": "",
+        "create_date": "<DATETIME>",
+        "create_time": "<TS_MS>",
+        "datasets": [],
+        "description": "A helpful Assistant",
+        "do_refer": "1",
+        "id": "<ID:chat#1>",
+        "language": "English",
+        "llm": {
+          "frequency_penalty": 0.7,
+          "max_tokens": 512,
+          "model_name": "fake-chat___OpenAI-API@OpenAI-API-Compatible",
+          "presence_penalty": 0.4,
+          "temperature": 0.1,
+          "top_p": 0.3
+        },
+        "meta_data_filter": {},
+        "name": "wd_rec_chat",
+        "prompt": {
+          "empty_response": "Sorry! No relevant content was found in the knowledge base!",
+          "keywords_similarity_weight": 0.7,
+          "opener": "Hi! I'm your assistant. What can I do for you?",
+          "prompt": "You are an intelligent assistant. Please summarize the content of the dataset to answer the question. Please list the data in the dataset and answer in detail. When all dataset content is irrelevant to the question, your answer must include the sentence \"The answer you are looking for is not found in the dataset!\" Answers need to consider chat history.\n      Here is the knowledge base:\n      {knowledge}\n      The above is the knowledge base.",
+          "refine_multiturn": true,
+          "rerank_model": "",
+          "show_quote": true,
+          "similarity_threshold": 0.2,
+          "top_n": 6,
+          "tts": false,
+          "variables": [
+            {
+              "key": "knowledge",
+              "optional": false
+            }
+          ]
+        },
+        "prompt_type": "simple",
+        "status": "1",
+        "tenant_id": "<ID:id#1>",
+        "top_k": 1024,
+        "update_date": "<DATETIME>",
+        "update_time": "<TS_MS>"
+      }
+    ]
+  }
+}

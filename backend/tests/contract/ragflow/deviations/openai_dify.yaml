@@ -1,0 +1,14 @@
+# Odchyłki scenariusza openai_dify (E2-1 OD) — do zatwierdzenia przez TL (CONTRACT WP E2-1 C1).
+# Przyczyna jest wspólna z odchyłką scenariusza retrieval (deviations/retrieval.yaml,
+# lista zamknięta C6 z E1-9a): chunker WD nie dokleja wiodącego „\n” sekcji naive,
+# a treść rekordu Dify to ta sama treść chunku (upstream: content_with_weight).
+# Naprawa znaczyłaby zmianę chunkera E1 i ponowne nagranie złota documents/chunks/retrieval
+# — poza zakresem zadania OD.
+- file: dify__retrieval/openai_dify--11.json
+  path: body.records.0.content
+  kind: value
+  reason: "chunker WD (K5 §5) nie dokleja wiodącego '\n' sekcji naive; golden == '\n' + wd (jak deviations/retrieval.yaml, retrieval--06.json)"
+- file: dify__retrieval/openai_dify--14.json
+  path: body.records.0.content
+  kind: value
+  reason: "jak wyżej: treść chunku z tego samego parsera, różnica wyłącznie wiodący '\n'"

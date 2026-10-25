@@ -1,0 +1,41 @@
+# Nakładka deweloperska na docker-compose.yml (11 §3.1, kontrakt WP E0-3 C12).
+# Uruchamia ją człowiek na hoście (bind-mounty tu dozwolone — K8-B p. 7), zwykle przez tools/dev/up.sh:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --wait
+# fake-llm dziedziczony z prod (profil "fake"):
+#   docker compose --profile fake -f docker-compose.yml -f docker-compose.dev.yml up -d
+#   + WD_LLM_BASE_URL=http://fake-llm:8090/v1
+services:
+  mariadb:
+    ports:
+      - "${WD_DEV_DB_PORT:-3306}:3306"
+
+  api:
+    build:
+      target: dev
+    volumes:
+      - ./backend/app:/app/app
+    command: ["uvicorn", "app.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    environment:
+      WD_ENV: ${WD_ENV:-dev}
+      WD_LOG_FORMAT: console
+    ports:
+      - "${WD_DEV_API_PORT:-8000}:8000"
+
+  # web wyłączony w dev — Vite dev server go zastępuje
+  web:
+    profiles: ["prod-web"]
+
+  web-dev:
+    image: oven/bun:1.4.2-alpine
+    working_dir: /app
+    command: ["sh", "-c", "bun install --frozen-lockfile && bun run dev --host 0.0.0.0 --port 5173"]
+    volumes:
+      - ./frontend:/app
+      # anonimowy volume — zależności w kontenerze, nie w repo (po zmianie: up -V)
+      - /app/node_modules
+    environment:
+      WD_API_UPSTREAM: http://api:8000
+    ports:
+      - "${WD_DEV_WEB_PORT:-5173}:5173"
+    depends_on:
+      - api

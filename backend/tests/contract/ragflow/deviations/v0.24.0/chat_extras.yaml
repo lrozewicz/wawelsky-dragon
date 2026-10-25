@@ -1,0 +1,27 @@
+# Odchyłki replay chat_extras vs złoto v0.24.0 (C0 p. 9) — klasy: [fake-llm], [chunker].
+# Plik SSE różni się od złota, a related_questions --17 po poprawce fake-llm K10 (2026-10-01)
+# ma dodatkową odchyłkę length (DEC-191); pozostałe pliki scenariusza (PUT czatu --19/--22/--24)
+# zgadzają się w całości — pokrywa je profil ragflow_0_24 z T1/T3/T5/T6a.
+# Porównanie .sse jest bajtowe (compare.compare_file), więc różnice treści delt i chunku dają
+# jedną odchyłkę `body`; strukturę ramek (koperta, klucze, delta, final, terminator) pokrywa
+# osobny test integracyjny tests/integration/api/test_sessions_ask.py::test_ask_frame_structure_matches_golden.
+- file: sessions__ask/chat_extras--18.sse
+  path: body
+  kind: value
+  reason: >-
+    [fake-llm][chunker] Delt 1 („Na podstawie źródeł: ├── Title: ragflow_”) oraz koperta każdej
+    ramki, ramka final:true i terminator są zgodne. Delta 2: złoto „…Content:\n\nLegenda o smoku
+    wawel”, WD „…Content:\n<p>Legenda o smoku waw” — blok wiedzy WD jest HTML-em draftu (każda
+    linia w <p>…</p>, ingest_pipeline.py:302), a fake-llm zwraca jego pierwszy fragment 80 znaków
+    (answers.py _TEXT_LIMIT); przez inną treść inaczej wypada też podział na delty 5-znakowe
+    (fake_llm/chat.py _CHUNK_CHARS). Delta 3: złoto „skim należy do n [ID:0]”, WD „elskim należy
+    do [ID:0]” (ten sam powód). Ramka finalna: content chunku — złoto bez znaków nowej linii i z
+    wiodącym '\n', WD z nowymi liniami i bez wiodącego '\n' (upstream dzieli txt po '\n' i gubi
+    separator, deepdoc/parser/txt_parser.py:58, a naive dokleja tylko wiodący '\n',
+    rag/nlp/__init__.py:1121); positions — złoto [[2,1,1,1,1]] (quirk add_positions z indeksem
+    chunku, rag/nlp/__init__.py:318/832), WD []. Ta sama przyczyna i uzasadnienie co
+    deviations/v0.24.0/completion.yaml (body.data.answer, chunks.0.content, chunks.0.positions).
+- file: sessions__related_questions/chat_extras--17.json
+  path: body.data
+  kind: length
+  reason: "[fake-llm] złoto nagrane z fake-llm sprzed poprawki K10 2026-10-01 (brak pytań → data=[]); upstream z nowym fake-llm parsuje te same 3 linie `^[0-9]\\. ` (golden=0, actual=3). DEC-191."

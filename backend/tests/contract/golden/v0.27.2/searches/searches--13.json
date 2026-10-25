@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/searches",
+    "query": {
+      "owner_ids": [
+        "11111111111111111111111111111111"
+      ]
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "search_apps": [],
+      "total": 0
+    },
+    "message": "success"
+  }
+}

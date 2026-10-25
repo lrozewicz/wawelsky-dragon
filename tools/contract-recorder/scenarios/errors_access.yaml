@@ -1,0 +1,382 @@
+# Odmowy dostępu dla tras E1: klucz drugiego użytkownika (recorder2) na zasobach
+# pierwszego (dataset, dokument, chunk, czat, sesja), brak/zły klucz oraz nieistniejące id.
+# Przygotowanie (dataset + upload + parse + poll + chunk + czat + sesja + completion)
+# i sprzątanie użytkownikiem 1 są bez nagrywania. Kroki drugiego użytkownika i kroki
+# "nietypowe" (HTTP>=400 albo code!=0) mają expect: any — nagrywamy fakty.
+# Delikatne DELETE drugiego użytkownika idą na końcu, przed sprzątaniem użytkownika 1.
+name: errors_access
+description: "Odmowy dostępu: klucz drugiego użytkownika na cudzych zasobach, brak i zły klucz oraz nieistniejące identyfikatory."
+steps:
+  # --- przygotowanie użytkownikiem 1 (bez nagrywania) ---
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e2_errors_access_ds"}
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: upload
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    record: false
+    capture: {document_id: "data.0.id"}
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+    record: false
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: list_chunks_setup
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    record: false
+    capture: {chunk_id: "data.chunks.0.id"}
+  - id: create_chat
+    method: POST
+    path: /api/v1/chats
+    json:
+      name: "wd_rec_e2_errors_access_chat"
+      dataset_ids: ["{dataset_id}"]
+    record: false
+    capture: {chat_id: "data.id"}
+  - id: create_session
+    method: POST
+    path: /api/v1/chats/{chat_id}/sessions
+    json: {name: "wd_rec_e2_errors_access_session"}
+    record: false
+    capture: {session_id: "data.id"}
+  - id: seed_completion
+    method: POST
+    path: /api/v1/chats/{chat_id}/completions
+    json:
+      question: "smokwawelski"
+      stream: false
+      session_id: "{session_id}"
+    record: false
+
+  # --- klucz drugiego użytkownika na zasobach pierwszego (odczyty i modyfikacje) ---
+  - id: datasets_put_second
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}
+    json: {name: "wd_rec_e2_errors_access_ds_intruder"}
+    auth: second
+    expect: any
+  - id: datasets_get_second
+    method: GET
+    path: /api/v1/datasets/{dataset_id}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: datasets_list_filter_second
+    method: GET
+    path: /api/v1/datasets
+    query: {id: "{dataset_id}"}
+    auth: second
+    expect: any
+  - id: documents_upload_second
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    auth: second
+    expect: any
+  - id: documents_list_second
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    auth: second
+    expect: any
+  - id: document_download_second
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    auth: second
+    expect: any
+  - id: document_patch_second
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {author: "wd_rec_e2_intruder"}}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: document_put_second
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {author: "wd_rec_e2_intruder"}}
+    auth: second
+    expect: any
+    versions: [v0.24.0]
+  - id: parse_second_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    auth: second
+    expect: any
+    versions: [v0.24.0]
+  - id: parse_second_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: stop_parse_second_v0_24
+    method: DELETE
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    auth: second
+    expect: any
+    versions: [v0.24.0]
+  - id: stop_parse_second_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/stop
+    json: {document_ids: ["{document_id}"]}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: chunks_list_second
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    auth: second
+    expect: any
+  - id: chunk_add_second
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    json:
+      content: "wd_rec_e2 smokwawelski: chunk dodany przez drugiego użytkownika."
+      important_keywords: ["wd_rec_e2"]
+    auth: second
+    expect: any
+  - id: retrieval_second
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+      top_k: 5
+    auth: second
+    expect: any
+  - id: chat_get_second
+    method: GET
+    path: /api/v1/chats/{chat_id}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: chat_put_second
+    method: PUT
+    path: /api/v1/chats/{chat_id}
+    json: {name: "wd_rec_e2_errors_access_chat_intruder"}
+    auth: second
+    expect: any
+  - id: chat_patch_second
+    method: PATCH
+    path: /api/v1/chats/{chat_id}
+    json: {name: "wd_rec_e2_errors_access_chat_intruder"}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: session_create_second
+    method: POST
+    path: /api/v1/chats/{chat_id}/sessions
+    json: {name: "wd_rec_e2_errors_access_session_intruder"}
+    auth: second
+    expect: any
+  - id: sessions_list_second
+    method: GET
+    path: /api/v1/chats/{chat_id}/sessions
+    query: {page: 1, page_size: 30}
+    auth: second
+    expect: any
+  - id: session_get_second
+    method: GET
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: session_patch_second
+    method: PATCH
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    json: {name: "wd_rec_e2_errors_access_session_intruder"}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: session_put_second
+    method: PUT
+    path: /api/v1/chats/{chat_id}/sessions/{session_id}
+    json: {name: "wd_rec_e2_errors_access_session_intruder"}
+    auth: second
+    expect: any
+    versions: [v0.24.0]
+  - id: completion_second
+    method: POST
+    path: /api/v1/chats/{chat_id}/completions
+    json:
+      question: "smokwawelski"
+      stream: false
+      session_id: "{session_id}"
+    auth: second
+    expect: any
+  - id: chat_completions_second
+    method: POST
+    path: /api/v1/chat/completions
+    json:
+      chat_id: "{chat_id}"
+      session_id: "{session_id}"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: false
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: openai_completions_second
+    method: POST
+    path: /api/v1/chats_openai/{chat_id}/chat/completions
+    json:
+      model: "model"
+      messages:
+        - role: user
+          content: "smokwawelski"
+      stream: false
+    auth: second
+    expect: any
+
+  # --- brak nagłówka i zły klucz ---
+  - id: datasets_no_auth
+    method: GET
+    path: /api/v1/datasets
+    auth: none
+    expect: any
+  - id: datasets_bad_auth
+    method: GET
+    path: /api/v1/datasets
+    auth: bad
+    expect: any
+  - id: chats_no_auth
+    method: GET
+    path: /api/v1/chats
+    auth: none
+    expect: any
+  - id: chats_bad_auth
+    method: GET
+    path: /api/v1/chats
+    auth: bad
+    expect: any
+  - id: retrieval_no_auth
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+    auth: none
+    expect: any
+  - id: retrieval_bad_auth
+    method: POST
+    path: /api/v1/retrieval
+    json:
+      question: "smokwawelski"
+      dataset_ids: ["{dataset_id}"]
+    auth: bad
+    expect: any
+
+  # --- nieistniejące identyfikatory, klucz użytkownika 1 (32 x "0") ---
+  - id: dataset_get_missing
+    method: GET
+    path: /api/v1/datasets/00000000000000000000000000000000
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+  - id: dataset_put_missing
+    method: PUT
+    path: /api/v1/datasets/00000000000000000000000000000000
+    json: {name: "wd_rec_e2_errors_access_ds_missing"}
+    auth: key
+    expect: any
+  - id: dataset_documents_missing
+    method: GET
+    path: /api/v1/datasets/00000000000000000000000000000000/documents
+    query: {page: 1, page_size: 30}
+    auth: key
+    expect: any
+  - id: chat_put_missing
+    method: PUT
+    path: /api/v1/chats/00000000000000000000000000000000
+    json: {name: "wd_rec_e2_errors_access_chat_missing"}
+    auth: key
+    expect: any
+  - id: chat_sessions_missing
+    method: GET
+    path: /api/v1/chats/00000000000000000000000000000000/sessions
+    query: {page: 1, page_size: 30}
+    auth: key
+    expect: any
+  - id: document_download_missing
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/00000000000000000000000000000000
+    auth: key
+    expect: any
+  - id: chunks_list_missing
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/00000000000000000000000000000000/chunks
+    query: {page: 1, page_size: 30}
+    auth: key
+    expect: any
+
+  # --- DELETE kluczem drugiego użytkownika: na końcu, przed sprzątaniem ---
+  - id: chunks_delete_second
+    method: DELETE
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    json: {chunk_ids: ["{chunk_id}"]}
+    auth: second
+    expect: any
+  - id: documents_delete_second
+    method: DELETE
+    path: /api/v1/datasets/{dataset_id}/documents
+    json: {ids: ["{document_id}"]}
+    auth: second
+    expect: any
+  - id: sessions_delete_second
+    method: DELETE
+    path: /api/v1/chats/{chat_id}/sessions
+    json: {ids: ["{session_id}"]}
+    auth: second
+    expect: any
+  - id: chats_delete_second
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}"]}
+    auth: second
+    expect: any
+  - id: datasets_delete_second
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    auth: second
+    expect: any
+
+  # --- sprzątanie użytkownikiem 1 (bez nagrywania) ---
+  - id: delete_chat
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}"]}
+    record: false
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

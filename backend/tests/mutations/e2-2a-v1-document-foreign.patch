@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/documents_files.py b/backend/app/services/documents_files.py
+--- a/backend/app/services/documents_files.py
++++ b/backend/app/services/documents_files.py
+@@ -74,9 +74,7 @@ class DocumentFilesService:
+         UPDATE do datasetu dokumentu (trasa mutuje dokument); cudzy dokument → 108 (K11 §10c
+         p. 9: trasa bez złota błędu zachowuje 108).
+         """
+         unique_ids = list(dict.fromkeys(document_ids))
+-        for document_id in unique_ids:
+-            await self._load(principal, document_id, Action.UPDATE)
+         await self._container.ingest.ingest_documents(unique_ids, run=run, delete=delete)
+
+     async def upload(

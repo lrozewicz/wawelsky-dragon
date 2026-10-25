@@ -1,0 +1,18 @@
+{
+  "nav.main": "Main navigation",
+  "nav.home": "Home",
+  "nav.datasets": "Datasets",
+  "nav.chat": "Chat",
+  "nav.search": "Search",
+  "nav.agent": "Agent",
+  "nav.memory": "Memory",
+  "nav.files": "Files",
+  "nav.settings": "Settings",
+  "nav.admin": "Admin",
+  "nav.help": "Help",
+  "nav.openMenu": "Open menu",
+  "nav.closeMenu": "Close menu",
+  "nav.collapse": "Collapse menu",
+  "nav.expand": "Expand menu",
+  "nav.breadcrumb": "Breadcrumb"
+}

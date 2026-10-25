@@ -1,0 +1,10 @@
+data:{"code":0,"message":"","data":{"answer":"Na podstawie źródeł: ├── Title: ragflow_","reference":{},"final":false}}
+
+data:{"code":0,"message":"","data":{"answer":"intro.txt\n└── Content:\n\nLegenda o smoku wawel","reference":{},"final":false}}
+
+data:{"code":0,"message":"","data":{"answer":"skim należy do n [ID:0]","reference":{},"final":false}}
+
+data:{"code":0,"message":"","data":{"answer":"","reference":{"total":1,"chunks":[{"id":"<ID:id#1>","content":"\nLegenda o smoku wawelskim należy do najstarszych opowieści Krakowa.Smokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinięu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postacibydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,że kamienie na schodach Wawelu pękały od żaru.Pewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyćsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,a następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,połknął przynętę w całości. Piekielne pragnienie popędziło go prostodo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.Mieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określiłgo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,na pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czaszionie prawdziwym ogniem ku uciesze turystów.Opowieść ta przetrwała wieki jako przestroga: siła i zarozumiałośćnie obronią przed pomysłowością prostego człowieka. Badacze folklorupodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralelew innych legendach Europy Środkowej, co czyni ją świadectwem wspólnejwyobraźni regionu.","document_id":"<ID:document#1>","document_name":"ragflow_intro.txt","dataset_id":"<ID:dataset#1>","image_id":"","positions":[[2,1,1,1,1]],"url":null,"similarity":"<FLOAT>","vector_similarity":"<FLOAT>","term_similarity":"<FLOAT>","doc_type":""}],"doc_aggs":[{"doc_name":"ragflow_intro.txt","doc_id":"<ID:document#1>","count":1}]},"final":true}}
+
+data:{"code":0,"message":"","data":true}
+

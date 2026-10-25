@@ -1,0 +1,48 @@
+diff --git a/backend/app/domain/policy/__init__.py b/backend/app/domain/policy/__init__.py
+index b2c24720..ae7d1d83 100644
+--- a/backend/app/domain/policy/__init__.py
++++ b/backend/app/domain/policy/__init__.py
+@@ -75,7 +75,9 @@ def can(principal: Principal, action: Action, res: ResourceRef) -> bool:
+         allowed = (is_owner or is_team) if action in (Action.READ, Action.USE) else is_owner
+     elif res.kind == "chat":
+         allowed = (
+-            (is_owner or is_team or granted) if action in (Action.READ, Action.USE) else is_owner
++            (is_owner or is_team or granted)
++            if action in (Action.READ, Action.USE)
++            else (is_owner or granted)
+         )
+     elif res.kind == "session":
+         allowed = is_owner or (
+diff --git a/backend/app/services/chats.py b/backend/app/services/chats.py
+index f2fff11a..8bb29dc0 100644
+--- a/backend/app/services/chats.py
++++ b/backend/app/services/chats.py
+@@ -204,7 +204,7 @@ class ChatsService:
+         async with transaction(self._sessionmaker()) as session:
+             chat = await chats_repo.get(session, chat_id)
+         return chat is not None and can(
+-            principal, Action.UPDATE, ResourceRef(kind="chat", owner_id=chat.tenant_id, id=chat.id)
++            principal, Action.UPDATE, await self._chat_ref(chat)
+         )
+ 
+     async def recommend_questions(
+@@ -231,7 +231,7 @@ class ChatsService:
+         """Aktualizacja (C2 update): PUT merge=False, PATCH merge=True; bez defaults promptu."""
+         fields = inp.fields
+         current = await self._load(chat_id)
+-        require(principal, Action.UPDATE, ResourceRef("chat", current.tenant_id, id=current.id))
++        require(principal, Action.UPDATE, await self._chat_ref(current))
+         dataset_ids: list[str] | None = None
+         if "dataset_ids" in fields:
+             async with transaction(self._sessionmaker()) as session:
+@@ -275,9 +275,7 @@ class ChatsService:
+     async def delete(self, principal: Principal, chat_id: str) -> None:
+         """Twarde usunięcie czatu (C2 delete, R3); kaskada FK czyści tabele powiązane."""
+         chat = await self._load(chat_id)
+-        require(
+-            principal, Action.DELETE, ResourceRef(kind="chat", owner_id=chat.tenant_id, id=chat.id)
+-        )
++        require(principal, Action.DELETE, await self._chat_ref(chat))
+         async with transaction(self._sessionmaker()) as session:
+             await chats_repo.delete(session, chat_id)
+ 

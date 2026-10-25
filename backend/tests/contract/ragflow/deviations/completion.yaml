@@ -1,0 +1,34 @@
+# Odchyłki replay completion vs złoto v0.27.2 (K6 §6) — klasy: [fake-llm], [chunker], [sse].
+# Różnice strukturalne completion--10 sankcjonowane contract: K4 §1.7 (K11 §10b p. 7).
+- file: chats___completions/completion--08.json
+  path: body.data.answer
+  kind: value
+  reason: "[fake-llm] blok wiedzy w komunikacie systemowym WD pochodzi z content_llm (HTML draftu: każda linia w <p>…</p>, ingest_pipeline.py:302), złoto ma czysty tekst; fake-llm zwraca pierwszy fragment 80 znaków tego bloku — inny kształt (złoto '…Content:\\n\\nLegenda … należy do n', WD '…Content:\\n<p>Legenda … należy do'). Pełny body.data.prompt po obu stronach potwierdza <p> po stronie WD."
+- file: chats___completions/completion--08.json
+  path: body.data.reference.chunks.0.content
+  kind: value
+  reason: "[chunker] chunker WD (K5 §5) nie dokleja wiodącego '\n' sekcji naive; treść poza tym identyczna (sprawdzone: golden == '\n' + wd)"
+- file: chats___completions/completion--08.json
+  path: body.data.reference.chunks.0.positions
+  kind: length
+  reason: "[chunker] WD nie fabrykuje pozycji dla formatów bez stron (upstream quirk [[1, 0, 0, 0, 0]], rag/nlp/__init__.py:474); WD zwraca pustą listę."
+- file: chat__completions/completion--10.json
+  path: body.data.final
+  kind: missing
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD dla stream:false na ścieżce empty_response zwraca wspólny kształt completion_data, który nie emituje klucza final; złoto upstream (ten sam kształt co ramka SSE) ma final: false. Odstępstwo świadome K4 §1.7 (K11 §10b p. 7)."
+- file: chat__completions/completion--10.json
+  path: body.data.created_at
+  kind: extra
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD dla stream:false na ścieżce empty_response zwraca wspólny kształt completion_data i zawsze emituje created_at; złoto upstream (kształt ramki SSE) nie ma created_at. Odstępstwo świadome K4 §1.7 (K11 §10b p. 7)."
+- file: chat__completions/completion--10.json
+  path: body.data.reference.doc_aggs
+  kind: extra
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD dla stream:false na ścieżce empty_response emituje pełne reference (doc_aggs: []); złoto upstream (kształt ramki SSE) ma reference bez doc_aggs. Odstępstwo świadome K4 §1.7 (K11 §10b p. 7)."
+- file: chat__completions/completion--10.json
+  path: body.data.reference.total
+  kind: extra
+  contract: "K4 §1.7"
+  reason: "[K4 §1.7] WD dla stream:false na ścieżce empty_response emituje pełne reference (total: 0); złoto upstream (kształt ramki SSE) ma reference bez total. Odstępstwo świadome K4 §1.7 (K11 §10b p. 7)."

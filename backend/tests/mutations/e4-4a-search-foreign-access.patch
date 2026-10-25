@@ -1,0 +1,31 @@
+diff --git a/backend/app/services/searches.py b/backend/app/services/searches.py
+index b0bdb9fe..24a7e87e 100644
+--- a/backend/app/services/searches.py
++++ b/backend/app/services/searches.py
+@@ -255,7 +255,7 @@ class SearchesService:
+         validated = _validated_name(name)
+         async with transaction(self._sessionmaker()) as session:
+             current = await searches_repo.get(session, search_id)
+-            if current is None or not can(principal, Action.UPDATE, _search_ref(current)):
++            if current is None:
+                 raise PermissionDenied("no authorization")
+             if validated.lower() != current.name.lower() and await searches_repo.name_taken(
+                 session, principal.user_id, validated, exclude_id=search_id
+@@ -288,7 +288,7 @@ class SearchesService:
+         """Twarde usunięcie (§D4); brak lub cudza → ``PermissionDenied("no authorization")``."""
+         async with transaction(self._sessionmaker()) as session:
+             row = await searches_repo.get(session, search_id)
+-            if row is None or not can(principal, Action.DELETE, _search_ref(row)):
++            if row is None:
+                 raise PermissionDenied("no authorization")
+             await searches_repo.delete(session, search_id)
+ 
+@@ -304,7 +304,7 @@ class SearchesService:
+         """
+         async with transaction(self._sessionmaker()) as session:
+             row = await searches_repo.get(session, search_id)
+-            if row is None or not can(principal, Action.READ, _search_ref(row)):
++            if row is None:
+                 raise PermissionDenied("no authorization")
+             kb_ids = await searches_repo.list_dataset_ids(session, search_id) or list(body_kb_ids)
+             if not kb_ids:

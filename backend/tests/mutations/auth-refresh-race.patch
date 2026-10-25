@@ -1,0 +1,13 @@
+diff --git a/backend/app/db/repositories/refresh_sessions.py b/backend/app/db/repositories/refresh_sessions.py
+index abc8c17..e8db579 100644
+--- a/backend/app/db/repositories/refresh_sessions.py
++++ b/backend/app/db/repositories/refresh_sessions.py
+@@ -88,7 +88,7 @@ async def revoke(session: AsyncSession, session_id: str, now_ms: int) -> int:
+         text(
+             "UPDATE refresh_sessions SET revoked_at = :now_ms,"
+             " update_time = :now_ms, update_date = :date"
+-            " WHERE id = :id AND revoked_at IS NULL"
++            " WHERE id = :id"  # MUTACJA: unieważnienie także już unieważnionej sesji
+         ),
+         {"id": session_id, "now_ms": now_ms, "date": date},
+     )

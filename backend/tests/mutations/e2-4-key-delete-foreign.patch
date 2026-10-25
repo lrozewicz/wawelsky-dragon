@@ -1,0 +1,13 @@
+diff --git a/backend/app/db/repositories/api_keys.py b/backend/app/db/repositories/api_keys.py
+index aaf6201..8cd8823 100644
+--- a/backend/app/db/repositories/api_keys.py
++++ b/backend/app/db/repositories/api_keys.py
+@@ -134,7 +134,7 @@ async def find_active_for_user(
+     column, value = next(iter(given.items()))
+     result = await session.execute(
+         text(
+-            f"{_SELECT} WHERE user_id = :user_id AND revoked_at IS NULL"
++            f"{_SELECT} WHERE revoked_at IS NULL"
+             f" AND {column} = :value ORDER BY create_time, id"
+         ),
+         {"user_id": user_id, "value": value},

@@ -1,7 +1,9 @@
 # CI/CD: shared workflows from github.com/lrozewicz/.github
 #   pull request     -> tests, image build, Trivy (no secrets, also for forks)
 #   push to main     -> build, push to Harbor, deploy to <app>.dev.lucasnextgen.com
-#   tag v1.2.3       -> promote the same image, deploy to <app>.lucasnextgen.com
+#   tag v1.2.3       -> promote the same images, deploy to <app>.lucasnextgen.com
+# Three images (<app>/backend, /web, /searxng), one tag; the backend image also runs the worker
+# and the MCP server (different command).
 name: CI
 
 on:
@@ -17,13 +19,26 @@ permissions:
 jobs:
   pr:
     if: github.event_name == 'pull_request'
-    uses: lrozewicz/.github/.github/workflows/pr.yml@main
+    uses: lrozewicz/.github/.github/workflows/pr.yml@multi-image
+    with:
+      images: |
+        [
+          {"name": "backend", "context": "backend", "dockerfile": "backend/Dockerfile"},
+          {"name": "web", "context": "frontend", "dockerfile": "frontend/Dockerfile"},
+          {"name": "searxng", "context": "docker/searxng", "dockerfile": "docker/searxng/Dockerfile", "test": false}
+        ]
 
   deploy:
     if: github.event_name == 'push'
-    uses: lrozewicz/.github/.github/workflows/deploy.yml@main
+    uses: lrozewicz/.github/.github/workflows/deploy.yml@multi-image
     with:
       environment: ${{ github.ref_type == 'tag' && 'prod' || 'dev' }}
+      images: |
+        [
+          {"name": "backend", "context": "backend", "dockerfile": "backend/Dockerfile"},
+          {"name": "web", "context": "frontend", "dockerfile": "frontend/Dockerfile"},
+          {"name": "searxng", "context": "docker/searxng", "dockerfile": "docker/searxng/Dockerfile", "test": false}
+        ]
     secrets:
       HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME }}
       HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}

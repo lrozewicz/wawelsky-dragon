@@ -1,0 +1,4 @@
+# Odchyłki replay openai_compat vs złoto v0.24.0 (C0 p. 9).
+# Kształt danych i SSE jest zgodny ze złotem bez odchyłek — pokrywa go gałąź profilu
+# ``ragflow_0_24`` w ``services/openai.py`` (``model`` odpowiedzi = nazwa z żądania).
+[]

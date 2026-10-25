@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/users/me/models",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "asr_id": "",
+      "embd_id": "fake-embed-1024",
+      "img2txt_id": "fake-vision",
+      "llm_id": "fake-chat",
+      "rerank_id": "fake-rerank",
+      "tts_id": ""
+    },
+    "message": "success"
+  }
+}

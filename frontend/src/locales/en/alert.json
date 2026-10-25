@@ -1,0 +1,5 @@
+{
+  "alert.models.title": "Configure models",
+  "alert.models.body": "No default LLM or embedding model is set.",
+  "alert.models.action": "Go to settings"
+}

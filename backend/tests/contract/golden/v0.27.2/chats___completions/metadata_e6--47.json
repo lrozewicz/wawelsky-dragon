@@ -1,0 +1,64 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/chats/<ID:chat_id_filtered#1>/completions",
+    "query": {},
+    "body": {
+      "question": "smokwawelski",
+      "stream": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "answer": "Na podstawie źródeł: ├── Title: e6_meta_a.txt\n└── Content:\n\nZapis pierwszy o smoku wawelskim dotyczy [ID:0]",
+      "audio_binary": null,
+      "chat_id": "<ID:chat_id_filtered#1>",
+      "created_at": "<TS_S>",
+      "id": "<ID:id#8>",
+      "prompt": "You are an intelligent assistant. Please summarize the content of the dataset to answer the question. Please list the data in the dataset and answer in detail. When all dataset content is irrelevant to the question, your answer must include the sentence \"The answer you are looking for is not found in the dataset!\" Answers need to consider chat history.  \n      Here is the knowledge base:  \n        \n------  \n  \nID: 0  \n├── Title: e6_meta_a.txt  \n└── Content:  \n  \nZapis pierwszy o smoku wawelskim dotyczy jaskini pod wzgorzem wawelskim.  \nSmokwawelski wymuszal na mieszczanach okup w postaci bydla i owiec.  \nKronikarz notuje, ze bestia zionela ogniem tak goracym, ze pekaly kamienie.  \n      The above is the knowledge base.  \n  \n### Query:  \nsmokwawelski  \n  \n## Time elapsed:  \n  - Total: <MS>  \n  - Check LLM: <MS>  \n  - Check Langfuse tracer: <MS>  \n  - Bind models: <MS>  \n  - Query refinement(LLM): <MS>  \n  - Retrieval: <MS>  \n  - Generate answer: <MS>  \n  \n## Token usage:  \n  - Generated tokens(approximately): 43  \n  - Token speed: <SPEED>/s",
+      "reference": {
+        "chunks": [
+          {
+            "content": "\nZapis pierwszy o smoku wawelskim dotyczy jaskini pod wzgorzem wawelskim.\nSmokwawelski wymuszal na mieszczanach okup w postaci bydla i owiec.\nKronikarz notuje, ze bestia zionela ogniem tak goracym, ze pekaly kamienie.",
+            "dataset_id": "<ID:dataset#1>",
+            "doc_type": "",
+            "document_id": "<ID:doc_id_a#1>",
+            "document_metadata": null,
+            "document_name": "e6_meta_a.txt",
+            "id": "<ID:id#5>",
+            "image_id": "",
+            "positions": [
+              [
+                1,
+                0,
+                0,
+                0,
+                0
+              ]
+            ],
+            "row_id": null,
+            "similarity": "<FLOAT>",
+            "term_similarity": "<FLOAT>",
+            "url": null,
+            "vector_similarity": "<FLOAT>"
+          }
+        ],
+        "doc_aggs": [
+          {
+            "count": 1,
+            "doc_id": "<ID:doc_id_a#1>",
+            "doc_name": "e6_meta_a.txt"
+          }
+        ],
+        "total": 1
+      },
+      "session_id": "<ID:id#9>"
+    },
+    "message": "success"
+  }
+}

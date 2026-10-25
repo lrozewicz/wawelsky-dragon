@@ -1,0 +1,13 @@
+diff --git a/docker-compose.yml b/docker-compose.yml
+index 3c517978..04adf700 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -67,8 +67,6 @@ services:
+     # Tylko `migrate` zakłada konto admina — dane z `.env` (K8 poprawka 2026-10-04 p. 1).
+     environment:
+       <<: *backend-env
+-      WD_ADMIN_EMAIL: ${WD_ADMIN_EMAIL:-}
+-      WD_ADMIN_PASSWORD: ${WD_ADMIN_PASSWORD:-}
+     depends_on:
+       mariadb:
+         condition: service_healthy

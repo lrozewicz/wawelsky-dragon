@@ -1,0 +1,7 @@
+# Samotest harnessu E1-9f: jeden krok na trasie istniejącej od E1-9f.
+name: users_me
+description: "Domyślne modele instancji po resecie K9."
+steps:
+  - id: models
+    method: GET
+    path: /api/v1/users/me/models

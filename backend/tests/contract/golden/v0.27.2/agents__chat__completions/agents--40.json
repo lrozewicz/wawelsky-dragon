@@ -1,0 +1,45 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/agents/chat/completions",
+    "query": {},
+    "body": {
+      "agent_id": "<ID:agent_retrieval#1>",
+      "query": "smokwawelski",
+      "stream": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "created_at": "<TS_S>",
+      "data": {
+        "content": "Odpowiedź testowa: The user query is smokwawelski",
+        "created_at": "<TS_S>",
+        "elapsed_time": "<FLOAT>",
+        "inputs": {},
+        "outputs": {
+          "_created_time": "<IGNORE>",
+          "_elapsed_time": "<FLOAT>",
+          "content": "Odpowiedź testowa: The user query is smokwawelski",
+          "downloads": []
+        },
+        "reference": {},
+        "usage": {
+          "calls": 1,
+          "completion_tokens": 0,
+          "prompt_tokens": 0,
+          "total_tokens": 45
+        }
+      },
+      "event": "workflow_finished",
+      "message_id": "<ID:id#23>",
+      "session_id": "<ID:id#24>",
+      "task_id": "<ID:id#24>"
+    }
+  }
+}

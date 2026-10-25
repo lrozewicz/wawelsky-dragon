@@ -1,0 +1,14 @@
+diff --git a/backend/app/main.py b/backend/app/main.py
+index bfcdc227..6dd29101 100644
+--- a/backend/app/main.py
++++ b/backend/app/main.py
+@@ -42,8 +42,7 @@ def include_routers(app: FastAPI, settings: Settings) -> None:
+     app.include_router(system_routes.legacy_router)
+     app.include_router(models_routes.router)
+     include_ragflow_routes(app)
+-    if settings.env == "test":  # K9 §1: trasa resetu istnieje tylko w trybie test
+-        app.include_router(test_reset_router)
++    app.include_router(test_reset_router)  # K9 §1: trasa resetu istnieje tylko w trybie test
+     include_hub_compat_routers(app, settings)
+     for router in (*wd_users_routers, *wd_access_routers, *wd_system_routers):
+         app.include_router(router)  # trasy WD admina montowane bezwarunkowo (E3-6a §1)

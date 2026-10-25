@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/kb_export.py b/backend/app/services/kb_export.py
+index fa5b1108..efd7066f 100644
+--- a/backend/app/services/kb_export.py
++++ b/backend/app/services/kb_export.py
+@@ -136,7 +136,7 @@ class KbExportService:
+         ujawniania czegokolwiek o zadaniu), potem wygaśnięcie i stan zadania/pliku (→ 410).
+         """
+         secret = self._container.settings.secret_key.get_secret_value()
+-        if not verify_export(secret, task_id, exp, sig):
++        if False:  # MUTACJA: weryfikacja podpisu pobrania pominięta
+             raise InvalidSignature(_MSG_INVALID_SIGNATURE)
+         now_s = self._container.clock.now_ms() // 1000
+         if exp < now_s:

@@ -1,0 +1,308 @@
+# Legacy menedżer plików `/api/v1/file/*` w obu wersjach:
+# - v0.24.0: `api/apps/sdk/files.py` (klucz API, `@token_required`, prefiks `/api/v1`);
+# - v0.27.2: `api/apps/backward_compat.py` (blueprint `backward_compat`, `/api/v1`,
+#   `@login_required` z domyślnymi typami auth `(JWT, API)` — przyjmuje więc też klucz API).
+# Kroki: create (folder, zdublowany), upload (multipart), list (root, paginacja+orderby,
+# keywords, parent_id), root_folder, parent_folder, all_parent_folder, get (bajty),
+# mv, rename, convert (link do datasetu + poll), upload_info (tylko v0.27.2), rm (na końcu),
+# błędy (nieistniejące id, brak/zły klucz, cudzy zasób), sprzątanie.
+#
+# Różnice wersji widoczne w ciałach żądań (dlatego osobne kroki z `versions`):
+# `rm`: v0.24.0 `{file_ids: [...]}` (SDK) vs v0.27.2 `{ids: [...]}` (`DeleteFileReq`,
+# `extra="forbid"`); `upload_info` istnieje tylko w v0.27.2.
+# Trasa `GET /api/v1/file/download/<attachment_id>` (tylko v0.24.0) — POMINIĘTA:
+# bez sensownego `attachment_id` (szczegóły: work/wp/E4-45g/reports/T3-routes.md).
+#
+# Uwaga o runnerze: krok multipart nie przenosi pól formularza (`parent_id`), więc upload
+# trafia do roota, a do podfolderu przenosi go `/file/mv` (szczegóły: T3-notes.md).
+name: file_legacy
+description: "Legacy /api/v1/file/* w v0.24.0 (SDK) i v0.27.2 (backward_compat): tworzenie, upload, listing, pobranie, move/rename, convert, rm i błędy."
+steps:
+  # --- przygotowanie: wymuszenie leniwego utworzenia folderu .knowledgebase pod rootem,
+  # żeby domyślne sortowanie listingu (create_time desc) nie zależało od tego, czy inne
+  # scenariusze zdążyły już ten folder utworzyć (szczegóły: T3-notes.md) ---
+  - id: prime_root_listing
+    method: GET
+    path: /api/v1/file/list
+    auth: key
+    record: false
+
+  # --- tworzenie zasobów: folder, podfolder, upload (trasy z zakresu, nagrywane) ---
+  - id: create_folder
+    method: POST
+    path: /api/v1/file/create
+    auth: key
+    json: {name: "wd_rec_e4_filelegacy_folder", type: "folder"}
+    capture: {folder_id: "data.id"}
+  - id: create_subfolder
+    method: POST
+    path: /api/v1/file/create
+    auth: key
+    json: {name: "wd_rec_e4_filelegacy_sub", parent_id: "{folder_id}", type: "folder"}
+    capture: {subfolder_id: "data.id"}
+  - id: upload_file
+    method: POST
+    path: /api/v1/file/upload
+    auth: key
+    multipart: {file: fixtures/ragflow_intro.txt}
+    capture: {file_id: "data.0.id"}
+
+  # --- listing: root, paginacja+orderby, keywords, parent_id ---
+  - id: list_root
+    method: GET
+    path: /api/v1/file/list
+    auth: key
+  - id: list_root_paged
+    method: GET
+    path: /api/v1/file/list
+    auth: key
+    query: {page: 1, page_size: 1, orderby: name, desc: false}
+  - id: list_by_keywords
+    method: GET
+    path: /api/v1/file/list
+    auth: key
+    query: {keywords: "wd_rec_e4_filelegacy"}
+  - id: list_by_parent
+    method: GET
+    path: /api/v1/file/list
+    auth: key
+    query: {parent_id: "{folder_id}"}
+
+  # --- root folder (v0.24.0: obiekt roota; v0.27.2: forwarding do listingu) ---
+  - id: get_root_folder
+    method: GET
+    path: /api/v1/file/root_folder
+    auth: key
+
+  # --- pobranie pliku (bajty) oraz parent/ancestors po przeniesieniu do podfolderu ---
+  - id: download_file
+    method: GET
+    path: /api/v1/file/get/{file_id}
+    auth: key
+    binary: true
+  - id: move_file
+    method: POST
+    path: /api/v1/file/mv
+    auth: key
+    json: {src_file_ids: ["{file_id}"], dest_file_id: "{subfolder_id}"}
+  - id: get_parent_folder
+    method: GET
+    path: /api/v1/file/parent_folder
+    auth: key
+    versions: [v0.27.2]
+    query: {file_id: "{file_id}"}
+  # v0.24.0: handler `get_parent_folder()` (sdk/files.py:360) nie przyjmuje parametru,
+  # a `@token_required` (api_utils.py:268-297) wstrzykuje `tenant_id` zawsze → TypeError →
+  # `server_error_response` (api_utils.py:147: HTTP 200, code 100, message=repr(e)).
+  # Trasa jest zepsuta upstream, więc nagrywamy fakt (`expect: any`) — szczegóły: T3-notes.md §10.
+  - id: get_parent_folder_v0_24
+    method: GET
+    path: /api/v1/file/parent_folder
+    auth: key
+    expect: any
+    versions: [v0.24.0]
+    query: {file_id: "{file_id}"}
+  - id: get_all_parent_folder
+    method: GET
+    path: /api/v1/file/all_parent_folder
+    auth: key
+    query: {file_id: "{file_id}"}
+  - id: rename_file
+    method: POST
+    path: /api/v1/file/rename
+    auth: key
+    json: {file_id: "{file_id}", name: "wd_rec_e4_filelegacy_renamed.txt"}
+
+  # --- linkowanie pliku do datasetu i skutek w liście dokumentów ---
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e4_filelegacy_ds"}
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: convert
+    method: POST
+    path: /api/v1/file/convert
+    auth: key
+    json: {file_ids: ["{file_id}"], kb_ids: ["{dataset_id}"]}
+  - id: poll_linked_document
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    auth: key
+    query: {page: 1, page_size: 30}
+    poll:
+      until: {path: "data.total", equals: 1}
+      interval_s: 2
+      timeout_s: 60
+
+  # --- informacje o uploadzie (tylko v0.27.2; brak tej trasy w v0.24.0) ---
+  - id: upload_info
+    method: POST
+    path: /api/v1/file/upload_info
+    auth: key
+    versions: [v0.27.2]
+    multipart: {file: fixtures/ragflow_intro.txt}
+
+  # --- błędy: nieistniejące identyfikatory ---
+  - id: download_missing
+    method: GET
+    path: /api/v1/file/get/00000000000000000000000000000000
+    auth: key
+    expect: any
+  - id: parent_missing
+    method: GET
+    path: /api/v1/file/parent_folder
+    auth: key
+    query: {file_id: "00000000000000000000000000000000"}
+    expect: any
+  - id: all_parent_missing
+    method: GET
+    path: /api/v1/file/all_parent_folder
+    auth: key
+    query: {file_id: "00000000000000000000000000000000"}
+    expect: any
+  - id: move_missing
+    method: POST
+    path: /api/v1/file/mv
+    auth: key
+    expect: any
+    json: {src_file_ids: ["00000000000000000000000000000000"], dest_file_id: "{folder_id}"}
+  - id: rm_missing_v0_24
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    expect: any
+    versions: [v0.24.0]
+    json: {file_ids: ["00000000000000000000000000000000"]}
+  - id: rm_missing_v0_27
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+    json: {ids: ["00000000000000000000000000000000"]}
+  - id: convert_missing_file
+    method: POST
+    path: /api/v1/file/convert
+    auth: key
+    expect: any
+    json: {file_ids: ["00000000000000000000000000000000"], kb_ids: ["{dataset_id}"]}
+
+  # --- błędy: nazwa zdublowana, brak nagłówka, zły klucz ---
+  - id: create_folder_duplicate
+    method: POST
+    path: /api/v1/file/create
+    auth: key
+    expect: any
+    json: {name: "wd_rec_e4_filelegacy_folder", type: "folder"}
+  - id: list_no_auth
+    method: GET
+    path: /api/v1/file/list
+    auth: none
+    expect: any
+  - id: list_bad_auth
+    method: GET
+    path: /api/v1/file/list
+    auth: bad
+    expect: any
+
+  # --- cudze zasoby: klucz drugiego użytkownika na zasobach użytkownika 1 ---
+  # Sonda `probe` (folder użytkownika 1, bez nagrywania) — cel odmów, żeby próby `mv`/`rm`
+  # kluczem `second` nie zmieniały zasobów potrzebnych w dalszych krokach.
+  - id: create_probe_folder
+    method: POST
+    path: /api/v1/file/create
+    auth: key
+    record: false
+    json: {name: "wd_rec_e4_filelegacy_probe", type: "folder"}
+    capture: {probe_id: "data.id"}
+  - id: list_second
+    method: GET
+    path: /api/v1/file/list
+    auth: second
+    expect: any
+  # bez `binary`, żeby nagrać treść odmowy (JSON), a nie tylko skrót bajtów
+  - id: download_second
+    method: GET
+    path: /api/v1/file/get/{probe_id}
+    auth: second
+    expect: any
+  - id: parent_second
+    method: GET
+    path: /api/v1/file/parent_folder
+    auth: second
+    expect: any
+    query: {file_id: "{probe_id}"}
+  - id: rename_second
+    method: POST
+    path: /api/v1/file/rename
+    auth: second
+    expect: any
+    json: {file_id: "{probe_id}", name: "wd_rec_e4_filelegacy_probe_second"}
+  - id: move_second
+    method: POST
+    path: /api/v1/file/mv
+    auth: second
+    expect: any
+    json: {src_file_ids: ["{probe_id}"], dest_file_id: "{folder_id}"}
+  - id: rm_second_v0_24
+    method: POST
+    path: /api/v1/file/rm
+    auth: second
+    expect: any
+    versions: [v0.24.0]
+    json: {file_ids: ["{probe_id}"]}
+  - id: rm_second_v0_27
+    method: POST
+    path: /api/v1/file/rm
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+    json: {ids: ["{probe_id}"]}
+
+  # --- sprzątanie nagrywane (trasa rm, ciało per wersja) i bez nagrywania (sonda, dataset) ---
+  - id: rm_file_v0_24
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    versions: [v0.24.0]
+    json: {file_ids: ["{file_id}"]}
+  - id: rm_file_v0_27
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    versions: [v0.27.2]
+    json: {ids: ["{file_id}"]}
+  - id: rm_folder_v0_24
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    versions: [v0.24.0]
+    json: {file_ids: ["{folder_id}"]}
+  - id: rm_folder_v0_27
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    versions: [v0.27.2]
+    json: {ids: ["{folder_id}"]}
+  - id: rm_probe_v0_24
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    record: false
+    expect: any
+    versions: [v0.24.0]
+    json: {file_ids: ["{probe_id}"]}
+  - id: rm_probe_v0_27
+    method: POST
+    path: /api/v1/file/rm
+    auth: key
+    record: false
+    expect: any
+    versions: [v0.27.2]
+    json: {ids: ["{probe_id}"]}
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

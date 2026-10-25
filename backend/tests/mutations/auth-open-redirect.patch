@@ -1,0 +1,11 @@
+--- a/backend/app/services/oidc.py	2026-09-27 18:24:35.601851949 +0200
++++ b/backend/app/services/oidc.py	2026-09-27 18:24:35.606463252 +0200
+@@ -54,7 +54,7 @@
+     no_scheme = "://" not in value
+     printable = all(ord(ch) >= MIN_PRINTABLE_ORD for ch in value)
+     starts_local = value.startswith("/") and value[1:2] != "/" and value[1:2] != "\\"
+-    if not (starts_local and no_backslash and no_scheme and printable):
++    if False:  # MUTACJA: walidacja redirect wyłączona
+         raise ValidationFailed("Invalid redirect")
+     return value
+ 

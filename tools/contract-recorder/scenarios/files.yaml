@@ -1,0 +1,266 @@
+# Menedżer plików RAGFlow v0.27.2 (/files*): tworzenie folderu i upload, listing
+# (root, parent_id, paginacja, keywords, orderby), pobranie bajtów, parent/ancestors,
+# move + rename (jedna trasa /files/move), link-to-datasets i skutek w liście
+# dokumentów datasetu, odmowy dostępu i błędy. Sprzątanie: DELETE /files + dataset.
+#
+# Trasy /files* istnieją WYŁĄCZNIE w v0.27.2 (v0.24.0 ma /file/* w api/apps/sdk/files.py
+# — zadanie T3), więc każdy krok ma versions: [v0.27.2].
+#
+# Uwaga o runnerze: krok multipart nie przenosi pól formularza (parent_id), więc upload
+# trafia do folderu głównego, a do podfolderu przenosi go /files/move (szczegóły:
+# work/wp/E4-45g/reports/T2-notes.md).
+name: files
+description: "Menedżer plików /files* (v0.27.2): foldery, upload, listing, pobranie, move/rename, link do datasetu i błędy."
+steps:
+  # --- przygotowanie: wymuszenie leniwego utworzenia folderu .knowledgebase pod rootem,
+  # żeby domyślne sortowanie listingu (create_time desc) nie zależało od tego, czy inne
+  # scenariusze zdążyły już ten folder utworzyć (szczegóły: T2-notes.md) ---
+  - id: prime_root_listing
+    method: GET
+    path: /api/v1/files
+    auth: key
+    record: false
+    versions: [v0.27.2]
+
+  # --- tworzenie zasobów: folder, podfolder, upload (trasy z zakresu, nagrywane) ---
+  - id: create_folder
+    method: POST
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    json: {name: "wd_rec_e4_files_folder", type: "folder"}
+    capture: {folder_id: "data.id"}
+  - id: create_subfolder
+    method: POST
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    json: {name: "wd_rec_e4_files_sub", parent_id: "{folder_id}", type: "folder"}
+    capture: {subfolder_id: "data.id"}
+  - id: upload_file
+    method: POST
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    multipart: {file: fixtures/ragflow_intro.txt}
+    capture: {file_id: "data.0.id"}
+
+  # --- listing: root, paginacja+orderby, parent_id, keywords ---
+  - id: list_root
+    method: GET
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+  - id: list_root_paged
+    method: GET
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    query: {page: 1, page_size: 1, orderby: name, desc: false}
+  - id: list_by_parent
+    method: GET
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    query: {parent_id: "{folder_id}"}
+  - id: list_by_keywords
+    method: GET
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    query: {keywords: "wd_rec_e4_files"}
+
+  # --- pobranie pliku (bajty) oraz parent/ancestors po przeniesieniu do podfolderu ---
+  - id: download_file
+    method: GET
+    path: /api/v1/files/{file_id}
+    auth: key
+    versions: [v0.27.2]
+    binary: true
+  - id: move_file
+    method: POST
+    path: /api/v1/files/move
+    auth: key
+    versions: [v0.27.2]
+    json: {src_file_ids: ["{file_id}"], dest_file_id: "{subfolder_id}"}
+  - id: rename_file
+    method: POST
+    path: /api/v1/files/move
+    auth: key
+    versions: [v0.27.2]
+    json: {src_file_ids: ["{file_id}"], new_name: "wd_rec_e4_files_renamed.txt"}
+  - id: get_parent_folder
+    method: GET
+    path: /api/v1/files/{file_id}/parent
+    auth: key
+    versions: [v0.27.2]
+  - id: get_ancestors
+    method: GET
+    path: /api/v1/files/{file_id}/ancestors
+    auth: key
+    versions: [v0.27.2]
+
+  # --- linkowanie pliku do datasetu i skutek w liście dokumentów ---
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e4_files_ds"}
+    record: false
+    versions: [v0.27.2]
+    capture: {dataset_id: "data.id"}
+  - id: link_to_datasets
+    method: POST
+    path: /api/v1/files/link-to-datasets
+    auth: key
+    versions: [v0.27.2]
+    json: {file_ids: ["{file_id}"], kb_ids: ["{dataset_id}"]}
+  - id: poll_linked_document
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    auth: key
+    versions: [v0.27.2]
+    query: {page: 1, page_size: 30}
+    poll:
+      until: {path: "data.total", equals: 1}
+      interval_s: 2
+      timeout_s: 60
+
+  # --- błędy: nieistniejące identyfikatory ---
+  - id: download_missing
+    method: GET
+    path: /api/v1/files/00000000000000000000000000000000
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+  - id: parent_missing
+    method: GET
+    path: /api/v1/files/00000000000000000000000000000000/parent
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+  - id: ancestors_missing
+    method: GET
+    path: /api/v1/files/00000000000000000000000000000000/ancestors
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+  - id: move_missing
+    method: POST
+    path: /api/v1/files/move
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+    json: {src_file_ids: ["00000000000000000000000000000000"], dest_file_id: "{folder_id}"}
+  - id: delete_missing
+    method: DELETE
+    path: /api/v1/files
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+    json: {ids: ["00000000000000000000000000000000"]}
+
+  # --- błędy: nazwa zdublowana i przeniesienie folderu do własnego potomka ---
+  - id: create_folder_duplicate
+    method: POST
+    path: /api/v1/files
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+    json: {name: "wd_rec_e4_files_folder", type: "folder"}
+  - id: move_folder_into_descendant
+    method: POST
+    path: /api/v1/files/move
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+    json: {src_file_ids: ["{folder_id}"], dest_file_id: "{subfolder_id}"}
+
+  # --- błędy: link-to-datasets z nieistniejącym datasetem ---
+  - id: link_missing_dataset
+    method: POST
+    path: /api/v1/files/link-to-datasets
+    auth: key
+    expect: any
+    versions: [v0.27.2]
+    json: {file_ids: ["{file_id}"], kb_ids: ["00000000000000000000000000000000"]}
+
+  # --- cudze zasoby: klucz drugiego użytkownika ---
+  - id: list_files_second
+    method: GET
+    path: /api/v1/files
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: download_second
+    method: GET
+    path: /api/v1/files/{file_id}
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: parent_second
+    method: GET
+    path: /api/v1/files/{file_id}/parent
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: ancestors_second
+    method: GET
+    path: /api/v1/files/{file_id}/ancestors
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+  - id: move_second
+    method: POST
+    path: /api/v1/files/move
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+    json: {src_file_ids: ["{file_id}"], dest_file_id: "{folder_id}"}
+  - id: link_second
+    method: POST
+    path: /api/v1/files/link-to-datasets
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+    json: {file_ids: ["{file_id}"], kb_ids: ["{dataset_id}"]}
+  - id: delete_second
+    method: DELETE
+    path: /api/v1/files
+    auth: second
+    expect: any
+    versions: [v0.27.2]
+    json: {ids: ["{file_id}"]}
+
+  # --- brak nagłówka i zły klucz ---
+  - id: list_files_no_auth
+    method: GET
+    path: /api/v1/files
+    auth: none
+    expect: any
+    versions: [v0.27.2]
+  - id: list_files_bad_auth
+    method: GET
+    path: /api/v1/files
+    auth: bad
+    expect: any
+    versions: [v0.27.2]
+
+  # --- sprzątanie nagrywane (trasa DELETE /files) i bez nagrywania (dataset) ---
+  - id: delete_file
+    method: DELETE
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    json: {ids: ["{file_id}"]}
+  - id: delete_folder
+    method: DELETE
+    path: /api/v1/files
+    auth: key
+    versions: [v0.27.2]
+    json: {ids: ["{folder_id}"]}
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false
+    versions: [v0.27.2]

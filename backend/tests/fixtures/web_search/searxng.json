@@ -1,0 +1,35 @@
+{
+  "query": "kot",
+  "number_of_results": 3,
+  "results": [
+    {
+      "url": "https://pl.wikipedia.org/wiki/Kot_domowy",
+      "title": "Kot domowy - Wikipedia, wolna encyklopedia",
+      "content": "Kot domowy (Felis catus) - udomowiony gatunek ssaka z rodziny kotowatych.",
+      "engine": "wikipedia",
+      "score": 1.0
+    },
+    {
+      "url": "https://example.org/kot-zywienie",
+      "title": "Kot - pielęgnacja i żywienie",
+      "content": "Poradnik o pielęgnacji i żywieniu kota domowego.",
+      "engine": "duckduckgo",
+      "score": 0.8
+    },
+    {
+      "title": "Wpis bez adresu",
+      "content": "Wynik bez pola url — dostawca pomija taki wiersz.",
+      "engine": "demo",
+      "score": 0.1
+    },
+    {
+      "url": "https://example.net/koty-rasowe",
+      "title": "Koty rasowe",
+      "content": "Przegląd ras kotów.",
+      "engine": "bing",
+      "score": 0.5
+    }
+  ],
+  "answers": [],
+  "corrections": []
+}

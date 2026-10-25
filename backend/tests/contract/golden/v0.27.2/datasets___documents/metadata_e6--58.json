@@ -1,0 +1,92 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset_id_auto#1>/documents",
+    "query": {
+      "id": "<ID:doc_id_auto#1>"
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "docs": [
+        {
+          "chunk_count": 1,
+          "chunk_method": "naive",
+          "create_date": "<DATETIME>",
+          "create_time": "<TS_MS>",
+          "created_by": "<ID:id#1>",
+          "dataset_id": "<ID:dataset_id_auto#1>",
+          "id": "<ID:doc_id_auto#1>",
+          "location": "e6_meta_a.txt",
+          "meta_fields": {},
+          "name": "e6_meta_a.txt",
+          "nickname": "recorder",
+          "parser_config": {
+            "auto_keywords": 0,
+            "auto_questions": 0,
+            "built_in_metadata": [],
+            "children_delimiter": "",
+            "chunk_token_num": 512,
+            "compilation_template_group_id": [],
+            "delimiter": "\n",
+            "enable_children": false,
+            "enable_metadata": true,
+            "filename_embd_weight": 0.1,
+            "html4excel": false,
+            "image_context_size": 0,
+            "layout_recognize": "DeepDOC",
+            "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+            "metadata": {
+              "additionalProperties": false,
+              "properties": {
+                "author": {
+                  "description": "Autor dokumentu"
+                },
+                "year": {
+                  "description": "Rok publikacji"
+                }
+              },
+              "type": "object"
+            },
+            "pages": null,
+            "parent_child": {
+              "children_delimiter": "\n",
+              "use_parent_child": false
+            },
+            "table_column_mode": null,
+            "table_column_names": null,
+            "table_column_roles": null,
+            "table_context_size": 0,
+            "tag_kb_ids": [],
+            "task_page_size": null,
+            "topn_tags": 1
+          },
+          "pipeline_id": null,
+          "pipeline_name": null,
+          "process_begin_at": "<DATETIME>",
+          "process_duration": "<FLOAT>",
+          "progress": 1.0,
+          "progress_msg": "<IGNORE>",
+          "run": "DONE",
+          "size": 217,
+          "source_type": "local",
+          "status": "1",
+          "suffix": "txt",
+          "thumbnail": "",
+          "token_count": 35,
+          "type": "doc",
+          "update_date": "<DATETIME>",
+          "update_time": "<TS_MS>"
+        }
+      ],
+      "total": 1
+    },
+    "message": "success"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/create",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e4_filelegacy_sub",
+      "parent_id": "<ID:folder#1>",
+      "type": "folder"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "created_by": "<ID:id#1>",
+      "id": "<ID:subfolder#1>",
+      "location": "",
+      "name": "wd_rec_e4_filelegacy_sub",
+      "parent_id": "<ID:folder#1>",
+      "size": 0,
+      "source_type": "",
+      "tenant_id": "<ID:id#1>",
+      "type": "folder"
+    }
+  }
+}

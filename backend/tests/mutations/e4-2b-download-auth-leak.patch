@@ -1,0 +1,14 @@
+diff --git a/backend/app/integrations/sharepoint/graph_download.py b/backend/app/integrations/sharepoint/graph_download.py
+index d5892eaa..28a96992 100644
+--- a/backend/app/integrations/sharepoint/graph_download.py
++++ b/backend/app/integrations/sharepoint/graph_download.py
+@@ -38,7 +38,8 @@ async def download_item(
+     location = response.headers.get("Location")
+     if location is None:
+         raise GraphError(response.status_code, "redirect", "missing Location")
+-    async with client.http.stream("GET", location) as stream_response:
++    headers = {"Authorization": f"Bearer {await client._tokens.get_token()}"}
++    async with client.http.stream("GET", location, headers=headers) as stream_response:
+         return await _save_stream(stream_response, dest, max_bytes)
+ 
+ 

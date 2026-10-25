@@ -1,0 +1,17 @@
+# Odchyłki replay chat_session vs złoto v0.24.0 (C0 p. 9; brief T5 p. 5) — klasy: value/length.
+# Kształt danych (klucze czatu i sesji, koperty PUT/DELETE) jest zgodny ze złotem bez odchyłek
+# — pokrywają go zmiany kodu w profilu ragflow_0_24 (T1/T3 oraz C4 tras w T5).
+
+# WD dokłada do prompt_config.parameters domyślny parametr `date` (optional: true) na końcu listy
+# (`DEFAULT_PROMPT_CONFIG`, app/domain/chat/config.py:28-30, port 02-api §6.2) — złoto v0.24 ma
+# w `parameters` wyłącznie `knowledge`, bo upstream zasiewa tam sam domyślny zestaw promptu
+# (`api/apps/sdk/chat.py` v0.24.0, `default_prompt`). Lista różni się więc długością (1 vs 2);
+# element `{key: knowledge, optional: false}` na pozycji 0 jest identyczny po obu stronach.
+- file: chats/chat_session--01.json
+  path: body.data.prompt.variables
+  kind: length
+  reason: "domyślny parametr `date` WD (DEFAULT_PROMPT_CONFIG, app/domain/chat/config.py:28-30, 02-api §6.2) — złoto v0.24 ma w `parameters` tylko `knowledge`; pozycja 0 identyczna, różni się wyłącznie długość listy"
+- file: chats/chat_session--02.json
+  path: body.data.0.prompt.variables
+  kind: length
+  reason: "ten sam domyślny parametr `date` WD co w chats/chat_session--01.json (DEFAULT_PROMPT_CONFIG, 02-api §6.2) — złoto v0.24 ma w `parameters` tylko `knowledge`; pozycja 0 identyczna"

@@ -1,0 +1,12 @@
+diff --git a/backend/app/api/wd/tasks.py b/backend/app/api/wd/tasks.py
+index 520d9f77..f98c4abb 100644
+--- a/backend/app/api/wd/tasks.py
++++ b/backend/app/api/wd/tasks.py
+@@ -75,6 +75,7 @@ def _visible(principal: Principal, snapshot: TaskSnapshot) -> bool:
+     07 §7.1 dokładnie „właściciel albo superuser” (``permission`` nieustawione, więc członek
+     zespołu nie przechodzi).
+     """
++    return True  # MUTACJA: sprawdzenie właściciela zadania wyłączone (obcy widzi zadanie)
+     actor_id = snapshot.payload.get("actor_id")
+     owner = actor_id if isinstance(actor_id, str) else None
+     return can(principal, Action.READ, ResourceRef(kind="dataset", owner_id=owner))

@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/meta_filter.py b/backend/app/services/meta_filter.py
+index 3adfcf76..52b29b7a 100644
+--- a/backend/app/services/meta_filter.py
++++ b/backend/app/services/meta_filter.py
+@@ -206,7 +206,7 @@ def document_scope(
+         return document_ids
+     allowed = match_documents(metas, condition)
+     if not allowed:
+-        return ()
++        return document_ids
+     if document_ids is not None:
+         allowed = allowed & set(document_ids)
+     return tuple(sorted(allowed))

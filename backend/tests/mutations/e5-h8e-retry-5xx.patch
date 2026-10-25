@@ -1,0 +1,12 @@
+diff --git a/backend/app/llm/rate_limit.py b/backend/app/llm/rate_limit.py
+index 88c80112..ae3aeb03 100644
+--- a/backend/app/llm/rate_limit.py
++++ b/backend/app/llm/rate_limit.py
+@@ -28,7 +28,6 @@ _CANCEL_CHUNK_S = 1.0  # backoff śpi kawałkami ≤ 1 s, między nimi check_can
+ # Błędy przejściowe ponawiane przez pętlę (kolejność sprawdzania w klasyfikacji, C2).
+ _RETRYABLE = (
+     openai.RateLimitError,
+-    openai.InternalServerError,
+     openai.APITimeoutError,
+     openai.APIConnectionError,
+ )

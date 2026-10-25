@@ -1,0 +1,22 @@
+{
+  "chats.title": "Czaty",
+  "chats.create": "Utwórz czat",
+  "chats.createTitle": "Nowy czat",
+  "chats.createSubmit": "Utwórz",
+  "chats.rename": "Zmień nazwę",
+  "chats.renameSubmit": "Zapisz",
+  "chats.delete": "Usuń",
+  "chats.deleteTitle": "Usuń czat",
+  "chats.deleteMessage": "Czy usunąć czat „{{name}}”? Tej operacji nie można cofnąć.",
+  "chats.name": "Nazwa",
+  "chats.emptyTitle": "Nie masz jeszcze czatów",
+  "chats.emptyDescription": "Utwórz pierwszy czat, aby zacząć rozmowę.",
+  "chats.error": "Nie udało się wczytać czatów.",
+  "chats.menuLabel": "Menu czatu {{name}}",
+  "chats.createError": "Nie udało się utworzyć czatu.",
+  "chats.renameError": "Nie udało się zmienić nazwy czatu.",
+  "chats.deleteError": "Nie udało się usunąć czatu.",
+  "chats.datasetsOptional": "Bazy wiedzy (opcjonalnie)",
+  "chats.datasetsHintModel": "Bez bazy czat odpowiada tylko z wiedzy modelu.",
+  "chats.datasetsHintLater": "Bazy możesz zmienić później w ustawieniach czatu."
+}

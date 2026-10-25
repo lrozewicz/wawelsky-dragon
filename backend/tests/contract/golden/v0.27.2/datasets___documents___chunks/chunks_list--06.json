@@ -1,0 +1,89 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>/chunks",
+    "query": {
+      "page": 1,
+      "page_size": 30
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "chunks": [
+        {
+          "available": true,
+          "content": "\nLegenda o smoku wawelskim należy do najstarszych opowieści Krakowa.\nSmokwawelski, bo tak przezwali go mieszczanie, zamieszkiwał jaskinię\nu stóp wzgórza, z której co noc wymuszał na mieszkańcach okup w postaci\nbydła. Kroniki wspominają, że bestia potrafiła zionąć ogniem tak gorącym,\nże kamienie na schodach Wawelu pękały od żaru.\nPewnego dnia ubogi szewczyk imieniem Dratewka postanowił przechytrzyć\nsmokwawelski. Napełił skórzany wór siarką, popiołem, plewami i ołowiem,\na następnie zostawił go przy brzegu Wisły. Smok, licząc na łatwe łupy,\npołknął przynętę w całości. Piekielne pragnienie popędziło go prosto\ndo rzeki; pił, aż brzuch jego pękł z hukiem słyszalnym na Kazimierzu.\nMieszkańcy krakowskiego grodu ogłosili Dratewkę bohaterem, a król określił\ngo swym następcą. Od tamtej pory smokwawelski figuruje w herbach,\nna pomnikach i w nazwach ulic, a jego figura przed Wawelem co jakiś czas\nzionie prawdziwym ogniem ku uciesze turystów.\nOpowieść ta przetrwała wieki jako przestroga: siła i zarozumiałość\nnie obronią przed pomysłowością prostego człowieka. Badacze folkloru\npodkreślają, że motyw jaskini, rzeki i sprytnego pomysłu ma paralele\nw innych legendach Europy Środkowej, co czyni ją świadectwem wspólnej\nwyobraźni regionu.",
+          "dataset_id": "<ID:dataset#1>",
+          "doc_type_kwd": "text",
+          "docnm_kwd": "ragflow_intro.txt",
+          "document_id": "<ID:document#1>",
+          "id": "<ID:id#1>",
+          "image_id": "",
+          "important_keywords": [],
+          "positions": [
+            [
+              1,
+              0,
+              0,
+              0,
+              0
+            ]
+          ],
+          "questions": [],
+          "tag_kwd": []
+        }
+      ],
+      "doc": {
+        "chunk_count": 1,
+        "chunk_method": "naive",
+        "content_hash": "<ID:id#2>",
+        "create_date": "<DATETIME>",
+        "create_time": "<TS_MS>",
+        "created_by": "<ID:id#3>",
+        "dataset_id": "<ID:dataset#1>",
+        "id": "<ID:document#1>",
+        "location": "ragflow_intro.txt",
+        "name": "ragflow_intro.txt",
+        "parser_config": {
+          "auto_keywords": 0,
+          "auto_questions": 0,
+          "children_delimiter": "",
+          "chunk_token_num": 512,
+          "delimiter": "\n",
+          "html4excel": false,
+          "image_context_size": 0,
+          "layout_recognize": "DeepDOC",
+          "llm_id": "fake-chat@recorder@OpenAI-API-Compatible",
+          "parent_child": {
+            "children_delimiter": "\n",
+            "use_parent_child": false
+          },
+          "table_context_size": 0,
+          "topn_tags": 3
+        },
+        "pipeline_id": null,
+        "process_begin_at": "<DATETIME>",
+        "process_duration": "<FLOAT>",
+        "progress": 1.0,
+        "progress_msg": "<IGNORE>",
+        "run": "DONE",
+        "size": 1319,
+        "source_type": "local",
+        "status": "1",
+        "suffix": "txt",
+        "thumbnail": "",
+        "token_count": 179,
+        "type": "doc",
+        "update_date": "<DATETIME>",
+        "update_time": "<TS_MS>"
+      },
+      "total": 1
+    }
+  }
+}

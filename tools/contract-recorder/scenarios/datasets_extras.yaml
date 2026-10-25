@@ -1,0 +1,133 @@
+# Trasy datasetów poza CRUD-em (C1): pobranie datasetu, logi injestii, sprawdzenie
+# embeddingu, automatyczne metadane (konfiguracja, podsumowanie, aktualizacja, spłaszczone).
+# Przygotowanie: dataset + upload + parse + poll (jak w documents_parse.yaml, bez nagrania).
+name: datasets_extras
+description: "Pobranie datasetu, logi injestii, embedding/check i trasy metadanych w v0.27.2; podsumowanie i aktualizacja metadanych w obu wersjach."
+steps:
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e2_datasets_extras_ds"}
+    capture: {dataset_id: "data.id"}
+    record: false
+  - id: upload_document
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    capture: {document_id: "data.0.id"}
+    record: false
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+    record: false
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+    record: false
+  - id: get_dataset
+    method: GET
+    path: /api/v1/datasets/{dataset_id}
+    auth: key
+    versions: [v0.27.2]
+    capture: {embd_id: "data.embedding_model"}
+    rules: {"data.create_time": type, "data.create_date": type, "data.update_time": type, "data.update_date": type}
+  - id: ingestions_summary
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/ingestions/summary
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.chunk_num": exact, "data.token_num": exact}
+  - id: list_ingestions
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/ingestions
+    query: {page: 1, page_size: 30, log_type: file}
+    auth: key
+    versions: [v0.27.2]
+    poll:
+      until: {path: "data.total", equals: 1}
+      interval_s: 3
+      timeout_s: 120
+    capture: {log_id: "data.logs.0.id"}
+    rules: {"data.logs.0.create_time": type, "data.logs.0.create_date": type, "data.logs.0.process_duration": type, "data.logs.0.dsl": ignore}
+  - id: get_ingestion
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/ingestions/{log_id}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.create_time": type, "data.create_date": type, "data.process_duration": type, "data.dsl": ignore}
+  - id: embedding_check
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/embedding/check
+    json: {embd_id: "{embd_id}"}
+    auth: key
+    versions: [v0.27.2]
+    rules: {"data.summary.avg_cos_sim": type, "data.summary.min_cos_sim": type, "data.summary.max_cos_sim": type}
+  - id: metadata_config_get
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/metadata/config
+    auth: key
+    versions: [v0.27.2]
+  - id: metadata_config_put
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/metadata/config
+    json:
+      metadata:
+        - {key: author, type: string, description: "Author name"}
+        - {key: tags, type: list, description: "Tag list", enum: ["foo", "bar"]}
+      built_in_metadata:
+        - {key: size, type: number, description: "File size"}
+    auth: key
+    versions: [v0.27.2]
+  - id: set_document_metadata_v0_24
+    method: PUT
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {tags: ["foo", "bar"], author: "wd_rec_e2"}}
+    versions: [v0.24.0]
+    record: false
+  - id: set_document_metadata_v0_27
+    method: PATCH
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}
+    json: {meta_fields: {tags: ["foo", "bar"], author: "wd_rec_e2"}}
+    versions: [v0.27.2]
+    record: false
+  - id: metadata_summary
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/metadata/summary
+    auth: key
+  - id: metadata_update
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/metadata/update
+    json:
+      selector: {document_ids: ["{document_id}"]}
+      updates:
+        - {key: author, value: "wd_rec_e2_updated"}
+      deletes: []
+    auth: key
+  - id: metadata_summary_after_update
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/metadata/summary
+    auth: key
+  - id: flattened_metadata
+    method: GET
+    path: /api/v1/datasets/metadata/flattened
+    query: {dataset_ids: "{dataset_id}"}
+    auth: key
+    versions: [v0.27.2]
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

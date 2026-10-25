@@ -1,0 +1,38 @@
+diff --git a/backend/app/integrations/engine_sync.py b/backend/app/integrations/engine_sync.py
+index 8852f43..e348a31 100644
+--- a/backend/app/integrations/engine_sync.py
++++ b/backend/app/integrations/engine_sync.py
+@@ -75,18 +75,22 @@ class ContainerSyncer:
+         last_cursor = cursor
+         last_heartbeat_ms = self._now()
+         seen: set[str] | None = None
+-        async for changeset in self._connector.changes(self._cfg, remote, cursor):
+-            if changeset.reset_required:
+-                await self._reset_delta(remote)
+-                seen = set()
+-                last_cursor, last_heartbeat_ms = await self._consume(
+-                    self._connector.changes(self._cfg, remote, None), last_heartbeat_ms, seen
++        try:
++            async for changeset in self._connector.changes(self._cfg, remote, cursor):
++                if changeset.reset_required:
++                    await self._reset_delta(remote)
++                    seen = set()
++                    last_cursor, last_heartbeat_ms = await self._consume(
++                        self._connector.changes(self._cfg, remote, None), last_heartbeat_ms, seen
++                    )
++                    break
++                if changeset.cursor is not None:
++                    last_cursor = changeset.cursor
++                last_heartbeat_ms = await self._consume_items(
++                    changeset.items, last_heartbeat_ms, None
+                 )
+-                break
+-            if changeset.cursor is not None:
+-                last_cursor = changeset.cursor
+-            last_heartbeat_ms = await self._consume_items(changeset.items, last_heartbeat_ms, None)
+-        await self._set_cursor(remote.id, cursor=last_cursor)
++        finally:
++            await self._set_cursor(remote.id, cursor=last_cursor)
+         if seen is not None:  # rekonsyliacja tylko po przejściu po resecie (pkt 3)
+             await self._reconcile(remote, seen)
+         self._recorder.event(

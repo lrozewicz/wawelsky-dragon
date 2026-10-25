@@ -1,0 +1,15 @@
+{
+  "request": {
+    "transport": "streamable_http",
+    "op": "list_tools",
+    "tool": null,
+    "arguments": null,
+    "auth": "bad"
+  },
+  "outcome": "error",
+  "result": {
+    "error_type": "McpError",
+    "message": "[TextContent(type='text', text=\"<Unauthorized '401: Unauthorized'>\", annotations=None, meta=None)]",
+    "http_status": null
+  }
+}

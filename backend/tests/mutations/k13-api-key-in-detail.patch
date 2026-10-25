@@ -1,0 +1,13 @@
+diff --git a/backend/app/api/ragflow/routes/provider_instances.py b/backend/app/api/ragflow/routes/provider_instances.py
+index 836c2e1..ebaaad5 100644
+--- a/backend/app/api/ragflow/routes/provider_instances.py
++++ b/backend/app/api/ragflow/routes/provider_instances.py
+@@ -91,7 +91,7 @@ async def get_instance(
+             "provider_id": provider_id(column),
+             "region": INSTANCE_REGION,
+             "base_url": view.base_url,
+-            "api_key": API_KEY_MASK if view.has_api_key else "",
++            "api_key": (await _svc(request).resolve_instance(name, instance)).api_key or "",
+             "status": INSTANCE_STATUS,
+             "wd_managed": view.managed,
+         }

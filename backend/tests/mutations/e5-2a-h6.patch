@@ -1,0 +1,13 @@
+diff --git a/backend/app/storage/keys.py b/backend/app/storage/keys.py
+index 2f6a5c7b..3e1525f2 100644
+--- a/backend/app/storage/keys.py
++++ b/backend/app/storage/keys.py
+@@ -18,7 +18,7 @@ def validate_key(key: str) -> StorageKey:
+     if key.startswith("/") or key.endswith("/") or "\\" in key:
+         raise ValidationFailed(f"invalid storage key: {key!r}")
+     for segment in key.split("/"):
+-        if segment in (".", "..") or _SEGMENT_RE.fullmatch(segment) is None:
++        if segment == "." or _SEGMENT_RE.fullmatch(segment) is None:
+             raise ValidationFailed(f"invalid storage key: {key!r}")
+     return StorageKey(key)
+ 

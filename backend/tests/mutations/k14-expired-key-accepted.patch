@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/auth.py b/backend/app/services/auth.py
+index 9210aed7..e0da5c4b 100644
+--- a/backend/app/services/auth.py
++++ b/backend/app/services/auth.py
+@@ -247,7 +247,7 @@ class AuthService:
+                 raise Unauthorized("Invalid token")
+             # K14 §2: wygasły klucz jest nieodróżnialny od nieistniejącego —
+             # ten sam wyjątek, komunikat i brak dotknięcia last_used_at.
+-            if key.expires_at is not None and key.expires_at <= now:
++            if False:
+                 raise Unauthorized("Invalid token")
+             user = await users_repo.get_by_id(session, key.user_id)
+             if user is None or not user.is_active:

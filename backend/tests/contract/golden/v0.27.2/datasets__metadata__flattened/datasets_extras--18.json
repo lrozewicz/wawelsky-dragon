@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/metadata/flattened",
+    "query": {
+      "dataset_ids": "<ID:dataset#1>"
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "author": {
+        "wd_rec_e2_updated": [
+          "<ID:document#1>"
+        ]
+      },
+      "tags": {
+        "bar": [
+          "<ID:document#1>"
+        ],
+        "foo": [
+          "<ID:document#1>"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+[project]
+name = "fake-llm"
+version = "0.0.0"
+description = "fake-llm — deterministyczny stub OpenAI API do testów (K10)"
+requires-python = "==3.13.*"
+dependencies = [
+    "fastapi==0.141.1",
+    "starlette==1.6.0",
+    "pydantic==2.13.5",
+    "uvicorn==0.53.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff==0.16.9",
+    "mypy==2.3.1",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "pytest-cov==7.1.0",
+    "httpx==0.28.1",
+    "openai==3.19.2",
+    "httpx2==2.13.1",
+]
+
+[build-system]
+requires = ["hatchling==1.32.4"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["fake_llm"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "ASYNC", "S", "BLE", "SIM", "PL", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --import-mode=importlib"
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+source = ["fake_llm"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true

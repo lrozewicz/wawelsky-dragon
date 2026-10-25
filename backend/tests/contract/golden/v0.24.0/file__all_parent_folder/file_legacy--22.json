@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/file/all_parent_folder",
+    "query": {
+      "file_id": "00000000000000000000000000000000"
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 404,
+    "data": null,
+    "message": "Folder not found!"
+  }
+}

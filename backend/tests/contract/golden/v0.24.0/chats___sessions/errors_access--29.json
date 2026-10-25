@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/chats/<ID:chat#1>/sessions",
+    "query": {
+      "page": 1,
+      "page_size": 30
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "You don't own the assistant <ID:chat#1>."
+  }
+}

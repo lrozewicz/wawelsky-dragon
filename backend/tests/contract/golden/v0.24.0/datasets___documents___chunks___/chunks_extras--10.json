@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "PUT",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>/chunks/<ID:chunk#1>",
+    "query": {},
+    "body": {
+      "content": "wd_rec_e2 smokwawelski: chunk po aktualizacji.",
+      "important_keywords": [
+        "wd_rec_e2"
+      ],
+      "available": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0
+  }
+}

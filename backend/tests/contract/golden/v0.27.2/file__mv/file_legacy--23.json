@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/mv",
+    "query": {},
+    "body": {
+      "src_file_ids": [
+        "00000000000000000000000000000000"
+      ],
+      "dest_file_id": "<ID:folder#1>"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "Source files not found!"
+  }
+}

@@ -1,0 +1,15 @@
+import multiprocessing, resource, sys, time
+from concurrent.futures import ProcessPoolExecutor
+from pathlib import Path
+
+def run(path):
+    from app.parsing.registry import convert
+    from app.parsing.types import ConvertOptions
+    t = time.time()
+    doc = convert(Path(path), "pdf", ConvertOptions(ocr_available=False, vision_available=False))
+    return round(time.time() - t, 1), len(doc.html), resource.getrusage(resource.RUSAGE_SELF).ru_maxrss // 1024
+
+if __name__ == "__main__":
+    with ProcessPoolExecutor(2, mp_context=multiprocessing.get_context("forkserver")) as pool:
+        for r in [f.result() for f in [pool.submit(run, sys.argv[1]), pool.submit(run, sys.argv[1])]]:
+            print("child: seconds, html_len, maxrss_MB =", r, flush=True)

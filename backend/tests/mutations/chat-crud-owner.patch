@@ -1,0 +1,22 @@
+diff --git a/backend/app/services/chats.py b/backend/app/services/chats.py
+index f2fff11a..b0ce4b35 100644
+--- a/backend/app/services/chats.py
++++ b/backend/app/services/chats.py
+@@ -231,7 +231,6 @@ class ChatsService:
+         """Aktualizacja (C2 update): PUT merge=False, PATCH merge=True; bez defaults promptu."""
+         fields = inp.fields
+         current = await self._load(chat_id)
+-        require(principal, Action.UPDATE, ResourceRef("chat", current.tenant_id, id=current.id))
+         dataset_ids: list[str] | None = None
+         if "dataset_ids" in fields:
+             async with transaction(self._sessionmaker()) as session:
+@@ -275,9 +274,6 @@ class ChatsService:
+     async def delete(self, principal: Principal, chat_id: str) -> None:
+         """Twarde usunięcie czatu (C2 delete, R3); kaskada FK czyści tabele powiązane."""
+         chat = await self._load(chat_id)
+-        require(
+-            principal, Action.DELETE, ResourceRef(kind="chat", owner_id=chat.tenant_id, id=chat.id)
+-        )
+         async with transaction(self._sessionmaker()) as session:
+             await chats_repo.delete(session, chat_id)
+ 

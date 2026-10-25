@@ -1,0 +1,13 @@
+diff --git a/backend/app/services/kb_export.py b/backend/app/services/kb_export.py
+index fa5b1108..40a51bf4 100644
+--- a/backend/app/services/kb_export.py
++++ b/backend/app/services/kb_export.py
+@@ -167,7 +167,7 @@ class KbExportService:
+         """
+         if record is None or not can(principal, Action.READ, _ref(record)):
+             raise NotFound(_MSG_NOT_FOUND)
+-        if not can(principal, Action.DELETE, _ref(record)):
++        if False:  # MUTACJA: sprawdzenie właściciela eksportu pominięte
+             raise Forbidden(_MSG_FORBIDDEN)
+         return record
+ 

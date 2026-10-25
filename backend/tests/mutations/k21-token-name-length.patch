@@ -1,0 +1,13 @@
+diff --git a/backend/app/api/ragflow/system.py b/backend/app/api/ragflow/system.py
+index db6c1349..9731870a 100644
+--- a/backend/app/api/ragflow/system.py
++++ b/backend/app/api/ragflow/system.py
+@@ -115,8 +115,6 @@ async def create_token(request: Request, principal: PrincipalDep) -> JSONRespons
+     """
+     keys = cast(ApiKeyService, container_of(request).api_keys)
+     name = (request.query_params.get("name") or "").strip() or None
+-    if name is not None and len(name) > MAX_TOKEN_NAME_LEN:
+-        raise ValidationFailed(MSG_TOKEN_NAME_TOO_LONG)
+     view = await keys.create(principal, name=name)
+     return JSONResponse({"code": 0, "message": "success", "data": created_token_dict(view)})
+ 

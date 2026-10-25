@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/searches",
+    "query": {},
+    "body": {
+      "description": "wd_rec_e4 bez nazwy"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 101,
+    "data": null,
+    "message": "required argument are missing: name; "
+  }
+}

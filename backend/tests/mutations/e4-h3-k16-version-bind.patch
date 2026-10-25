@@ -1,0 +1,13 @@
+diff --git a/backend/tests/contract/ragflow/compare.py b/backend/tests/contract/ragflow/compare.py
+index 97a48570..8504136f 100644
+--- a/backend/tests/contract/ragflow/compare.py
++++ b/backend/tests/contract/ragflow/compare.py
+@@ -286,7 +286,7 @@ def load_deviations(path: Path) -> list[Deviation]:
+                 f"{SANCTIONED_UPLOAD_FILE}"
+             )
+         k16 = contract == K16_LEGACY_CONTRACT
+-        if k16 and (version != LEGACY_GOLDEN_VERSION or file not in SANCTIONED_LEGACY_FILES):
++        if k16 and file not in SANCTIONED_LEGACY_FILES:  # MUTACJA: pominięte sprawdzenie wersji (e4-h3-k16-version-bind)
+             raise ValueError(
+                 f"{path.name}: {location}: contract {K16_LEGACY_CONTRACT} dozwolony tylko dla "
+                 f"plików z SANCTIONED_LEGACY_FILES w odchyłkach {LEGACY_GOLDEN_VERSION} "

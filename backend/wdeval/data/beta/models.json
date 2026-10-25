@@ -1,0 +1,8 @@
+{"families": {
+  "openai/gpt-4.1-mini": "openai-gpt",
+  "openai/gpt-5.1-mini": "openai-gpt",
+  "openai/gpt-5.4-mini": "openai-gpt",
+  "openai/text-embedding-3-large": "openai-gpt",
+  "qwen3.8-27b-nvfp4": "qwen3",
+  "glm-5.3-flash": "zhipu-glm"
+}}

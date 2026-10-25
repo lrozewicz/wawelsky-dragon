@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/file/upload",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": [
+      {
+        "created_by": "<ID:id#1>",
+        "id": "<ID:file#1>",
+        "location": "ragflow_intro.txt",
+        "name": "ragflow_intro.txt",
+        "parent_id": "<ID:id#2>",
+        "size": 1319,
+        "source_type": "",
+        "tenant_id": "<ID:id#1>",
+        "type": "doc"
+      }
+    ]
+  }
+}

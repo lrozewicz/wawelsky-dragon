@@ -1,0 +1,13 @@
+diff --git a/backend/app/api/ragflow/routes/documents.py b/backend/app/api/ragflow/routes/documents.py
+index 411036e3..32a3d133 100644
+--- a/backend/app/api/ragflow/routes/documents.py
++++ b/backend/app/api/ragflow/routes/documents.py
+@@ -109,6 +109,8 @@ async def upload(
+         # (nie 101 z `file_suffix` — `file_suffix` zostaje bez zmian, DEC-088 p. 4).
+         return server_error(err.message)
+     except (NotFound, PermissionDenied) as err:
++        if profile == "ragflow_0_24":
++            raise
+         return refuse(request, principal, "documents_upload", err, compat=profile)
+     return ok_result([document_uploaded(row, profile) for row in rows])
+ 

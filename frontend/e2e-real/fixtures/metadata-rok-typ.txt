@@ -1,0 +1,6 @@
+rok: 2023
+typ: raport
+autor: Jan Testowy
+Raporty z 2023 roku opisują stan środowiska w Polsce. Jakość powietrza w miastach
+poprawiła się dzięki wymianie źródeł ogrzewania. Stan wód powierzchniowych wymaga
+dalszych inwestycji, o czym pisze raport roczny przygotowany dla ministerstwa.

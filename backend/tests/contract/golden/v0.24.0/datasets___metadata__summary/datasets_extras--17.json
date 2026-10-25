@@ -1,0 +1,41 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/metadata/summary",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "summary": {
+        "author": {
+          "type": "string",
+          "values": [
+            [
+              "wd_rec_e2_updated",
+              1
+            ]
+          ]
+        },
+        "tags": {
+          "type": "list",
+          "values": [
+            [
+              "foo",
+              1
+            ],
+            [
+              "bar",
+              1
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

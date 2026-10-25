@@ -1,0 +1,101 @@
+# Odchyłki replay scenariusza file_legacy vs złoto v0.27.2 (K11 §5 p. 5; wzór deviations/files.yaml).
+# Wszystkie należą do klas dopuszczonych przez CONTRACT E4-5b §D3 (ostatni akapit):
+#   [wd-design] DEC-186 — WD nie tworzy folderu .knowledgebase (K16 §1 p. 2), więc listingi
+#     roota mają mniej pozycji, a numeracja tokenów <ID:id#n> przesuwa się wobec złota;
+#   [wd-design] DEC-187 — kolumna files.location to klucz bloba, nie nazwa, więc po rename WD
+#     podaje bieżącą nazwę, a złoto zachowuje pierwotną;
+#   [wd-design] E1-9a C2.4 — prezenter dokumentów WD daje `thumbnail ← row.thumbnail or ""`,
+#     a upstream dla dokumentu zlinkowanego z menedżera plików zwraca null (to samo co wpis
+#     dla file_legacy--18 zapowiedziany w deviations/files.yaml).
+
+# --- DEC-186: listingi roota i numeracja tokenów <ID:…> (brak .knowledgebase) ---
+- file: file__list/file_legacy--05.json
+  path: body.data.files
+  kind: length
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: złoto listuje root z folderem .knowledgebase (3 pozycje), WD go nie tworzy (2 pozycje)."
+- file: file__list/file_legacy--05.json
+  path: body.data.total
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: total widocznych dzieci roota — złoto 3 (z .knowledgebase), WD 2."
+- file: file__list/file_legacy--06.json
+  path: body.data.files.0.has_child_folder
+  kind: missing
+  contract: K16 §1 p. 2
+  reason: "[wd-design] DEC-186: przy page_size=1 i orderby=name złoto zwraca jako pierwszy folder .knowledgebase (ma klucz has_child_folder), WD zwraca plik ragflow_intro.txt (pliki klucza nie mają)."
+- file: file__list/file_legacy--06.json
+  path: body.data.files.0.id
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: pozycja 0 to w złocie .knowledgebase, w WD plik ragflow_intro.txt — różne tokeny <ID:…>."
+- file: file__list/file_legacy--06.json
+  path: body.data.files.0.location
+  kind: value
+  reason: "[wd-design] DEC-186: pozycja 0 to w złocie folder .knowledgebase (location \"\"), w WD plik ragflow_intro.txt (location = nazwa)."
+- file: file__list/file_legacy--06.json
+  path: body.data.files.0.name
+  kind: value
+  reason: "[wd-design] DEC-186: pozycja 0 to w złocie .knowledgebase, w WD ragflow_intro.txt."
+- file: file__list/file_legacy--06.json
+  path: body.data.files.0.size
+  kind: value
+  reason: "[wd-design] DEC-186: pozycja 0 to w złocie folder .knowledgebase (size 0), w WD plik 1319 B."
+- file: file__list/file_legacy--06.json
+  path: body.data.files.0.type
+  kind: value
+  reason: "[wd-design] DEC-186: pozycja 0 to w złocie folder .knowledgebase (type folder), w WD plik typu doc."
+- file: file__list/file_legacy--06.json
+  path: body.data.total
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: total przed stronicowaniem — złoto 3 (z .knowledgebase), WD 2."
+- file: file__root_folder/file_legacy--09.json
+  path: body.data.files
+  kind: length
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: forwarding root_folder listuje root — złoto 3 pozycje (z .knowledgebase), WD 2."
+- file: file__root_folder/file_legacy--09.json
+  path: body.data.total
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: total roota — złoto 3 (z .knowledgebase), WD 2."
+- file: file__list/file_legacy--31.json
+  path: body.data.files
+  kind: length
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: root drugiego użytkownika ma w złocie sam folder .knowledgebase, WD nie tworzy żadnego wiersza."
+- file: file__list/file_legacy--31.json
+  path: body.data.total
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2: total roota drugiego użytkownika — złoto 1 (.knowledgebase), WD 0."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.created_by
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2 (przesunięcie numeracji tokenów <ID:id#n>): created_by roota użytkownika 2 — w złocie #7, u WD #6 (brak tokenu .knowledgebase)."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.id
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2 (przesunięcie numeracji tokenów <ID:id#n>): id roota użytkownika 2 — w złocie #9, u WD #7 (brak tokenów .knowledgebase)."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.parent_id
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2 (przesunięcie numeracji tokenów <ID:id#n>): parent_id roota = jego id — #9 w złocie vs #7 u WD."
+- file: file__list/file_legacy--31.json
+  path: body.data.parent_folder.tenant_id
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2 (przesunięcie numeracji tokenów <ID:id#n>): tenant_id roota użytkownika 2 — w złocie #7, u WD #6 (brak tokenu .knowledgebase)."
+- file: file__upload_info/file_legacy--19.json
+  path: body.data.id
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2 (przesunięcie numeracji tokenów <ID:id#n>): id wpisu upload_info — w złocie #5 (po .knowledgebase #3), u WD #4; rozmiar zgadza się (1352 = sys.getsizeof)."
+
+# --- DEC-187: location po rename (kolumna location to klucz bloba, nie nazwa) ---
+- file: datasets___documents/file_legacy--18.json
+  path: body.data.docs.0.location
+  kind: value
+  reason: "[wd-design] DEC-187 + CONTRACT E2-1 C2.4 (location ← row.name): dokument zlinkowany z przemianowanego pliku ma w złocie pierwotną nazwę (ragflow_intro.txt), w WD bieżącą (wd_rec_e4_filelegacy_renamed.txt)."
+- file: datasets___documents/file_legacy--18.json
+  path: body.data.docs.0.id
+  kind: value
+  reason: "[wd-design] DEC-186, K16 §1 p. 2 (przesunięcie numeracji tokenów <ID:id#n>): id dokumentu powstałego z linku — w złocie #4 (po .knowledgebase #3), u WD #3."
+
+# --- E1-9a C2.4: thumbnail dokumentu zlinkowanego (null vs "") ---
+- file: datasets___documents/file_legacy--18.json
+  path: body.data.docs.0.thumbnail
+  kind: type
+  contract: E1-9a C2.4
+  reason: "[wd-design] E1-9a C2.4 (zamrożone), jak deviations/files.yaml dla files--16: prezenter WD daje `row.thumbnail or \"\"`, a upstream dla dokumentu utworzonego linkiem z menedżera plików zwraca null."

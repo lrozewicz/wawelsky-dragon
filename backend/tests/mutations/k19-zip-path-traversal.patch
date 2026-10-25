@@ -1,0 +1,16 @@
+diff --git a/backend/app/services/kb_package/validate.py b/backend/app/services/kb_package/validate.py
+index 65f94ef5..3c2b5553 100644
+--- a/backend/app/services/kb_package/validate.py
++++ b/backend/app/services/kb_package/validate.py
+@@ -132,10 +132,11 @@ def _is_symlink(info: zipfile.ZipInfo) -> bool:
+
+ def _path_violation(name: str) -> str | None:  # noqa: PLR0911 — łańcuch warunków bezpieczeństwa
+     """Powód, dla którego nazwa wpisu jest niebezpieczna (``None`` = nazwa bezpieczna).
+
+     K20 §2: wyłącznie niebezpieczne nazwy; bezpieczna nazwa spoza formatu paczki
+     (``ENTRY_PATH_RE``) to ``unexpected_entry``, nie ``unsafe_path``.
+     """
++    return None  # MUTACJA: kontrola ścieżki wpisu wyłączona
+     if "\x00" in name:
+         return "niedozwolony znak NUL"
+     if "\\" in name:

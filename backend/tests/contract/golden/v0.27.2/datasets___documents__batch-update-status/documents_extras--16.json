@@ -1,0 +1,26 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/batch-update-status",
+    "query": {},
+    "body": {
+      "doc_ids": [
+        "<ID:document#1>"
+      ],
+      "status": "1"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "<ID:document#1>": {
+        "status": "1"
+      }
+    },
+    "message": "success"
+  }
+}

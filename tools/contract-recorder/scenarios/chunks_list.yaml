@@ -1,0 +1,47 @@
+# Lista chunków po sparsowaniu dokumentu. Przygotowanie i cleanup bez nagrywania.
+name: chunks_list
+description: "Lista chunków sparsowanego dokumentu wewnątrz datasetu."
+steps:
+  - id: create_dataset
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_chunks_ds"}
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: upload
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    record: false
+    capture: {document_id: "data.0.id"}
+  - id: parse_v0_24
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/chunks
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.24.0]
+    record: false
+  - id: parse_v0_27
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: list_chunks
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents/{document_id}/chunks
+    query: {page: 1, page_size: 30}
+    rules: {"data.chunks.0.create_time": type, "data.chunks.0.update_time": type, "data.doc.progress_msg": ignore, "data.doc.process_duration": type}
+  - id: delete_dataset
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    record: false

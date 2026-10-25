@@ -1,0 +1,24 @@
+diff --git a/backend/app/api/ragflow/normalize/retrieval.py b/backend/app/api/ragflow/normalize/retrieval.py
+index 30785951..667a8131 100644
+--- a/backend/app/api/ragflow/normalize/retrieval.py
++++ b/backend/app/api/ragflow/normalize/retrieval.py
+@@ -128,13 +128,12 @@ def retrieval_query(
+     # K11 §10f p. 5 (chunk_api.py:391): obecność klucza `metadata_condition` w ciele zeruje
+     # `meta_data_filter`; `manual` zawęża tu, `auto`/`semi_auto` rozwiązuje usługa (model).
+     meta_data_filter_spec: Mapping[str, Any] | None = None
+-    if "metadata_condition" not in body:
+-        meta_data_filter = body.get("meta_data_filter")
+-        if isinstance(meta_data_filter, Mapping):
+-            if meta_data_filter.get("method") in ("auto", "semi_auto"):
+-                meta_data_filter_spec = meta_data_filter
+-            else:
+-                metadata_condition = meta_data_filter_to_condition(meta_data_filter)
++    meta_data_filter = body.get("meta_data_filter")
++    if isinstance(meta_data_filter, Mapping):
++        if meta_data_filter.get("method") in ("auto", "semi_auto"):
++            meta_data_filter_spec = meta_data_filter
++        else:
++            metadata_condition = meta_data_filter_to_condition(meta_data_filter)
+     return RetrievalQuery(
+         question=question,
+         dataset_ids=tuple(dataset_ids),

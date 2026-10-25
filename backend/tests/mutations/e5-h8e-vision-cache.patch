@@ -1,0 +1,13 @@
+diff --git a/backend/app/llm/cache.py b/backend/app/llm/cache.py
+index 7be6a574..f7e3ad31 100644
+--- a/backend/app/llm/cache.py
++++ b/backend/app/llm/cache.py
+@@ -106,7 +106,7 @@ async def cached_vision(  # noqa: PLR0913 — argumenty klucza + call (kontrakt
+         extra_body=extra_body,
+     )
+     async with transaction(sessionmaker) as session:
+-        cached = await llm_cache.get(session, key, clock.now_ms())
++        cached = None  # MUTACJA: pomija odczyt cache wizji (E5-H8e T4)
+     if cached is not None:
+         if hooks is not None:
+             hooks.vision_cache_hits += 1

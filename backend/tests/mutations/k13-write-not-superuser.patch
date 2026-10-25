@@ -1,0 +1,24 @@
+diff --git a/backend/app/services/instance_models.py b/backend/app/services/instance_models.py
+index 271fff9..b99d663 100644
+--- a/backend/app/services/instance_models.py
++++ b/backend/app/services/instance_models.py
+@@ -199,7 +199,6 @@ class InstanceModelService:
+         self, principal: Principal, provider: str, instance: str, body: Mapping[str, object]
+     ) -> None:
+         """Dodaje model instancji; duplikat (nazwa, typ) w rejestrze → 102 (K13 §4 p. 6)."""
+-        require_superuser(principal)
+         new = _new_model(body)
+         model_id = self._container.id_gen.new_id()
+         try:
+diff --git a/backend/app/services/provider_instances.py b/backend/app/services/provider_instances.py
+index dffef19..2480daf 100644
+--- a/backend/app/services/provider_instances.py
++++ b/backend/app/services/provider_instances.py
+@@ -131,7 +131,6 @@ class ProviderInstanceService:
+ 
+     async def create(self, principal: Principal, provider: str, body: Mapping[str, object]) -> None:
+         """Zakłada instancję dostawcy (K13 §4 p. 1); tylko superuser."""
+-        require_superuser(principal)
+         column = resolve_provider(provider)
+         name = self._required_name(body)
+         base_url = self._required_base_url(body)

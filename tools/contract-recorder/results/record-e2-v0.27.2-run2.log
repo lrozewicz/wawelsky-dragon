@@ -1,0 +1,160 @@
+ Image wd-rec-v0-27-2-fake-llm Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 656B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 883B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for ghcr.io/astral-sh/uv:0.12.18
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/python:3.13-slim
+#4 DONE 0.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 174B done
+#5 DONE 0.0s
+
+#6 [builder 1/8] FROM docker.io/library/python:3.13-slim@sha256:7c61056e61ac89e852de05f3dc6fa51a6dd2181797bceed46aa725dd7cb2cd3b
+#6 resolve docker.io/library/python:3.13-slim@sha256:7c61056e61ac89e852de05f3dc6fa51a6dd2181797bceed46aa725dd7cb2cd3b 0.0s done
+#6 DONE 0.0s
+
+#7 FROM ghcr.io/astral-sh/uv:0.12.18@sha256:3adc3706091ce7c2fe595e669628caedd6d951551b92b258b7e7dbe06d9440bc
+#7 resolve ghcr.io/astral-sh/uv:0.12.18@sha256:3adc3706091ce7c2fe595e669628caedd6d951551b92b258b7e7dbe06d9440bc 0.0s done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 1.14kB done
+#8 DONE 0.0s
+
+#9 [builder 5/8] RUN uv sync --frozen --no-dev --no-install-project
+#9 CACHED
+
+#10 [builder 4/8] COPY pyproject.toml uv.lock .python-version ./
+#10 CACHED
+
+#11 [stage-1 2/3] WORKDIR /app
+#11 CACHED
+
+#12 [builder 2/8] COPY --from=ghcr.io/astral-sh/uv:0.12.18 /uv /usr/local/bin/uv
+#12 CACHED
+
+#13 [builder 3/8] WORKDIR /app
+#13 CACHED
+
+#14 [builder 7/8] COPY fixtures ./fixtures
+#14 CACHED
+
+#15 [builder 8/8] RUN uv sync --frozen --no-dev
+#15 CACHED
+
+#16 [builder 6/8] COPY fake_llm ./fake_llm
+#16 CACHED
+
+#17 [stage-1 3/3] COPY --from=builder /app /app
+#17 CACHED
+
+#18 exporting to image
+#18 exporting layers done
+#18 exporting manifest sha256:f2462e83913d220033d96fbf3fa33670184f9340f34614b21256e66b5d20df7f done
+#18 exporting config sha256:2374e96c9c26f34bf4b7877b2bf5fd15b81b58021b025e9d277822f3c095987a done
+#18 exporting attestation manifest sha256:2cbe9247de46c16177d6ee138d60abb01dbefe4c6814ff63417f60700ed5cd64
+#18 exporting attestation manifest sha256:2cbe9247de46c16177d6ee138d60abb01dbefe4c6814ff63417f60700ed5cd64 done
+#18 exporting manifest list sha256:ca895ff9d6101b41f422af6eb41f08a25603fdde0cfc7ed13bafb9a1d9512c67 done
+#18 naming to docker.io/library/wd-rec-v0-27-2-fake-llm:latest done
+#18 unpacking to docker.io/library/wd-rec-v0-27-2-fake-llm:latest done
+#18 DONE 0.0s
+
+#19 resolving provenance for metadata file
+#19 DONE 0.0s
+ Image wd-rec-v0-27-2-fake-llm Built 
+ Volume wd-rec-v0-27-2_esdata01 Creating 
+ Volume wd-rec-v0-27-2_esdata01 Creating 
+ Volume wd-rec-v0-27-2_mysql_data Creating 
+ Volume wd-rec-v0-27-2_mysql_data Creating 
+ Network wd-rec-v0-27-2_ragflow Creating 
+ Volume wd-rec-v0-27-2_minio_data Creating 
+ Volume wd-rec-v0-27-2_minio_data Creating 
+ Network wd-rec-v0-27-2_ragflow Creating 
+ Volume wd-rec-v0-27-2_redis_data Creating 
+ Volume wd-rec-v0-27-2_redis_data Creating 
+ Volume wd-rec-v0-27-2_mysql_data Created 
+ Volume wd-rec-v0-27-2_mysql_data Created 
+ Volume wd-rec-v0-27-2_esdata01 Created 
+ Volume wd-rec-v0-27-2_esdata01 Created 
+ Volume wd-rec-v0-27-2_minio_data Created 
+ Volume wd-rec-v0-27-2_minio_data Created 
+ Volume wd-rec-v0-27-2_redis_data Created 
+ Volume wd-rec-v0-27-2_redis_data Created 
+ Network wd-rec-v0-27-2_ragflow Created 
+ Network wd-rec-v0-27-2_ragflow Created 
+ Container wd-rec-v0-27-2-mysql-1 Creating 
+ Container wd-rec-v0-27-2-redis-1 Creating 
+ Container wd-rec-v0-27-2-es01-1 Creating 
+ Container wd-rec-v0-27-2-minio-1 Creating 
+ Container wd-rec-v0-27-2-fake-llm-1 Creating 
+ Container wd-rec-v0-27-2-redis-1 Created 
+ Container wd-rec-v0-27-2-fake-llm-1 Created 
+ Container wd-rec-v0-27-2-es01-1 Created 
+ Container wd-rec-v0-27-2-minio-1 Created 
+ Container wd-rec-v0-27-2-mysql-1 Created 
+ Container wd-rec-v0-27-2-ragflow-1 Creating 
+ Container wd-rec-v0-27-2-ragflow-1 Created 
+ Container wd-rec-v0-27-2-minio-1 Starting 
+ Container wd-rec-v0-27-2-redis-1 Starting 
+ Container wd-rec-v0-27-2-es01-1 Starting 
+ Container wd-rec-v0-27-2-fake-llm-1 Starting 
+ Container wd-rec-v0-27-2-mysql-1 Starting 
+ Container wd-rec-v0-27-2-minio-1 Started 
+ Container wd-rec-v0-27-2-redis-1 Started 
+ Container wd-rec-v0-27-2-es01-1 Started 
+ Container wd-rec-v0-27-2-fake-llm-1 Started 
+ Container wd-rec-v0-27-2-mysql-1 Started 
+ Container wd-rec-v0-27-2-mysql-1 Waiting 
+ Container wd-rec-v0-27-2-mysql-1 Healthy 
+ Container wd-rec-v0-27-2-ragflow-1 Starting 
+ Container wd-rec-v0-27-2-ragflow-1 Started 
+SCENARIO chat_extras OK files=11
+SCENARIO chunks_extras OK files=13
+SCENARIO datasets_extras OK files=11
+SCENARIO documents_extras OK files=17
+SCENARIO errors_access OK files=40
+SCENARIO openai_dify OK files=6
+SCENARIO system OK files=16
+ Container wd-rec-v0-27-2-es01-1 Stopping 
+ Container wd-rec-v0-27-2-minio-1 Stopping 
+ Container wd-rec-v0-27-2-redis-1 Stopping 
+ Container wd-rec-v0-27-2-fake-llm-1 Stopping 
+ Container wd-rec-v0-27-2-ragflow-1 Stopping 
+ Container wd-rec-v0-27-2-minio-1 Stopped 
+ Container wd-rec-v0-27-2-minio-1 Removing 
+ Container wd-rec-v0-27-2-redis-1 Stopped 
+ Container wd-rec-v0-27-2-redis-1 Removing 
+ Container wd-rec-v0-27-2-minio-1 Removed 
+ Container wd-rec-v0-27-2-fake-llm-1 Stopped 
+ Container wd-rec-v0-27-2-fake-llm-1 Removing 
+ Container wd-rec-v0-27-2-redis-1 Removed 
+ Container wd-rec-v0-27-2-fake-llm-1 Removed 
+ Container wd-rec-v0-27-2-es01-1 Stopped 
+ Container wd-rec-v0-27-2-es01-1 Removing 
+ Container wd-rec-v0-27-2-es01-1 Removed 
+ Container wd-rec-v0-27-2-ragflow-1 Stopped 
+ Container wd-rec-v0-27-2-ragflow-1 Removing 
+ Container wd-rec-v0-27-2-ragflow-1 Removed 
+ Container wd-rec-v0-27-2-mysql-1 Stopping 
+ Container wd-rec-v0-27-2-mysql-1 Stopped 
+ Container wd-rec-v0-27-2-mysql-1 Removing 
+ Container wd-rec-v0-27-2-mysql-1 Removed 
+ Volume wd-rec-v0-27-2_minio_data Removing 
+ Volume wd-rec-v0-27-2_esdata01 Removing 
+ Volume wd-rec-v0-27-2_mysql_data Removing 
+ Volume wd-rec-v0-27-2_redis_data Removing 
+ Network wd-rec-v0-27-2_ragflow Removing 
+ Volume wd-rec-v0-27-2_minio_data Removed 
+ Volume wd-rec-v0-27-2_mysql_data Removed 
+ Volume wd-rec-v0-27-2_esdata01 Removed 
+ Volume wd-rec-v0-27-2_redis_data Removed 
+ Network wd-rec-v0-27-2_ragflow Removed 
+RECORD version=v0.27.2 scenarios=7 files=114 fail=0 seconds=90.6

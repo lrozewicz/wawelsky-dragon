@@ -1,0 +1,4 @@
+src/routeTree.gen.ts
+.tanstack/
+test-results/
+test-results-real/

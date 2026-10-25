@@ -1,0 +1,22 @@
+{
+  "chats.title": "Chats",
+  "chats.create": "Create chat",
+  "chats.createTitle": "New chat",
+  "chats.createSubmit": "Create",
+  "chats.rename": "Rename",
+  "chats.renameSubmit": "Save",
+  "chats.delete": "Delete",
+  "chats.deleteTitle": "Delete chat",
+  "chats.deleteMessage": "Delete the chat “{{name}}”? This action cannot be undone.",
+  "chats.name": "Name",
+  "chats.emptyTitle": "You have no chats yet",
+  "chats.emptyDescription": "Create your first chat to start a conversation.",
+  "chats.error": "Could not load chats.",
+  "chats.menuLabel": "Chat menu {{name}}",
+  "chats.createError": "Could not create the chat.",
+  "chats.renameError": "Could not rename the chat.",
+  "chats.deleteError": "Could not delete the chat.",
+  "chats.datasetsOptional": "Knowledge bases (optional)",
+  "chats.datasetsHintModel": "Without a knowledge base, the chat answers only from the model's own knowledge.",
+  "chats.datasetsHintLater": "You can change the bases later in the chat settings."
+}

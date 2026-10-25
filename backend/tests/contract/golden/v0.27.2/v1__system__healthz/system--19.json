@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/system/healthz",
+    "query": {},
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "db": "ok",
+    "doc_engine": "ok",
+    "redis": "ok",
+    "status": "ok",
+    "storage": "ok"
+  }
+}

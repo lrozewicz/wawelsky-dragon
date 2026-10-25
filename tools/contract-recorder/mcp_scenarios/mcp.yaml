@@ -1,0 +1,232 @@
+# Scenariusz MCP — wyłącznie RAGFlow v0.27.2, tryb `--mcp` (stos z `compose.v0.27.2.mcp.yml`,
+# serwer MCP upstream `mcp/server/server.py`, tryb host). Trasy i zachowanie z kodu v0.27.2:
+# narzędzia `list_tools` (server.py l. 546-661) i `call_tool` (l. 664-713) — trzy narzędzia:
+# `ragflow_retrieval` (wymagane `question`, l. 612), `ragflow_list_datasets` (l. 615),
+# `ragflow_list_chats` (l. 638); nieznane narzędzie -> `ValueError` (l. 713), które SDK
+# zamienia na `CallToolResult(isError=true)`. Middleware `AuthMiddleware` (l. 722-744) pilnuje
+# tylko OBECNOŚCI tokenu na ścieżkach `/sse`/`/mcp` (brak -> 401); zły token przepuszcza,
+# a backend zwraca błąd (mcp_runner zapisuje go jako `outcome: error`).
+#
+# Oba transporty: `streamable_http` -> `/mcp`, `sse` -> `/sse`. Nagłówki `api_key`/`X-API-Key`
+# czyta `_extract_token_from_headers` (l. 479-502). Detale: work/wp/E6-0/reports/T3b-routes.md.
+#
+# Przygotowanie i sprzątanie to kroki `op: http` (`record: false`, reużycie `runner._run_step`):
+# dataset `wd_rec_e6_mcp_ds` + upload `fixtures/ragflow_intro.txt` + parse + poll DONE
+# (żeby `ragflow_retrieval` miał fragmenty) oraz czat `wd_rec_e6_mcp_chat`
+# (żeby `ragflow_list_chats` nie był pusty).
+name: mcp
+description: "Kontrakt serwera MCP upstream v0.27.2 (oba transporty): initialize, list_tools, call_tool i błędy."
+steps:
+  # --- przygotowanie (op: http, bez nagrania) ---
+  - id: create_dataset
+    op: http
+    method: POST
+    path: /api/v1/datasets
+    json: {name: "wd_rec_e6_mcp_ds"}
+    versions: [v0.27.2]
+    record: false
+    capture: {dataset_id: "data.id"}
+  - id: upload
+    op: http
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents
+    multipart: {file: fixtures/ragflow_intro.txt}
+    versions: [v0.27.2]
+    record: false
+    capture: {document_id: "data.0.id"}
+  - id: parse
+    op: http
+    method: POST
+    path: /api/v1/datasets/{dataset_id}/documents/parse
+    json: {document_ids: ["{document_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: poll_parse_done
+    op: http
+    method: GET
+    path: /api/v1/datasets/{dataset_id}/documents
+    query: {page: 1, page_size: 30}
+    versions: [v0.27.2]
+    record: false
+    poll:
+      until: {path: "data.docs.0.run", equals: "DONE"}
+      interval_s: 3
+      timeout_s: 600
+  - id: create_chat
+    op: http
+    method: POST
+    path: /api/v1/chats
+    json: {name: "wd_rec_e6_mcp_chat", dataset_ids: []}
+    versions: [v0.27.2]
+    record: false
+    capture: {chat_id: "data.id"}
+
+  # ================= transport: streamable_http (/mcp) =================
+  - id: sha_initialize
+    transport: streamable_http
+    op: initialize
+    auth: key
+  - id: sha_list_tools
+    transport: streamable_http
+    op: list_tools
+    auth: key
+  - id: sha_list_datasets_no_args
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_list_datasets
+    auth: key
+  - id: sha_list_datasets_paged
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_list_datasets
+    arguments: {page: 1, page_size: 10}
+    auth: key
+  - id: sha_list_chats
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_list_chats
+    auth: key
+  - id: sha_retrieval_dataset_ids
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {dataset_ids: ["{dataset_id}"], question: "smokwawelski"}
+    auth: key
+  - id: sha_retrieval_all_datasets
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {question: "smokwawelski"}
+    auth: key
+  - id: sha_list_tools_api_key_header
+    transport: streamable_http
+    op: list_tools
+    auth: api_key_header
+  - id: sha_list_tools_x_api_key_header
+    transport: streamable_http
+    op: list_tools
+    auth: x_api_key
+  - id: sha_list_tools_no_auth
+    transport: streamable_http
+    op: list_tools
+    auth: none
+    expect_error: true
+  - id: sha_list_tools_bad_key
+    transport: streamable_http
+    op: list_tools
+    auth: bad
+    expect_error: true
+  - id: sha_call_unknown_tool
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_unknown_tool
+    arguments: {}
+    auth: key
+    expect_error: true
+  - id: sha_retrieval_missing_question
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {}
+    auth: key
+    expect_error: true
+  - id: sha_retrieval_wrong_type_question
+    transport: streamable_http
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {question: 123}
+    auth: key
+    expect_error: true
+
+  # ================= transport: sse (/sse) =================
+  - id: sse_initialize
+    transport: sse
+    op: initialize
+    auth: key
+  - id: sse_list_tools
+    transport: sse
+    op: list_tools
+    auth: key
+  - id: sse_list_datasets_no_args
+    transport: sse
+    op: call_tool
+    tool: ragflow_list_datasets
+    auth: key
+  - id: sse_list_datasets_paged
+    transport: sse
+    op: call_tool
+    tool: ragflow_list_datasets
+    arguments: {page: 1, page_size: 10}
+    auth: key
+  - id: sse_list_chats
+    transport: sse
+    op: call_tool
+    tool: ragflow_list_chats
+    auth: key
+  - id: sse_retrieval_dataset_ids
+    transport: sse
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {dataset_ids: ["{dataset_id}"], question: "smokwawelski"}
+    auth: key
+  - id: sse_retrieval_all_datasets
+    transport: sse
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {question: "smokwawelski"}
+    auth: key
+  - id: sse_list_tools_api_key_header
+    transport: sse
+    op: list_tools
+    auth: api_key_header
+  - id: sse_list_tools_x_api_key_header
+    transport: sse
+    op: list_tools
+    auth: x_api_key
+  - id: sse_list_tools_no_auth
+    transport: sse
+    op: list_tools
+    auth: none
+    expect_error: true
+  - id: sse_list_tools_bad_key
+    transport: sse
+    op: list_tools
+    auth: bad
+    expect_error: true
+  - id: sse_call_unknown_tool
+    transport: sse
+    op: call_tool
+    tool: ragflow_unknown_tool
+    arguments: {}
+    auth: key
+    expect_error: true
+  - id: sse_retrieval_missing_question
+    transport: sse
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {}
+    auth: key
+    expect_error: true
+  - id: sse_retrieval_wrong_type_question
+    transport: sse
+    op: call_tool
+    tool: ragflow_retrieval
+    arguments: {question: 123}
+    auth: key
+    expect_error: true
+
+  # --- sprzątanie (op: http, bez nagrania) ---
+  - id: delete_chat
+    op: http
+    method: DELETE
+    path: /api/v1/chats
+    json: {ids: ["{chat_id}"]}
+    versions: [v0.27.2]
+    record: false
+  - id: delete_dataset
+    op: http
+    method: DELETE
+    path: /api/v1/datasets
+    json: {ids: ["{dataset_id}"]}
+    versions: [v0.27.2]
+    record: false

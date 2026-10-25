@@ -1,0 +1,8 @@
+# Konfiguracja ruff dla narzędzia wydajnościowego (nie jest częścią pakietu backend).
+# Dziedziczy ustawienia backendu, ale wyłącza reguły nieadekwatne do skryptu narzędziowego:
+# S (assert/S311 w testach i losowość niekryptograficzna), T201 (print w CLI),
+# PLR (magic values w progach testów), D (docstringi nie są wymagane w narzędziu).
+extend = "../../backend/pyproject.toml"
+
+[lint]
+ignore = ["S", "T201", "PLR", "D"]

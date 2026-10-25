@@ -1,0 +1,19 @@
+# Odchyłki replay errors_access vs złoto v0.24.0 (K11 §10d p. 15).
+# Jedyny plik sankcjonowany: upload dokumentu do CUDZEGO datasetu — złoto v0.24.0 utrwala błąd
+# upstreamu (code 0, sukces), WD odmawia 109 „no authorization" i nie dotyka zasobu.
+# Wszystkie trzy Diffy tego pliku należą do tej samej różnicy jednej odpowiedzi.
+- file: datasets___documents/errors_access--13.json
+  path: body.data
+  kind: missing
+  contract: "K11 §10d p. 15"
+  reason: '[K11 §10d p. 15] Złoto upstreamu zwraca sukces (code 0) z listą dokumentów, WD odmawia 109 przed jakąkolwiek zmianą zasobu — koperta odmowy nie ma pola ``data`` (E2-2f C2: wpisy v0.24 bez ``data``).'
+- file: datasets___documents/errors_access--13.json
+  path: body.code
+  kind: value
+  contract: "K11 §10d p. 15"
+  reason: '[K11 §10d p. 15] WD odmawia na cudzym zasobie kodem 109 (jak v0.27.2, K11 §10d p. 15), złoto v0.24.0 pokazuje sukces upstreamu (code 0).'
+- file: datasets___documents/errors_access--13.json
+  path: body.message
+  kind: extra
+  contract: "K11 §10d p. 15"
+  reason: '[K11 §10d p. 15] Koperta odmowy WD (109) niesie pole message o treści no authorization; złoto sukcesu upstreamu (code 0) nie ma klucza ``message``, a komparator pomija dodatkowe ``message`` tylko przy ``code == 0`` (K11 §5 p. 4, Q2).'

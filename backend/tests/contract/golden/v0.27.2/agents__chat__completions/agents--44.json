@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/agents/chat/completions",
+    "query": {},
+    "body": {
+      "agent_id": "<ID:agent_retrieval#1>",
+      "query": "smokwawelski",
+      "stream": false,
+      "session_id": "<ID:session#1>"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 103,
+    "data": false,
+    "message": "Session does not belong to the requested agent."
+  }
+}

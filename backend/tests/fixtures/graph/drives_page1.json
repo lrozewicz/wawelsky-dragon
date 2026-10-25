@@ -1,0 +1,13 @@
+{
+  "value": [
+    {"id": "b!d1", "name": "Documents", "driveType": "documentLibrary"},
+    {"id": "b!d2", "name": "Archive", "driveType": "documentLibrary"},
+    {
+      "id": "b!sys",
+      "name": "Preservation Hold Library",
+      "driveType": "documentLibrary",
+      "system": {}
+    }
+  ],
+  "@odata.nextLink": "https://graph.microsoft.com/v1.0/sites/S1/drives?$skiptoken=P2"
+}

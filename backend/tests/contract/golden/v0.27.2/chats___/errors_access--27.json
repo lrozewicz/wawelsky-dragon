@@ -1,0 +1,19 @@
+{
+  "request": {
+    "method": "PATCH",
+    "path": "/api/v1/chats/<ID:chat#1>",
+    "query": {},
+    "body": {
+      "name": "wd_rec_e2_errors_access_chat_intruder"
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 109,
+    "data": false,
+    "message": "no authorization"
+  }
+}

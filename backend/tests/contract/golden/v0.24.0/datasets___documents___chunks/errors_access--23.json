@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents/<ID:document#1>/chunks",
+    "query": {},
+    "body": {
+      "content": "wd_rec_e2 smokwawelski: chunk dodany przez drugiego użytkownika.",
+      "important_keywords": [
+        "wd_rec_e2"
+      ]
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 102,
+    "message": "You don't own the dataset <ID:dataset#1>."
+  }
+}

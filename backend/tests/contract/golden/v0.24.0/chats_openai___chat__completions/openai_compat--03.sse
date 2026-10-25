@@ -1,0 +1,6 @@
+data:{"id":"<ID:id#1>","choices":[{"delta":{"content":"Odpowiedź testowa: smokwawelski","role":"assistant","function_call":null,"tool_calls":null,"reasoning_content":null},"finish_reason":null,"index":0,"logprobs":null}],"created":"<TS_S>","model":"model","object":"chat.completion.chunk","system_fingerprint":"","usage":null}
+
+data:{"id":"<ID:id#1>","choices":[{"delta":{"content":null,"role":"assistant","function_call":null,"tool_calls":null,"reasoning_content":null},"finish_reason":"stop","index":0,"logprobs":null}],"created":"<TS_S>","model":"model","object":"chat.completion.chunk","system_fingerprint":"","usage":{"prompt_tokens":6,"completion_tokens":13,"total_tokens":19}}
+
+data:[DONE]
+

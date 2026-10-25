@@ -1,0 +1,12 @@
+diff --git a/backend/app/services/dataset_metadata.py b/backend/app/services/dataset_metadata.py
+index f5b22d4..0e896ba 100644
+--- a/backend/app/services/dataset_metadata.py
++++ b/backend/app/services/dataset_metadata.py
+@@ -334,7 +334,6 @@ class DatasetMetadataService:
+         spełniających warunek; zapisywane są tylko dokumenty, których metadane faktycznie
+         się zmieniły (``updated``), a ``matched_docs`` to liczność zbioru docelowego.
+         """
+-        await self._dataset(principal, dataset_id, Action.UPDATE)
+         async with transaction(self._sessionmaker()) as session:
+             if document_ids:
+                 present = await documents_query.ids_in_dataset(session, dataset_id, document_ids)

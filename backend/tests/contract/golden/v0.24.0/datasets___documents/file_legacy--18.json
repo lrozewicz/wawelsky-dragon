@@ -1,0 +1,82 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/datasets/<ID:dataset#1>/documents",
+    "query": {
+      "page": 1,
+      "page_size": 30
+    },
+    "body": null
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 0,
+    "data": {
+      "docs": [
+        {
+          "chunk_count": 0,
+          "chunk_method": "naive",
+          "create_date": "<DATETIME>",
+          "create_time": "<TS_MS>",
+          "created_by": "<ID:id#1>",
+          "dataset_id": "<ID:dataset#1>",
+          "id": "<ID:id#4>",
+          "location": "ragflow_intro.txt",
+          "meta_fields": {},
+          "name": "wd_rec_e4_filelegacy_renamed.txt",
+          "parser_config": {
+            "auto_keywords": 0,
+            "auto_questions": 0,
+            "chunk_token_num": 512,
+            "delimiter": "\n",
+            "graphrag": {
+              "entity_types": [
+                "organization",
+                "person",
+                "geo",
+                "event",
+                "category"
+              ],
+              "method": "light",
+              "use_graphrag": true
+            },
+            "html4excel": false,
+            "image_context_size": 0,
+            "layout_recognize": "DeepDOC",
+            "llm_id": "fake-chat___OpenAI-API@OpenAI-API-Compatible",
+            "raptor": {
+              "max_cluster": 64,
+              "max_token": 256,
+              "prompt": "Please summarize the following paragraphs. Be careful with the numbers, do not make things up. Paragraphs as following:\n      {cluster_content}\nThe above is the content you need to summarize.",
+              "random_seed": 0,
+              "threshold": 0.1,
+              "use_raptor": true
+            },
+            "table_context_size": 0,
+            "topn_tags": 3
+          },
+          "pipeline_id": null,
+          "process_begin_at": null,
+          "process_duration": "<FLOAT>",
+          "progress": 0.0,
+          "progress_msg": "<IGNORE>",
+          "run": "UNSTART",
+          "size": 1319,
+          "source_type": "local",
+          "status": "1",
+          "suffix": "txt",
+          "thumbnail": null,
+          "title": null,
+          "token_count": 0,
+          "type": "doc",
+          "update_date": "<DATETIME>",
+          "update_time": "<TS_MS>"
+        }
+      ],
+      "total": 1
+    }
+  }
+}

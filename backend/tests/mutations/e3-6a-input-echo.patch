@@ -1,0 +1,13 @@
+diff --git a/backend/app/api/errors.py b/backend/app/api/errors.py
+index ac3b30e..cf8fdfb 100644
+--- a/backend/app/api/errors.py
++++ b/backend/app/api/errors.py
+@@ -127,7 +127,7 @@ async def _handle_request_validation(request: Request, exc: Exception) -> JSONRe
+         # Lista błędów Pydantic bez pól ctx/url/input (K3 §5), w kształcie JSON (loc jako lista).
+         errors = jsonable_encoder(
+             [
+-                {k: v for k, v in error.items() if k not in ("ctx", "url", "input")}
++                {k: v for k, v in error.items() if k not in ("ctx", "url")}
+                 for error in err.errors()
+             ]
+         )

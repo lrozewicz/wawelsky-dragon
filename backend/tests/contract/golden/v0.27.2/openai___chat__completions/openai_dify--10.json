@@ -1,0 +1,25 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/openai/<ID:chat#1>/chat/completions",
+    "query": {},
+    "body": {
+      "model": "no-such-model",
+      "messages": [
+        {
+          "role": "user",
+          "content": "smokwawelski"
+        }
+      ],
+      "stream": false
+    }
+  },
+  "status": 200,
+  "headers": {
+    "content-type": "application/json"
+  },
+  "body": {
+    "code": 101,
+    "message": "`llm_id` no-such-model doesn't exist"
+  }
+}
