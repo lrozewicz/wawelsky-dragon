@@ -15,6 +15,7 @@ import { modelsDefaultHandlers } from './handlers/models'
 import { searchesHandlers } from './handlers/searches'
 import { settingsHandlers } from './handlers/settings'
 
+export { makeDeployment, makeRunpodState, runpodHandlers } from './handlers/runpod'
 export * from './handlers/admin'
 export * from './handlers/auth'
 export * from './handlers/chats'

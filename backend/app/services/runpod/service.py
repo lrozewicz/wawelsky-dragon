@@ -85,6 +85,12 @@ class RunpodService:
         except RunpodError as exc:
             raise UpstreamError(f"RunPod check failed: {exc.message}") from exc
         await keystore.save_key(self._c, api_key)
+        # Model od razu trafia do rejestru, żeby dało się go wybrać jako parser jeszcze przed
+        # pierwszym wdrożeniem (pod włączy dopiero pytanie przy starcie parsowania).
+        for hosted in HOSTED_MODELS.values():
+            await ensure_registered(
+                self._c, hosted, base_url=None, api_token=None, created_by=principal.user_id
+            )
         return await self.key_status()
 
     async def remove_key(self, principal: Principal) -> None:

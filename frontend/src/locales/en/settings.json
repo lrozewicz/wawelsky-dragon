@@ -3,6 +3,7 @@
   "settings.tabs.model": "Model providers",
   "settings.tabs.profile": "Profile",
   "settings.tabs.api": "API keys",
+  "settings.tabs.runpod": "RunPod",
   "settings.common.save": "Save",
   "settings.common.cancel": "Cancel",
   "settings.common.close": "Close",

@@ -71,6 +71,9 @@ async def test_key_is_validated_encrypted_and_masked(
     assert "rpa_test" not in stored
     client = await client_for(container)
     assert isinstance(client, RunpodClient)
+    async with transaction(container.sessionmaker) as session:  # model wybieralny jako parser
+        model = await models_repo.get_by_name(session, MODEL, "image2text")
+    assert model is not None
 
 
 async def test_catalog_requires_superuser_and_filters(

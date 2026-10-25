@@ -54,6 +54,9 @@ IMPORT_TABLES = ("dataset_imports", "wd_settings")
 # Tabela migracji 0010 (spisy treści dokumentów, K21 §1).
 PROFILE_TABLES = ("document_profiles",)
 
+# Tabela migracji 0011 (pody RunPod uruchamiane z panelu).
+RUNPOD_TABLES = ("runpod_pods",)
+
 # Wszystkie tabele po `upgrade head`: K2 + hub-compat + integracje + instancje dostawców
 # + wyszukiwarka + limiter logowania + schemat agenta + import KB + spisy treści + alembic_version
 # (K12 §1, K13 §1, K15 §1, E5-2a §4, K2 §6, K19 §4, K21 §1).
@@ -67,6 +70,7 @@ ALL_TABLES = (
     | set(AGENT_TABLES)
     | set(IMPORT_TABLES)
     | set(PROFILE_TABLES)
+    | set(RUNPOD_TABLES)
     | {"alembic_version"}
 )
 

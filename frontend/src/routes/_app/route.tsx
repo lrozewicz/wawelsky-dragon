@@ -8,6 +8,7 @@ import { requireSession } from '../../app/guards'
 import { AppLayout } from '../../components/layout/AppLayout'
 import type { AppUser } from '../../components/layout/types'
 import { useShowModelsAlert } from '../../features/models/queries'
+import { PodPromptHost } from '../../features/runpod/PodPromptHost'
 import useNotifications from '../../hooks/useNotifications/useNotifications'
 import { changeLanguage } from '../../i18n'
 import type { Language } from '../../i18n'
@@ -60,6 +61,7 @@ function AppShell(): JSX.Element | null {
       onLanguageChange={handleLanguageChange}
     >
       <Outlet />
+      <PodPromptHost />
     </AppLayout>
   )
 }

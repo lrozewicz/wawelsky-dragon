@@ -14,6 +14,8 @@ import type { QueryClient } from '@tanstack/react-query'
 import { api, apiCall } from '../../../api/client'
 import type { components } from '../../../api/schema.gen'
 import { datasetKeys } from '../queries'
+import { runpodPreflight } from '../../runpod/api'
+import { hasRunpodPromptHost, openRunpodPrompt } from '../../runpod/promptStore'
 import { documentKeys } from './queries'
 import type { DocumentRow } from './queries'
 
@@ -108,13 +110,23 @@ export function useDeleteDocuments(datasetId: string) {
 export function useParseDocuments(datasetId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: { ids: string[] }) =>
-      apiCall<components['schemas']['SuccessCount']>(
+    mutationFn: async (input: { ids: string[] }) => {
+      // Parser działający na RunPod, a pod wyłączony: zamiast parsować (i kończyć błędem) pytamy
+      // „włączyć pod?”. Po wdrożeniu WD samo uruchomi parsowanie tych dokumentów.
+      if (hasRunpodPromptHost()) {
+        const preflight = await runpodPreflight(datasetId, input.ids)
+        if (preflight?.needs_pod) {
+          openRunpodPrompt({ datasetId, documentIds: input.ids, preflight })
+          return { success_count: 0 } as components['schemas']['SuccessCount']
+        }
+      }
+      return apiCall<components['schemas']['SuccessCount']>(
         api.POST('/api/v1/datasets/{dataset_id}/documents/parse', {
           params: { path: { dataset_id: datasetId } },
           body: { document_ids: input.ids },
         }),
-      ),
+      )
+    },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: documentKeys.all(datasetId) })
     },

@@ -1,6 +1,6 @@
 /**
  * Układ sekcji Ustawień (kontrakt WP E3-6c1 §4): nagłówek „Ustawienia” i zakładki-linki
- * Dostawcy modeli · Profil · Klucze API. Wzór: `features/admin/AdminLayout.tsx`.
+ * Dostawcy modeli · Profil · Klucze API · RunPod. Wzór: `features/admin/AdminLayout.tsx`.
  */
 
 import type { JSX, ReactNode } from 'react'
@@ -14,16 +14,17 @@ import Typography from '@mui/material/Typography'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTranslation } from 'react-i18next'
 
-export type SettingsTabKey = 'model' | 'profile' | 'api'
+export type SettingsTabKey = 'model' | 'profile' | 'api' | 'runpod'
 
 /** Kolejność zakładek z kontraktu §4. */
-export const SETTINGS_TABS: readonly SettingsTabKey[] = ['model', 'profile', 'api']
+export const SETTINGS_TABS: readonly SettingsTabKey[] = ['model', 'profile', 'api', 'runpod']
 
 /** Adresy tras zakładek — id tras z `routes/_app/user-setting/*.tsx`. */
 const TAB_PATHS = {
   model: '/user-setting/model',
   profile: '/user-setting/profile',
   api: '/user-setting/api',
+  runpod: '/user-setting/runpod',
 } as const
 
 /**
