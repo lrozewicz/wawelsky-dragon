@@ -65,6 +65,11 @@ COPY app ./app
 COPY alembic.ini ./
 COPY alembic ./alembic
 
+# pip z obrazu bazowego nie jest potrzebny w runtime (zależności są w /opt/venv), a niesie własną kopię certifi
+# (`pip/_vendor/certifi`), którą skanery zgłaszają jako CRITICAL, gdy obraz bazowy jest starszy niż poprawka.
+RUN rm -rf /usr/local/lib/python3.13/site-packages/pip /usr/local/lib/python3.13/site-packages/pip-*.dist-info \
+    /usr/local/bin/pip /usr/local/bin/pip3 /usr/local/bin/pip3.13
+
 # Katalog danych z właścicielem wd — nowy nazwany wolumen app-data:/data przejmuje właściciela z obrazu (K5 §2.6)
 RUN mkdir -p /data && chown wd:wd /data
 

@@ -1,8 +1,8 @@
 # Obraz searxng WD (kontrakt E6-3f C7) — obraz upstream z PRZYPIĘTYM tagiem + nasz settings.yml.
 # Bez bind-mountów repo (K8-B p. 7): konfiguracja wchodzi do obrazu przez COPY.
-# Tag zweryfikowany `docker pull` 2026-10-12 (digest sha256:76b0bf285aca014c7191fc4d9234c4bfb358624ac33d8883833d496c059ec072).
+# Tag zweryfikowany `docker pull` 2026-10-25 (starszy 2026.10.4-d48c4b555 miał certifi z CRITICAL GHSA-6q48-6c7w-9gw2; ten ma 2026.10.19).
 
-FROM searxng/searxng:2026.10.4-d48c4b555 AS runtime
+FROM searxng/searxng:2026.10.25-54ca1d9cf AS runtime
 
 COPY settings.yml /etc/searxng/settings.yml
 
