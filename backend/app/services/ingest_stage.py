@@ -23,6 +23,7 @@ from app.services.ingest_convert import (
     tesseract_available,
 )
 from app.services.ingest_diacritics import build_diacritics
+from app.services.runpod.guard import ensure_pod_ready
 from app.storage.keys import validate_key
 from app.worker.errors import PermanentError
 
@@ -54,6 +55,7 @@ async def _recognizers(
     lr = pc.get("layout_recognize")
     vision_model: ModelRef | None = None
     if layout_vision:
+        await ensure_pod_ready(container, lr)
         try:
             vision_model = await models.resolve(lr, "image2text")
         except NotFound as exc:
