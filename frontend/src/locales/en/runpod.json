@@ -60,7 +60,7 @@
   "runpod.progress.background": "Close (deployment continues in the background)",
   "runpod.status.requested": "Requesting…",
   "runpod.status.provisioning": "Allocating a GPU on RunPod…",
-  "runpod.status.starting": "Pulling the image and starting the container…",
+  "runpod.status.starting": "Pulling the image and starting the container… (usually 3–7 min; after 12 min we will suggest another GPU)",
   "runpod.status.loading": "Loading the model into GPU memory…",
   "runpod.status.ready": "Ready — the model is running",
   "runpod.status.terminating": "Deleting the pod…",

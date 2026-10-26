@@ -906,8 +906,8 @@ samym lub większym VRAM) → wdrożenie → parsowanie ruszy samo po gotowości
 o kontakt z administratorem.
 
 **Koszty:** worker (pętla co 15 s) kasuje poda (`DELETE`, koniec naliczania), gdy nie ma zadań parsowania używających modelu
-i minęły 2 minuty bezczynności. Dodatkowe bezpieczniki: pod bez maszyny przez 5 min lub model niegotowy po 25 min są kasowane
-jako nieudane, twardy limit życia 8 h, przycisk *Wyłącz teraz* w liście wdrożeń. Parsowanie zlecone w tle (integracje) bez
+i minęły 2 minuty bezczynności. Dodatkowe bezpieczniki: pod bez maszyny przez 5 min, bez wystartowanego kontenera przez 12 min lub model niegotowy po 25 min są
+kasowane jako nieudane, twardy limit życia 8 h, przycisk *Wyłącz teraz* w liście wdrożeń. Parsowanie zlecone w tle (integracje) bez
 działającego poda kończy się błędem „… is not running on RunPod” — uruchom poda i ponów. Koszt dotychczasowy jest w liście
 wdrożeń (cena/h × czas). Na koncie RunPod warto ustawić limit wydatków.
 
@@ -915,8 +915,12 @@ wdrożeń (cena/h × czas). Na koncie RunPod warto ustawić limit wydatków.
 (`--api-key`, zaszyfrowany w bazie i w instancji `runpod-xiaomi-ocr-0-runpod`). Rotacja `WD_CRYPTO_KEY` obejmuje klucz RunPod
 i klucze podów. API: `/api/wd/v1/runpod/*` (klucz, modele, gpus, preflight, deployments).
 
-**Diagnostyka:** `failed` z `gpu_unavailable` = RunPod nie dał maszyny w 5 min (wybierz inne GPU); `model did not start in time`
-= obraz/model nie wstał w 25 min (sprawdź logi poda w konsoli RunPod). Lokalny model z §11 i ten z RunPod mają różne nazwy
+**Etapy startu:** *Przydzielanie GPU* → *Pobieranie obrazu i uruchamianie kontenera* (pod `RUNNING` w RunPod, ale proxy zwraca 404
+na `/health`, a `runtime` jest puste) → *Ładowanie modelu* (kontener działa, proxy 502) → *Gotowe* (`/health` 200). Etap pobierania obrazu
+to zwykle 3–7 min; na wolnym hoście bywa dłużej i z błędami `error creating container` w logach systemowych poda.
+
+**Diagnostyka:** `failed` z `gpu_unavailable` = RunPod nie dał maszyny w 5 min albo kontener nie wystartował w 12 min (wybierz inne
+GPU / centrum danych); `model did not start in time` = model nie wstał w 25 min (sprawdź logi poda w konsoli RunPod). Lokalny model z §11 i ten z RunPod mają różne nazwy
 (`xiaomi-ocr-0` vs `xiaomi-ocr-0-runpod`) i mogą działać obok siebie.
 
 ## Odsyłacze

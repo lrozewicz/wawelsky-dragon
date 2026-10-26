@@ -28,9 +28,14 @@ logger = logging.getLogger("app.runpod")
 
 REQUEST_TIMEOUT_S = 120
 PROVISION_TIMEOUT_S = 300  # brak maszyny dłużej niż 5 min = GPU niedostępne
+# Maszyna jest, ale kontener nie wstał (powolne pobieranie obrazu, błędy hosta przy `create`).
+# Zdrowy pod: obraz ~5 min + start ~1 min, więc 12 min to już zły host — wolimy inne GPU niż 25 min.
+CONTAINER_START_TIMEOUT_S = 12 * 60
 IDLE_GRACE_S = 120  # tyle po ostatnim zadaniu pod jeszcze żyje (kolejne pliki, ponowne próby)
 MAX_LIFETIME_S = 8 * 3600  # twardy bezpiecznik kosztów
 HEALTH_TIMEOUT_S = 5.0
+HTTP_OK = 200
+HTTP_NOT_FOUND = 404
 _RUNPOD_TO_STATUS = {"PROVISIONING": "provisioning", "STARTING": "starting", "RUNNING": "loading"}
 _GONE = {"EXITED", "ERROR", "TERMINATED"}
 
@@ -63,14 +68,26 @@ async def _terminate(
     await _update(container, row, status=status, error=error, end_time=container.clock.now_ms())
 
 
-async def _model_healthy(base_url: str) -> bool:
-    """``GET /health`` vLLM (bez klucza); 200 = silnik gotowy do obsługi żądań."""
+async def _health_status(base_url: str) -> int | None:
+    """Kod HTTP ``GET /health`` vLLM przez proxy RunPod (bez klucza); ``None`` = błąd sieci.
+
+    200 = silnik gotowy. 404 z proxy = port poda nie jest jeszcze zarejestrowany (kontener nie
+    wystartował); 502 = kontener działa, ale vLLM jeszcze nie nasłuchuje (ładuje model).
+    """
     health = base_url.removesuffix("/v1") + "/health"
     try:
         async with httpx.AsyncClient(timeout=HEALTH_TIMEOUT_S) as http:
-            return (await http.get(health)).status_code == 200  # noqa: PLR2004
+            return (await http.get(health)).status_code
     except httpx.HTTPError:
-        return False
+        return None
+
+
+def _container_started(pod: dict[str, Any], health: int | None) -> bool:
+    """Czy kontener już działa: `runtime` z RunPod albo proxy, które nie odpowiada 404.
+
+    Błąd sieci (``None``) liczymy jako „działa”, żeby chwilowa awaria proxy nie ubiła poda.
+    """
+    return bool(pod.get("runtime")) or health != HTTP_NOT_FOUND
 
 
 async def _become_ready(container: Container, row: PodRow, model: HostedModel) -> None:
@@ -145,27 +162,34 @@ async def advance(  # noqa: PLR0911 — automat stanów: każdy stan końcowy to
         fields["price_per_hr"] = cost
     if pod.get("dataCenterId") and not row.data_center_id:
         fields["data_center_id"] = pod["dataCenterId"]
-    if new_status == "provisioning" and age_s > PROVISION_TIMEOUT_S:
-        await _terminate(
-            container,
-            client,
-            row,
-            status="failed",
-            error="gpu_unavailable: no machine within 5 minutes",
-        )
-        return
-    if new_status in {"starting", "loading"} and age_s > model.startup_timeout_s:
-        await _terminate(
-            container, client, row, status="failed", error="model did not start in time"
-        )
-        return
     base_url = row.base_url or proxy_url(row.pod_id)
     fields["base_url"] = base_url
-    if new_status == "loading" and await _model_healthy(base_url):
+    health = await _health_status(base_url) if new_status == "loading" else None
+    if new_status == "loading" and not _container_started(pod, health):
+        new_status = "starting"  # RunPod: RUNNING, ale kontener jeszcze pobiera obraz / startuje
+    if (error := _timeout_error(new_status, age_s, model)) is not None:
+        await _terminate(container, client, row, status="failed", error=error)
+        return
+    if new_status == "loading" and health == HTTP_OK:
         await _update(container, row, **fields)
         await _become_ready(container, _with(row, base_url=base_url), model)
         return
     await _update(container, row, status=new_status, **fields)
+
+
+def _timeout_error(status: str, age_s: float, model: HostedModel) -> str | None:
+    """Powód przerwania wdrożenia, które za długo tkwi w danym stanie (``None`` = czekamy dalej).
+
+    Prefiks ``gpu_unavailable`` sprawia, że panel proponuje inne GPU / centrum danych.
+    """
+    if status == "provisioning" and age_s > PROVISION_TIMEOUT_S:
+        return "gpu_unavailable: no machine within 5 minutes"
+    if status == "starting" and age_s > CONTAINER_START_TIMEOUT_S:
+        minutes = CONTAINER_START_TIMEOUT_S // 60
+        return f"gpu_unavailable: the container did not start within {minutes} minutes"
+    if status in {"starting", "loading"} and age_s > model.startup_timeout_s:
+        return "model did not start in time"
+    return None
 
 
 def _with(row: PodRow, **changes: Any) -> PodRow:
