@@ -58,3 +58,22 @@ async def test_other_gateway_is_left_untouched(catalog: list[int]) -> None:
 
     assert [(view.name, view.model_type) for view in views] == [("a", None), ("b", None)]
     assert catalog == []
+
+
+async def test_wildcard_only_gateway_gets_prefixed_catalog(catalog: list[int]) -> None:
+    """Sam `openrouter/*` (bez konkretnych nazw): modele z katalogu dostają prefiks bramki."""
+    views = await instance_models._supported_views("https://litellm.example/v1", ["openrouter/*"])
+
+    assert [(view.name, view.model_type) for view in views] == [
+        ("openrouter/openai/gpt-5", "chat"),
+        ("openrouter/openai/text-embedding-3-large", "embedding"),
+        ("openrouter/voyageai/rerank-3", "rerank"),
+    ]
+
+
+async def test_foreign_wildcard_is_not_treated_as_openrouter(catalog: list[int]) -> None:
+    """Wildcard innej bramki (`*/*`) nie uruchamia katalogu OpenRouter."""
+    views = await instance_models._supported_views("http://llm.local/v1", ["*/*", "m"])
+
+    assert [(view.name, view.model_type) for view in views] == [("m", None)]
+    assert catalog == []

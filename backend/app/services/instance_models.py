@@ -193,8 +193,9 @@ async def _supported_views(
     publiczny katalog OpenRouter. Dla innych bramek lista zostaje taka, jak zwróciła sonda.
     """
     concrete = [name for name in names if not name.endswith(WILDCARD_SUFFIX)]
-    prefix = OPENROUTER_PREFIX if any(n.startswith(OPENROUTER_PREFIX) for n in concrete) else ""
-    is_openrouter = bool(prefix) or "openrouter" in base_url.lower() or len(concrete) < len(names)
+    # Prefiks także z samego wildcardu `openrouter/*` — bez konkretnych nazw to jedyny ślad.
+    prefix = OPENROUTER_PREFIX if any(n.startswith(OPENROUTER_PREFIX) for n in names) else ""
+    is_openrouter = bool(prefix) or "openrouter" in base_url.lower()
     types = await provider_probe.fetch_openrouter_types() if is_openrouter else {}
     merged = {name: types.get(name.removeprefix(prefix)) for name in concrete}
     for model_id, model_type in types.items():
