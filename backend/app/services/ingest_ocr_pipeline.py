@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator, Awaitable, Callable
 from concurrent.futures.process import BrokenProcessPool
+from dataclasses import replace
 
 from app.llm.hooks import current_hooks
 from app.parsing.converters.pdf import RoutedBatch
@@ -36,6 +37,9 @@ PROGRESS_OCR_END = 0.40  # C1: koniec OCR/wizji
 PROGRESS_CONVERT = PROGRESS_OCR_START  # C1: wpis końca konwersji
 OCR_STEP_LIMIT = 50  # C1: do 50 stron raport co stronę
 OCR_STEP = 10  # C1: powyżej — co ≤ 10 stron
+# Partie fazy A liczone naraz, gdy działa potok OCR: obrazy stron (~4 MB) czekają na OCR w pamięci,
+# więc renderowanie nie może uciekać rozpoznawaniu (przy 745 stronach worker dostawał OOM).
+PHASE_A_LOOKAHEAD = 3
 
 
 async def report_converted(report: ReportFn | None, doc: ConvertedDocument, fmt: str) -> None:
@@ -132,7 +136,10 @@ class PdfOcrPipeline:
         self._vision_concurrency = vision_concurrency
         self._diacritics = diacritics
         self._check_cancel = check_cancel
-        self._queue: asyncio.Queue[PendingPage | None] = asyncio.Queue()
+        # Mała kolejka = backpressure na fazę A (patrz PHASE_A_LOOKAHEAD).
+        self._queue: asyncio.Queue[PendingPage | None] = asyncio.Queue(
+            maxsize=max(2 * vision_concurrency, 8)
+        )
         self._progress = OcrProgress(report, initial_name=_default_name(vision, ocr))
         self._task: asyncio.Task[RecognitionResult] = asyncio.create_task(
             self._recognize(), name="ocr-pipeline"
@@ -156,16 +163,29 @@ class PdfOcrPipeline:
                 return
             yield page
 
-    def on_batch(self, batch: RoutedBatch) -> None:
-        """Po partii fazy A: strony pending partii idą do rozpoznawania od razu (kontrakt C3)."""
+    async def _put(self, item: PendingPage | None) -> None:
+        """``queue.put`` z backpressure; gdy OCR padł, propaguje jego błąd zamiast wisieć."""
+        put = asyncio.ensure_future(self._queue.put(item))
+        try:
+            await asyncio.wait({put, self._task}, return_when=asyncio.FIRST_COMPLETED)
+        finally:
+            if not put.done():
+                put.cancel()
+        if not put.done() or put.cancelled():
+            await asyncio.gather(put, return_exceptions=True)
+            self._task.result()  # rzuca błąd rozpoznawania; wynik oznaczałby przedwczesny koniec
+            raise RuntimeError("OCR stopped before all pages were queued")
+
+    async def on_batch(self, batch: RoutedBatch) -> None:
+        """Po partii fazy A: strony pending idą do rozpoznawania (czeka, gdy OCR nie nadąża)."""
         for page in batch.pending:
-            self._queue.put_nowait(page)
+            await self._put(page)
 
     async def finish(self, doc: ConvertedDocument) -> ConvertedDocument:
         """Zamyka strumień, czeka na rozpoznanie, raportuje finał i wstawia fragmenty."""
         total = len(doc.pending_pages)
         self._progress.input_done(total)
-        self._queue.put_nowait(None)
+        await self._put(None)
         result = await self._task
         await self._progress.finish(total)
         return apply_recognition(doc, result.outcomes, self._vision)
@@ -177,7 +197,9 @@ class PdfOcrPipeline:
 
 
 async def convert_pdf_pipelined(  # noqa: PLR0913 — parametry przekazywane wprost z ``convert_document``
-    convert_batches: Callable[[Callable[[RoutedBatch], None]], Awaitable[ConvertedDocument]],
+    convert_batches: Callable[
+        [Callable[[RoutedBatch], Awaitable[None]]], Awaitable[ConvertedDocument]
+    ],
     *,
     timeout_s: float | None,
     ocr: PageRecognizer | None,
@@ -215,3 +237,50 @@ async def convert_pdf_pipelined(  # noqa: PLR0913 — parametry przekazywane wpr
         raise
     await report_converted(report, doc, "pdf")
     return await pipeline.finish(doc)
+
+
+def _without_images(batch: RoutedBatch) -> RoutedBatch:
+    """Partia bez PNG stron pending: obrazy są w kolejce OCR, dalej potrzebne są metadane."""
+    return RoutedBatch(batch.routed, tuple(replace(page, image_png=b"") for page in batch.pending))
+
+
+async def route_with_lookahead(
+    batches: tuple[tuple[int, ...], ...],
+    submit: Callable[[tuple[int, ...]], asyncio.Future[RoutedBatch]],
+    *,
+    on_pending: Callable[[RoutedBatch], Awaitable[None]],
+    on_routed: Callable[[RoutedBatch], None],
+    after_batch: Callable[[], Awaitable[None]],
+) -> list[RoutedBatch]:
+    """Faza A potokowo: naraz najwyżej ``PHASE_A_LOOKAHEAD`` partii, kolejna po oddaniu poprzedniej.
+
+    Wynik partii trafia do ``on_pending`` (czeka na wolne miejsce w kolejce OCR), a w zwracanej
+    liście zostaje bez obrazów, więc pamięć nie rośnie z liczbą stron dokumentu.
+    """
+    remaining = iter(batches)
+    running: set[asyncio.Future[RoutedBatch]] = set()
+    routed: list[RoutedBatch] = []
+
+    def submit_next() -> None:
+        pages = next(remaining, None)
+        if pages is not None:
+            running.add(submit(pages))
+
+    for _ in range(PHASE_A_LOOKAHEAD):
+        submit_next()
+    try:
+        while running:
+            done, _ = await asyncio.wait(running, return_when=asyncio.FIRST_COMPLETED)
+            running.difference_update(done)
+            for future in done:
+                batch: RoutedBatch = future.result()
+                on_routed(batch)
+                await on_pending(batch)
+                routed.append(_without_images(batch))
+                submit_next()
+                await after_batch()
+    except BaseException:
+        for future in running:
+            future.cancel()
+        raise
+    return routed

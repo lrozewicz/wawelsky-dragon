@@ -42,7 +42,11 @@ from app.parsing.html import section_html
 from app.parsing.recognizers import PageRecognizer, complete_pages, self_check
 from app.parsing.registry import convert, detect_format
 from app.parsing.types import ConvertedDocument, ConvertOptions, PdfStrategy
-from app.services.ingest_ocr_pipeline import convert_pdf_pipelined, report_converted
+from app.services.ingest_ocr_pipeline import (
+    convert_pdf_pipelined,
+    report_converted,
+    route_with_lookahead,
+)
 from app.worker.errors import POOL_BROKEN_MESSAGE, TransientError
 
 VLM_CONCURRENCY = 3
@@ -286,7 +290,7 @@ async def _convert_pdf(  # noqa: PLR0913, PLR0917 — sygnatura T4 + on_pending 
     executor: Executor | None,
     check_cancel: Callable[[], Awaitable[None]] | None,
     report: Callable[[float, str], Awaitable[None]] | None,
-    on_pending: Callable[[RoutedBatch], None] | None = None,
+    on_pending: Callable[[RoutedBatch], Awaitable[None]] | None = None,
 ) -> ConvertedDocument:
     """Konwersja PDF partiami: faza A → B → C, wynik identyczny jak sekwencyjnie (C3)."""
     loop = asyncio.get_running_loop()
@@ -321,25 +325,35 @@ async def _phase_a(  # noqa: PLR0913, PLR0917 — kształt fazy z kontraktu C3
     running: list[asyncio.Future[Any]],
     report: Callable[[float, str], Awaitable[None]] | None,
     check_cancel: Callable[[], Awaitable[None]] | None,
-    on_pending: Callable[[RoutedBatch], None] | None = None,
+    on_pending: Callable[[RoutedBatch], Awaitable[None]] | None = None,
 ) -> list[RoutedBatch]:
-    """Faza A: routing + render stron pending każdej partii jako osobne zadania puli."""
+    """Faza A: routing + render stron pending partii (z potokiem OCR: z oknem i backpressure)."""
+    if (
+        on_pending is not None
+    ):  # okno anuluje własne zadania przy błędzie (nie trafiają do `running`)
+
+        async def after_batch() -> None:
+            await _report_batch(report, progress)
+            if check_cancel is not None:
+                await check_cancel()
+
+        return await route_with_lookahead(
+            plan.batches,
+            lambda pages: _submit(loop, executor, route_pdf_batch, path, pages, opts),
+            on_pending=on_pending,
+            on_routed=progress.add_routed,
+            after_batch=after_batch,
+        )
     futures = [
         _submit(loop, executor, route_pdf_batch, path, pages, opts) for pages in plan.batches
     ]
     running.extend(futures)
-
-    def on_done(_index: int, batch: RoutedBatch) -> None:
-        progress.add_routed(batch)
-        if on_pending is not None:  # strony pending partii idą do rozpoznawania od razu (C3)
-            on_pending(batch)
-
     outcomes = await _drain(
         futures,
         progress=progress,
         report=report,
         check_cancel=check_cancel,
-        on_done=on_done,
+        on_done=lambda _index, batch: progress.add_routed(batch),
     )
     return [batch for batch in outcomes if batch is not None]
 

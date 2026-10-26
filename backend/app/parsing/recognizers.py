@@ -7,7 +7,7 @@ import re
 import shutil
 import subprocess
 from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from io import BytesIO
 from typing import Literal, Protocol
 
@@ -306,7 +306,7 @@ async def recognize_stream(  # noqa: PLR0913 — sygnatura z kontraktu C2
     pozostałych workerów i propaguje (``vision_concurrency < 1`` → ``ValueError``)."""
     if vision_concurrency < 1:
         raise ValueError("vision_concurrency must be >= 1")
-    queue: asyncio.Queue[PendingPage | None] = asyncio.Queue()
+    queue: asyncio.Queue[PendingPage | None] = asyncio.Queue(maxsize=vision_concurrency * 2)
     sem = asyncio.Semaphore(vision_concurrency)
     outcomes: list[PageOutcome] = []
     counter = {"total": 0, "done": 0}  # total = strony pobrane z wejścia, done = ukończone
@@ -316,9 +316,9 @@ async def recognize_stream(  # noqa: PLR0913 — sygnatura z kontraktu C2
     async def producer() -> None:
         async for page in pending_iter:
             counter["total"] += 1
-            queue.put_nowait(page)
+            await queue.put(page)
         for _ in range(vision_concurrency):
-            queue.put_nowait(None)
+            await queue.put(None)
 
     async def worker() -> None:
         nonlocal last_name
@@ -329,7 +329,7 @@ async def recognize_stream(  # noqa: PLR0913 — sygnatura z kontraktu C2
             if check_cancel is not None:
                 await check_cancel()
             outcome = await _recognize_page(page, ocr, vision, sem, diacritics)
-            outcomes.append(outcome)
+            outcomes.append((replace(outcome[0], image_png=b""), *outcome[1:]))  # bez PNG
             if on_progress is not None:
                 async with lock:  # emisja w kolejności ukończeń (rosnące `done`)
                     counter["done"] += 1
