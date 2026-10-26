@@ -31,7 +31,7 @@
     "@tanstack/react-router": "1.170.46",
     "@tanstack/zod-adapter": "1.167.0",
     "dayjs": "1.11.23",
-    "eventsource-parser": "3.1.1",
+    "eventsource-parser": "4.1.2",
     "i18next": "26.5.6",
     "openapi-fetch": "0.17.0",
     "react": "19.3.1",
