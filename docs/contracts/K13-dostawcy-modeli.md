@@ -88,6 +88,7 @@ Schematy odpowiedzi:
   `status` = `"active"|"inactive"` (z `is_active`), `rank` = 500, `extra` = obiekt (`{}` gdy NULL), `max_tokens`/`wd_dimension` liczba albo `null`;
   sortowanie po `name`. (Pola upstream `verify`, `features` pominięte.)
 - `SupportedModel`: `{name, rank:500}` — identyfikatory `data[].id` z `GET {base_url}/models` instancji, sortowane po `name`.
+  Rozszerzenie WD: `model_type` (`chat`/`embedding`/`rerank` albo `null`). Dla bramki OpenRouter (host `openrouter…` albo nazwy `openrouter/…`, np. LiteLLM z wildcardem) backend dokłada typy i modele z publicznego katalogu `https://openrouter.ai/api/v1/models?output_modalities=text|embeddings|rerank` (best effort; porażka katalogu nie psuje listy); pozycje-wildcardy `*/*` są pomijane.
 
 ## 4. Reguły
 **Instancje**

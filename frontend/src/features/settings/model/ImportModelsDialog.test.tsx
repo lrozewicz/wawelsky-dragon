@@ -133,4 +133,76 @@ describe('ImportModelsDialog', () => {
       await screen.findByText('Nie udało się wykonać operacji: Connection failed: HTTP 401'),
     ).toBeInTheDocument()
   })
+
+  it('wyszukiwarka zawęża listę do modeli z wpisanym fragmentem nazwy', async () => {
+    server.use(...settingsHandlers(SEED))
+    const user = userEvent.setup()
+    await renderDialog()
+
+    await screen.findByRole('checkbox', { name: 'a' })
+    await user.type(screen.getByRole('searchbox', { name: 'Szukaj modelu' }), 'ol')
+
+    expect(screen.getByRole('checkbox', { name: 'old' })).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'a' })).not.toBeInTheDocument()
+    expect(screen.getByText('Pokazano 1 z 3')).toBeInTheDocument()
+  })
+
+  it('typ importu filtruje listę wg `model_type`, a modele o nieznanym typie zostają', async () => {
+    server.use(
+      ...settingsHandlers({
+        instances: SEED.instances,
+        supported: {
+          'inst-1': [
+            { name: 'gpt', rank: 1, model_type: 'chat' },
+            { name: 'emb', rank: 2, model_type: 'embedding' },
+            { name: 'rr', rank: 3, model_type: 'rerank' },
+            { name: 'mystery', rank: 4 },
+          ],
+        },
+      }),
+    )
+    const user = userEvent.setup()
+    await renderDialog()
+
+    // Domyślny typ „chat”: embedding i rerank znikają.
+    expect(await screen.findByRole('checkbox', { name: 'gpt' })).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'emb' })).not.toBeInTheDocument()
+    expect(screen.getByRole('checkbox', { name: 'mystery' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('combobox', { name: 'Typ importowanych modeli' }))
+    await user.click(await screen.findByRole('option', { name: 'Embedding' }))
+
+    expect(await screen.findByRole('checkbox', { name: 'emb' })).toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'gpt' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('checkbox', { name: 'rr' })).not.toBeInTheDocument()
+  })
+
+  it('import pomija zaznaczone modele, które filtr ukrył', async () => {
+    const bodies: unknown[] = []
+    server.use(
+      ...settingsHandlers({
+        instances: SEED.instances,
+        supported: {
+          'inst-1': [
+            { name: 'gpt', rank: 1, model_type: 'chat' },
+            { name: 'emb', rank: 2, model_type: 'embedding' },
+          ],
+        },
+      }),
+    )
+    server.use(capturePost(bodies))
+    const user = userEvent.setup()
+    await renderDialog()
+
+    await check('gpt')
+    await user.click(screen.getByRole('combobox', { name: 'Typ importowanych modeli' }))
+    await user.click(await screen.findByRole('option', { name: 'Embedding' }))
+    await check('emb')
+    await user.click(screen.getByRole('button', { name: 'Importuj' }))
+
+    await waitFor(() => expect(bodies).toHaveLength(1))
+    expect(bodies).toEqual([
+      { model_name: 'emb', model_type: 'embedding', max_tokens: 8192, wd_dimension: null },
+    ])
+  })
 })

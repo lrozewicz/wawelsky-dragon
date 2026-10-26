@@ -120,3 +120,43 @@ async def test_probe_without_data_list_is_102(monkeypatch: pytest.MonkeyPatch) -
         await provider_probe.probe_models(BASE_URL, KEY)
 
     assert exc.value.message.startswith("Connection failed: ")
+
+
+def _catalog_handler(captured: list[httpx2.Request]) -> Callable[[httpx2.Request], httpx2.Response]:
+    """Katalog OpenRouter: osobna lista dla każdej wartości ``output_modalities``."""
+    by_modality = {
+        "text": [{"id": "openai/gpt-5"}, {"id": "openai/text-embedding-3-large"}],
+        "embeddings": [{"id": "openai/text-embedding-3-large"}, {"id": "baai/bge-m3"}],
+        "rerank": [{"id": "voyageai/rerank-3"}],
+    }
+
+    def handle(request: httpx2.Request) -> httpx2.Response:
+        captured.append(request)
+        return httpx2.Response(
+            200, json={"data": by_modality[request.url.params["output_modalities"]]}
+        )
+
+    return handle
+
+
+async def test_openrouter_types_embedding_overrides_text(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Model z listy ``text`` i ``embeddings`` dostaje typ embeddingu; brak nagłówka klucza."""
+    captured: list[httpx2.Request] = []
+    _use_transport(monkeypatch, _catalog_handler(captured))
+
+    types = await provider_probe.fetch_openrouter_types()
+
+    assert types == {
+        "openai/gpt-5": "chat",
+        "openai/text-embedding-3-large": "embedding",
+        "baai/bge-m3": "embedding",
+        "voyageai/rerank-3": "rerank",
+    }
+    assert all("authorization" not in request.headers for request in captured)
+
+
+async def test_openrouter_types_failure_is_empty(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Błąd katalogu nie psuje listy modeli: pusta mapa zamiast wyjątku."""
+    _use_transport(monkeypatch, _handler([], raise_=httpx2.ConnectError("boom")))
+
+    assert await provider_probe.fetch_openrouter_types() == {}

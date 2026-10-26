@@ -57,7 +57,7 @@ def _model_body(view: InstanceModelView) -> dict[str, Any]:
 
 def _supported_body(view: SupportedModelView) -> dict[str, Any]:
     """Element ``data`` listy modeli bramki (K13 §3, schemat ``SupportedModel``)."""
-    return {"name": view.name, "rank": view.rank}
+    return {"name": view.name, "rank": view.rank, "model_type": view.model_type}
 
 
 def _wants_supported(request: Request) -> bool:

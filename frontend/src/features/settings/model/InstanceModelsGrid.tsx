@@ -175,7 +175,7 @@ export function InstanceModelsGrid(props: InstanceModelsGridProps): JSX.Element 
         rows={rows}
         columns={withEllipsisHeaders(actionsFirst(columns, compact))}
         loading={loading}
-        getRowId={(row) => row.name}
+        getRowId={(row) => row.wd_model_id}
         aria-label={t('settings.models.gridLabel')}
         localeText={localeText}
         disableVirtualization

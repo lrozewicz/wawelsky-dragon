@@ -17,6 +17,11 @@ TIMEOUT_S = 10.0
 MODELS_PATH = "/models"
 HTTP_OK = 200
 
+# Publiczny katalog OpenRouter (bez klucza): typy modeli, których `/models` bramki nie zdradza.
+OPENROUTER_CATALOG_URL = "https://openrouter.ai/api/v1/models"
+# `output_modalities` katalogu → typ modelu WD; kolejne wpisy nadpisują wcześniejsze.
+OPENROUTER_MODALITY_TYPES = (("text", "chat"), ("embeddings", "embedding"), ("rerank", "rerank"))
+
 # Transport podstawiany w testach (``httpx2.MockTransport``); ``None`` = realna sieć.
 _transport: httpx2.AsyncBaseTransport | None = None
 
@@ -46,3 +51,25 @@ async def probe_models(base_url: str, api_key: str | None) -> list[str]:
         return sorted(str(item["id"]) for item in payload["data"])
     except (TypeError, ValueError, KeyError) as exc:
         raise Conflict(f"Connection failed: {type(exc).__name__}") from exc
+
+
+async def fetch_openrouter_types() -> dict[str, str]:
+    """Typy modeli z publicznego katalogu OpenRouter: ``id`` → ``chat``/``embedding``/``rerank``.
+
+    Best effort: lista bramki jest ważniejsza od typów, więc każdy błąd (sieć, status, JSON)
+    daje pustą mapę zamiast wyjątku. URL stały (nie od admina), klucz nie jest wysyłany.
+    """
+    types: dict[str, str] = {}
+    async with httpx2.AsyncClient(timeout=TIMEOUT_S, transport=_transport) as client:
+        for modality, model_type in OPENROUTER_MODALITY_TYPES:
+            try:
+                response = await client.get(
+                    OPENROUTER_CATALOG_URL, params={"output_modalities": modality}
+                )
+                if response.status_code != HTTP_OK:
+                    continue
+                for item in response.json()["data"]:
+                    types[str(item["id"])] = model_type
+            except (httpx2.HTTPError, TypeError, ValueError, KeyError):
+                continue
+    return types

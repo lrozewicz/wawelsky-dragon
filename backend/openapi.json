@@ -23857,6 +23857,18 @@
           "rank": {
             "type": "integer",
             "title": "Rank"
+          },
+          "model_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Type",
+            "description": "Typ modelu z katalogu OpenRouter (`chat`/`embedding`/`rerank`), gdy znany"
           }
         },
         "additionalProperties": false,
