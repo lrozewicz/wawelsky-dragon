@@ -18,6 +18,7 @@ from PIL import Image
 from app.core.errors import WDError
 from app.llm.gateway import LLMGateway
 from app.llm.types import ModelRef
+from app.parsing.cancel_watch import run_with_cancel_watch
 from app.parsing.diacritics_stage import DiacriticsCorrector
 from app.parsing.errors import binary_missing, empty_document
 from app.parsing.html import paragraphs_html, sanitize_html, section_html, text_chars
@@ -300,10 +301,9 @@ async def recognize_stream(  # noqa: PLR0913 — sygnatura z kontraktu C2
     check_cancel: CancelFn | None = None,
     on_progress: ProgressFn | None = None,
 ) -> RecognitionResult:
-    """Rozpoznaje strony z kolejki (``vision_concurrency`` workerów konsumenckich).
+    """Rozpoznaje strony z kolejki (``vision_concurrency`` workerów); ``total`` rośnie z napływem.
 
-    ``total`` rośnie, jak strony napływają; ``check_cancel`` przed KAŻDĄ stroną anuluje
-    pozostałych workerów i propaguje (``vision_concurrency < 1`` → ``ValueError``)."""
+    ``check_cancel`` (przed stroną i w tle) anuluje; ``vision_concurrency < 1`` → ValueError."""
     if vision_concurrency < 1:
         raise ValueError("vision_concurrency must be >= 1")
     queue: asyncio.Queue[PendingPage | None] = asyncio.Queue(maxsize=vision_concurrency * 2)
@@ -344,7 +344,7 @@ async def recognize_stream(  # noqa: PLR0913 — sygnatura z kontraktu C2
         for index in range(vision_concurrency)
     ]
     try:
-        await asyncio.gather(*tasks)
+        await run_with_cancel_watch(asyncio.gather(*tasks), check_cancel)
     except BaseException:
         for task in tasks:
             task.cancel()

@@ -11,6 +11,7 @@ from collections.abc import AsyncIterator
 
 import pytest
 
+from app.parsing import cancel_watch
 from app.parsing.converters.pdf import RoutedBatch
 from app.parsing.recognizers import recognize_stream
 from app.parsing.types import PendingPage
@@ -135,3 +136,54 @@ async def test_on_batch_raises_instead_of_hanging_when_ocr_dies() -> None:
     with pytest.raises(Boom):
         await asyncio.wait_for(pipe.on_batch(_batch(1, size=50)), timeout=5)
     await pipe.abort()
+
+
+class Cancelled(Exception):
+    """Odpowiednik TaskCancelled w teście."""
+
+
+async def test_stop_interrupts_pages_in_flight(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stop przerywa strony w toku w ciągu interwału odpytywania, nie po ich zakończeniu."""
+    monkeypatch.setattr(cancel_watch, "CANCEL_POLL_S", 0.01)
+    stop = asyncio.Event()
+    gate = GateRecognizer()  # OCR nigdy nie kończy się sam
+
+    async def check_cancel() -> None:
+        if stop.is_set():
+            raise Cancelled
+
+    async def pages() -> AsyncIterator[PendingPage]:
+        for number in range(1, 40):
+            yield _page(number)
+
+    task = asyncio.create_task(
+        recognize_stream(
+            pages(), ocr=None, vision=gate, vision_concurrency=4, check_cancel=check_cancel
+        )
+    )
+    await _settle()
+    assert not task.done()  # strony wiszą w OCR
+
+    stop.set()
+    with pytest.raises(Cancelled):
+        await asyncio.wait_for(task, timeout=2)
+
+
+async def test_watch_stops_polling_when_work_finishes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Po zakończeniu pracy obserwator znika (brak wiszącego zadania w tle)."""
+    monkeypatch.setattr(cancel_watch, "CANCEL_POLL_S", 0.01)
+    polls = 0
+
+    async def check_cancel() -> None:
+        nonlocal polls
+        polls += 1
+
+    async def work() -> str:
+        await asyncio.sleep(0.05)
+        return "ok"
+
+    assert await cancel_watch.run_with_cancel_watch(work(), check_cancel) == "ok"
+    seen = polls
+    await asyncio.sleep(0.05)
+    assert polls == seen  # po zakończeniu nikt już nie pyta
+    assert not [t for t in asyncio.all_tasks() if t.get_name() == "cancel-watch"]
