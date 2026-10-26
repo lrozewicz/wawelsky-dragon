@@ -91,6 +91,7 @@ class SupportedModelView:
 
     name: str
     rank: int
+    model_type: str | None = None
 
 
 @dataclass(frozen=True)
@@ -177,6 +178,33 @@ def _delete_names(body: Mapping[str, object]) -> list[str]:
     return names
 
 
+# Bramka LiteLLM z wildcardem `openrouter/*` wystawia modele jako `openrouter/<id>`.
+OPENROUTER_PREFIX = "openrouter/"
+WILDCARD_SUFFIX = "/*"
+
+
+async def _supported_views(
+    base_url: str, names: builtins.list[str]
+) -> builtins.list[SupportedModelView]:
+    """Lista bramki bez pozycji-wildcardów; dla OpenRouter z typami i modelami z katalogu.
+
+    `/models` bramki nie zna typów i przy wildcardzie nie wylicza modeli embeddingowych ani
+    rerank, więc dla bramki OpenRouter (host `openrouter…` albo nazwy `openrouter/…`) dokładamy
+    publiczny katalog OpenRouter. Dla innych bramek lista zostaje taka, jak zwróciła sonda.
+    """
+    concrete = [name for name in names if not name.endswith(WILDCARD_SUFFIX)]
+    # Prefiks także z samego wildcardu `openrouter/*` — bez konkretnych nazw to jedyny ślad.
+    prefix = OPENROUTER_PREFIX if any(n.startswith(OPENROUTER_PREFIX) for n in names) else ""
+    is_openrouter = bool(prefix) or "openrouter" in base_url.lower()
+    types = await provider_probe.fetch_openrouter_types() if is_openrouter else {}
+    merged = {name: types.get(name.removeprefix(prefix)) for name in concrete}
+    for model_id, model_type in types.items():
+        merged.setdefault(f"{prefix}{model_id}", model_type)
+    return [
+        SupportedModelView(name=name, rank=RANK, model_type=merged[name]) for name in sorted(merged)
+    ]
+
+
 class InstanceModelService:
     """Modele instancji dostawcy: odczyt dla każdego, zapis tylko dla superusera (K13 §2)."""
 
@@ -200,7 +228,7 @@ class InstanceModelService:
         async with transaction(self._sm()) as session:
             resolved = await self._resolve_instance(session, provider, instance)
         names = await provider_probe.probe_models(resolved.base_url, resolved.api_key)
-        return [SupportedModelView(name=name, rank=RANK) for name in sorted(names)]
+        return await _supported_views(resolved.base_url, names)
 
     async def add(
         self, principal: Principal, provider: str, instance: str, body: Mapping[str, object]

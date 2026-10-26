@@ -113,6 +113,24 @@ describe('InstanceModelsPanel', () => {
     expect(screen.getByText('Wierszy na stronę:')).toBeInTheDocument()
   })
 
+  it('pokazuje osobne wiersze dla modeli o tej samej nazwie i różnym typie', async () => {
+    // Regresja: `getRowId` po samej nazwie mieszał wiersze (chat + vision `gpt`) przy zmianie instancji.
+    const twin = makeSeedInstance({
+      id: 'inst-2',
+      name: 'twin',
+      models: [
+        makeInstanceModel({ name: 'gpt', model_type: 'chat', wd_model_id: 'm-chat' }),
+        makeInstanceModel({ name: 'gpt', model_type: 'vision', wd_model_id: 'm-vision' }),
+      ],
+    })
+    server.use(...settingsHandlers({ instances: [twin] }))
+    await renderPanel(toProviderInstance(twin))
+
+    expect(await screen.findAllByText('gpt')).toHaveLength(2)
+    expect(screen.getByText('Czat')).toBeInTheDocument()
+    expect(screen.getByText('Wizja')).toBeInTheDocument()
+  })
+
   it('wysyła PATCH tylko ze zmianą statusu po przełączeniu modelu', async () => {
     const bodies: { path: string; body: unknown }[] = []
     server.use(...settingsHandlers({ instances: [INSTANCE] }))

@@ -8361,6 +8361,11 @@ export interface components {
             name: string;
             /** Rank */
             rank: number;
+            /**
+             * Model Type
+             * @description Typ modelu z katalogu OpenRouter (`chat`/`embedding`/`rerank`), gdy znany
+             */
+            model_type?: string | null;
         };
         /**
          * SwitchChunksRequest

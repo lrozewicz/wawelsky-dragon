@@ -3,6 +3,8 @@
  * (`?supported=true`), pozwala zaznaczyć wiele nazw i wybrać dla nich typ, a import wysyła
  * kolejne `POST …/models` (jedno na nazwę). Nazwy już obecne w instancji są pomijane,
  * a podsumowanie pokazuje liczbę dodanych i komunikaty błędów (kontrakt §0).
+ * Lista ma wyszukiwarkę (po fragmencie nazwy), a wybrany typ działa też jako filtr: bramka OpenRouter
+ * podaje typy modeli (`model_type`), więc pokazujemy modele tego typu i te o nieznanym typie.
  */
 
 import { useState } from 'react'
@@ -28,6 +30,7 @@ import { ApiError } from '../../../api/envelope'
 import { MODEL_TYPES } from '../constants'
 import type { ModelType } from '../constants'
 import { supportedModelsQueryOptions, useAddInstanceModel } from '../providerQueries'
+import type { SupportedModel } from '../providerQueries'
 
 import { DEFAULT_MAX_TOKENS, buildAddModelBody } from './AddModelDialog'
 
@@ -38,6 +41,15 @@ type ImportResult = { added: number; errors: string[] }
 function errorText(error: unknown, title: string, fallback: string): string {
   const message = error instanceof ApiError && error.message !== '' ? error.message : fallback
   return `${title}: ${message}`
+}
+
+/**
+ * Czy model z bramki pasuje do wybranego typu importu: nieznany typ pokazujemy zawsze (nie wiemy,
+ * czy nie pasuje), a „vision” to modele czatu z obrazem — katalog nie odróżnia ich od `chat`.
+ */
+export function matchesType(item: SupportedModel, type: ModelType): boolean {
+  if (item.model_type == null) return true
+  return type === 'vision' ? item.model_type === 'chat' : item.model_type === type
 }
 
 export type ImportModelsDialogProps = {
@@ -55,12 +67,21 @@ export function ImportModelsDialog(props: ImportModelsDialogProps): JSX.Element 
   const add = useAddInstanceModel(instanceId)
   const [selected, setSelected] = useState<string[]>([])
   const [type, setType] = useState<ModelType>('chat')
+  const [search, setSearch] = useState('')
   const [result, setResult] = useState<ImportResult | null>(null)
   const [pending, setPending] = useState(false)
 
   const existing = new Set(existingNames)
   const items = supported.data ?? []
-  const available = items.filter((item) => !existing.has(item.name))
+  const needle = search.trim().toLowerCase()
+  const visible = items.filter(
+    (item) => matchesType(item, type) && item.name.toLowerCase().includes(needle),
+  )
+  const available = visible.filter((item) => !existing.has(item.name))
+  // Import i liczniki dotyczą tylko widocznych pozycji: zaznaczone, a potem odfiltrowane modele
+  // nie trafiają do instancji z innym typem niż ten, który widzi użytkownik.
+  const visibleNames = new Set(visible.map((item) => item.name))
+  const chosen = selected.filter((name) => visibleNames.has(name))
   const allSelected =
     available.length > 0 && available.every((item) => selected.includes(item.name))
 
@@ -71,18 +92,24 @@ export function ImportModelsDialog(props: ImportModelsDialogProps): JSX.Element 
   }
 
   function toggleAll(checked: boolean): void {
-    setSelected(checked ? available.map((item) => item.name) : [])
+    const names = available.map((item) => item.name)
+    setSelected((current) =>
+      checked
+        ? [...new Set([...current, ...names])]
+        : current.filter((name) => !names.includes(name)),
+    )
   }
 
   function close(): void {
     setSelected([])
+    setSearch('')
     setResult(null)
     onClose()
   }
 
   /** Kolejne POST-y: jedno żądanie na zaznaczoną, jeszcze nieistniejącą nazwę. */
   async function runImport(): Promise<void> {
-    const names = selected.filter((name) => !existing.has(name))
+    const names = chosen.filter((name) => !existing.has(name))
     setPending(true)
     let added = 0
     const errors: string[] = []
@@ -143,31 +170,50 @@ export function ImportModelsDialog(props: ImportModelsDialogProps): JSX.Element 
               {t('settings.models.importEmpty')}
             </Typography>
           ) : (
-            <Box sx={{ maxHeight: 240, overflowY: 'auto' }}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={allSelected}
-                    indeterminate={!allSelected && selected.length > 0}
-                    onChange={(event) => toggleAll(event.target.checked)}
-                  />
-                }
-                label={t('settings.models.selectAll')}
+            <>
+              <TextField
+                fullWidth
+                size="small"
+                type="search"
+                label={t('settings.models.importSearch')}
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                data-testid="import-model-search"
               />
-              {items.map((item) => (
+              <Typography variant="caption" color="text.secondary">
+                {t('settings.models.importShown', { shown: visible.length, total: items.length })}
+              </Typography>
+              <Box sx={{ maxHeight: 240, overflowY: 'auto' }}>
                 <FormControlLabel
-                  key={item.name}
                   control={
                     <Checkbox
-                      checked={selected.includes(item.name)}
-                      disabled={existing.has(item.name)}
-                      onChange={(event) => toggle(item.name, event.target.checked)}
+                      checked={allSelected}
+                      indeterminate={!allSelected && selected.length > 0}
+                      onChange={(event) => toggleAll(event.target.checked)}
                     />
                   }
-                  label={item.name}
+                  label={t('settings.models.selectAll')}
                 />
-              ))}
-            </Box>
+                {visible.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary" sx={{ p: 1 }}>
+                    {t('settings.models.importNoMatch')}
+                  </Typography>
+                ) : null}
+                {visible.map((item) => (
+                  <FormControlLabel
+                    key={item.name}
+                    control={
+                      <Checkbox
+                        checked={selected.includes(item.name)}
+                        disabled={existing.has(item.name)}
+                        onChange={(event) => toggle(item.name, event.target.checked)}
+                      />
+                    }
+                    label={item.name}
+                  />
+                ))}
+              </Box>
+            </>
           )}
 
           <TextField
@@ -177,6 +223,7 @@ export function ImportModelsDialog(props: ImportModelsDialogProps): JSX.Element 
             label={t('settings.models.importType')}
             value={type}
             onChange={(event) => setType(event.target.value as ModelType)}
+            helperText={t('settings.models.importTypeHint')}
             data-testid="import-model-type"
           >
             {MODEL_TYPES.map((modelType) => (
@@ -193,7 +240,7 @@ export function ImportModelsDialog(props: ImportModelsDialogProps): JSX.Element 
         <Button
           variant="contained"
           loading={pending}
-          disabled={selected.length === 0}
+          disabled={chosen.length === 0}
           onClick={() => void runImport()}
         >
           {t('settings.models.importSubmit')}

@@ -41,6 +41,10 @@ class SupportedModel(ResponseModel):
 
     name: str
     rank: int
+    model_type: str | None = Field(
+        default=None,
+        description="Typ modelu z katalogu OpenRouter (`chat`/`embedding`/`rerank`), gdy znany",
+    )
 
 
 class InstanceModelAddRequest(RequestModel):
