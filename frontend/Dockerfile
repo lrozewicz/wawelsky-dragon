@@ -1,6 +1,6 @@
 # Obraz web: build SPA (vite) + runtime Bun z serve.ts (statyka + reverse proxy).
 # Kontrakt: work/wp/E0-3/CONTRACT.md C9; metryka rozmiaru: C2 (≤ 120 MB).
-FROM oven/bun:1.4.2-alpine AS deps
+FROM oven/bun:1.4.4-alpine AS deps
 WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
@@ -32,7 +32,7 @@ RUN bun run typecheck \
     && bun run build \
     && bun run bundle-budget
 
-FROM oven/bun:1.4.2-alpine AS runtime
+FROM oven/bun:1.4.4-alpine AS runtime
 WORKDIR /app
 COPY --from=build /app/dist ./dist
 COPY serve.ts ./
