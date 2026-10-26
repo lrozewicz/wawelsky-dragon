@@ -123,6 +123,7 @@ Kolejne kroki administracyjne (dostawcy modeli, OIDC, klucze API, SharePoint, ba
 | [`docs/BIG-PICTURE.md`](docs/BIG-PICTURE.md) | co realnie powstało: moduły, przepływy, odchyłki od specyfikacji |
 | [`docs/runbooks/admin.md`](docs/runbooks/admin.md) | runbook administratora: konfiguracja i utrzymanie WD |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | architektura i decyzje projektowe (mapa całości) |
+| [`docs/runbooks/admin.md`](docs/runbooks/admin.md) §17 | modele OCR na GPU w RunPod uruchamiane z panelu (klucz, wybór GPU, auto-kasowanie poda) |
 | [`docs/runbooks/kubernetes-ovh.md`](docs/runbooks/kubernetes-ovh.md) | wdrożenie dev/prod na Kubernetesie (CI/CD, Harbor, Argo CD), sekrety, rollback |
 | [`docs/runbooks/backup-restore.md`](docs/runbooks/backup-restore.md) | kopie zapasowe, odtworzenie, rotacja klucza szyfrującego |
 | (dokumentacja poza repozytorium publicznym) | przepięcie klienta hub-compat z RAGFlow na WD — część prywatna |
