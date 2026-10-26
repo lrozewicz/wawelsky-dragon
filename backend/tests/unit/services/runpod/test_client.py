@@ -78,4 +78,6 @@ def test_pod_body_runs_vllm_with_token_and_http_port() -> None:
         cloud="SECURE",
         data_center_ids=[],
     )
-    assert proxy_url("p1") == "https://p1-8000.proxy.runpod.net/v1"
+    assert proxy_url("pod0001") == "https://pod0001-8000.proxy.runpod.net/v1"
+    with pytest.raises(ValueError):
+        proxy_url("evil.example.com/x")

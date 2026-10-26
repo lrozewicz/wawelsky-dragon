@@ -5,13 +5,11 @@ from __future__ import annotations
 import base64
 from typing import TYPE_CHECKING
 
-import httpx
-
 from app.core.crypto import decrypt, encrypt
 from app.core.errors import Conflict
 from app.db.repositories import wd_settings
 from app.db.uow import transaction
-from app.services.runpod.client import RunpodClient
+from app.services.runpod.client import HttpClient, RunpodClient
 
 if TYPE_CHECKING:
     from app.core.container import Container
@@ -49,9 +47,7 @@ async def delete_key(container: Container) -> None:
         await wd_settings.delete_value(session, SETTING_NAME)
 
 
-async def client_for(
-    container: Container, *, http: httpx.AsyncClient | None = None
-) -> RunpodClient:
+async def client_for(container: Container, *, http: HttpClient | None = None) -> RunpodClient:
     """Klient RunPod z zapisanym kluczem; brak klucza → ``Conflict`` (409)."""
     key = await load_key(container)
     if key is None:

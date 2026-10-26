@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -102,5 +103,11 @@ def pod_body(  # noqa: PLR0913 — parametry ciała żądania
 
 
 def proxy_url(pod_id: str) -> str:
-    """Publiczny adres proxy RunPod portu vLLM (bazowy URL API zgodnego z OpenAI)."""
+    """Publiczny adres proxy RunPod portu vLLM (bazowy URL API zgodnego z OpenAI).
+
+    Host jest zawsze ``*.proxy.runpod.net``; id poda pochodzi z API RunPod i jest walidowane,
+    więc nie da się nim podstawić innego hosta (SSRF, H13).
+    """
+    if re.fullmatch(r"[a-z0-9]{6,40}", pod_id) is None:
+        raise ValueError("invalid RunPod pod id")
     return f"https://{pod_id}-{PORT}.proxy.runpod.net/v1"

@@ -10,8 +10,6 @@ import secrets
 from dataclasses import asdict
 from typing import TYPE_CHECKING, Any
 
-import httpx
-
 from app.core.crypto import encrypt
 from app.core.errors import Conflict, NotFound, UpstreamError, ValidationFailed, WDError
 from app.db.repositories import documents as documents_repo
@@ -24,6 +22,7 @@ from app.services.provider_common import require_superuser
 from app.services.runpod import catalog as gpu_catalog
 from app.services.runpod import keystore
 from app.services.runpod.client import (
+    HttpClient,
     RunpodAuthError,
     RunpodCapacityError,
     RunpodClient,
@@ -60,7 +59,7 @@ def gpu_view(gpu: gpu_catalog.Gpu) -> dict[str, Any]:
 class RunpodService:
     """Operacje panelu RunPod (stan w ``runpod_pods`` i ``wd_settings``)."""
 
-    def __init__(self, container: Container, *, http: httpx.AsyncClient | None = None) -> None:
+    def __init__(self, container: Container, *, http: HttpClient | None = None) -> None:
         self._c = container
         # ``container.runpod_http``: klient wstrzykiwany w testach (``httpx.MockTransport``).
         self._http = http or getattr(container, "runpod_http", None)

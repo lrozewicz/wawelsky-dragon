@@ -13,6 +13,8 @@ import httpx
 
 API_BASE = "https://api.runpod.io/v2"
 DEFAULT_TIMEOUT_S = 30.0
+# Alias dla pozostałych modułów: tylko ten plik i `lifecycle` importują klienta HTTP (H13).
+HttpClient = httpx.AsyncClient
 HTTP_NOT_FOUND = 404
 
 # Fragmenty komunikatów RunPod oznaczające brak wolnych maszyn (nie błąd żądania).
