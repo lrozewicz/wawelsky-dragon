@@ -887,6 +887,38 @@ Sprzątanie: gotowe paczki w `storage_root/exports/` i `.part` są usuwane po 24
 
 ---
 
+## 17. Modele na GPU w RunPod (Xiaomi-OCR-0 bez własnej karty)
+
+Zamiast usługi `ocr` z compose (§11) model OCR można uruchamiać na GPU wynajętym w RunPod — z panelu WD,
+tylko na czas parsowania. Nic nie trzeba instalować na serwerze WD; potrzebny jest klucz API RunPod.
+
+**Konfiguracja (superuser):** Ustawienia → **RunPod** → wklej klucz API → *Zapisz klucz* (WD sprawdza go w RunPod i trzyma
+zaszyfrowanym `WD_CRYPTO_KEY`). Od tej chwili w rejestrze modeli jest `xiaomi-ocr-0-runpod` (typ `vision`) — wybierz go jako
+parser PDF w ustawieniach bazy wiedzy (`layout_recognize`).
+
+**Wybór GPU:** lista z cenami za godzinę i dostępnością; filtry: chmura (Secure/Community), min./maks. VRAM, region, kraj,
+„tylko dostępne teraz”. Model wymaga min. 16 GB VRAM (zalecane 24 GB). *Uruchom na wybranym GPU* → potwierdzenie ceny →
+postęp (przydział GPU → obraz → ładowanie modelu → gotowe; zwykle 5–8 min).
+
+**Parsowanie:** gdy pod jest wyłączony, a dokument ma parser `xiaomi-ocr-0-runpod`, kliknięcie *Parsuj* (także przy przesyłaniu
+plików) pyta „Pod … jest wyłączony — włączyć?”. *Tak* → wybór GPU (domyślnie poprzednio użyte; gdy niedostępne — inne GPU z tym
+samym lub większym VRAM) → wdrożenie → parsowanie ruszy samo po gotowości modelu. Zwykły użytkownik dostaje prośbę
+o kontakt z administratorem.
+
+**Koszty:** worker (pętla co 15 s) kasuje poda (`DELETE`, koniec naliczania), gdy nie ma zadań parsowania używających modelu
+i minęły 2 minuty bezczynności. Dodatkowe bezpieczniki: pod bez maszyny przez 5 min lub model niegotowy po 25 min są kasowane
+jako nieudane, twardy limit życia 8 h, przycisk *Wyłącz teraz* w liście wdrożeń. Parsowanie zlecone w tle (integracje) bez
+działającego poda kończy się błędem „… is not running on RunPod” — uruchom poda i ponów. Koszt dotychczasowy jest w liście
+wdrożeń (cena/h × czas). Na koncie RunPod warto ustawić limit wydatków.
+
+**Bezpieczeństwo:** adres poda (`https://<id>-8000.proxy.runpod.net`) jest publiczny, więc vLLM startuje z losowym kluczem
+(`--api-key`, zaszyfrowany w bazie i w instancji `runpod-xiaomi-ocr-0-runpod`). Rotacja `WD_CRYPTO_KEY` obejmuje klucz RunPod
+i klucze podów. API: `/api/wd/v1/runpod/*` (klucz, modele, gpus, preflight, deployments).
+
+**Diagnostyka:** `failed` z `gpu_unavailable` = RunPod nie dał maszyny w 5 min (wybierz inne GPU); `model did not start in time`
+= obraz/model nie wstał w 25 min (sprawdź logi poda w konsoli RunPod). Lokalny model z §11 i ten z RunPod mają różne nazwy
+(`xiaomi-ocr-0` vs `xiaomi-ocr-0-runpod`) i mogą działać obok siebie.
+
 ## Odsyłacze
 
 - Checklista bezpieczeństwa H1–H17 (dowody i mutacje): [../security/checklista-H.md](../security/checklista-H.md)

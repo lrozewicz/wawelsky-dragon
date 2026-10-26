@@ -3,6 +3,7 @@
 Wymagają stosu testowego (`eval "$(tools/dev/up.sh test env)"` + `up.sh test up mariadb-test`).
 """
 
+import base64
 from collections.abc import Iterator
 
 import pytest
@@ -31,6 +32,9 @@ MODEL_ID = "m" * 32
 INSTANCE_ID = "p" * 32
 WEB_SEARCH_ID = "w" * 32
 WEB_SEARCH_PLAIN = "ws-plain"
+POD_ID = "r" * 32
+POD_PLAIN = "vllm-token"
+RUNPOD_KEY_PLAIN = "rpa_plain_key"
 
 TIME_MS = 1790157600000
 DATE = "2026-09-23 10:00:00.000"
@@ -41,6 +45,8 @@ ALL_ROWS = {
     "provider_instances.api_key_enc": 1,
     "web_search_providers.api_key_enc": 1,
     "integrations.secret_enc": 1,
+    "runpod_pods.api_token_enc": 1,
+    "wd_settings.runpod_api_key": 1,
 }
 NO_ROWS = dict.fromkeys(ALL_ROWS, 0)
 
@@ -60,6 +66,29 @@ def _provider_aad(instance_id: str) -> bytes:
 
 def _web_search_aad(provider_id: str) -> bytes:
     return b"web-search-provider:" + provider_id.encode()
+
+
+def _pod_aad(pod_id: str) -> bytes:
+    return b"runpod-pod:" + pod_id.encode()
+
+
+def _seed_runpod(engine: Engine) -> None:
+    """Wiersz wdrożenia z kluczem vLLM i zapisany klucz API RunPod (oba pod OLD)."""
+    pod_enc = encrypt(OLD, POD_PLAIN.encode(), _pod_aad(POD_ID))
+    setting = base64.b64encode(encrypt(OLD, RUNPOD_KEY_PLAIN.encode(), b"runpod-api-key")).decode()
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO runpod_pods (id, model_name, status, gpu_id, gpu_name, vram_gb, cloud,"
+                " api_token_enc, create_time, update_time)"
+                " VALUES (:id, 'm', 'ready', 'g', 'G', 24, 'SECURE', :enc, :t, :t)"
+            ),
+            {"id": POD_ID, "enc": pod_enc, "t": TIME_MS},
+        )
+        conn.execute(
+            text("INSERT INTO wd_settings (name, value, update_time) VALUES (:n, :v, :t)"),
+            {"n": "runpod_api_key", "v": setting, "t": TIME_MS},
+        )
 
 
 def _seed(
@@ -162,6 +191,7 @@ def _scalar(engine: Engine, sql: str, **params: object) -> object:
 
 def test_rotate_rewrites_all_columns_with_same_aad(db: Engine) -> None:
     _seed(db)
+    _seed_runpod(db)
     with db.begin() as conn:
         counts = rotate_crypto_key.rotate(conn, OLD, NEW, dry_run=False)
     assert counts == ALL_ROWS
@@ -200,6 +230,12 @@ def test_rotate_rewrites_all_columns_with_same_aad(db: Engine) -> None:
     assert decrypt_secret(NEW, INTEGRATION_ID, str(secret)) == INTEGRATION_PLAIN
     with pytest.raises(ValidationFailed):
         decrypt_secret(OLD, INTEGRATION_ID, str(secret))
+    pod = _scalar(db, "SELECT api_token_enc FROM runpod_pods WHERE id = :id", id=POD_ID)
+    assert decrypt(NEW, bytes(pod), _pod_aad(POD_ID)) == POD_PLAIN.encode()
+    with pytest.raises(ValidationFailed):
+        decrypt(OLD, bytes(pod), _pod_aad(POD_ID))
+    stored = _scalar(db, "SELECT value FROM wd_settings WHERE name = 'runpod_api_key'")
+    assert decrypt(NEW, base64.b64decode(stored), b"runpod-api-key") == RUNPOD_KEY_PLAIN.encode()
     # `secret_last4` nie zmienia się (C1).
     assert (
         _scalar(db, "SELECT secret_last4 FROM integrations WHERE id = :id", id=INTEGRATION_ID)
@@ -209,6 +245,7 @@ def test_rotate_rewrites_all_columns_with_same_aad(db: Engine) -> None:
 
 def test_dry_run_leaves_rows_untouched(db: Engine) -> None:
     _seed(db)
+    _seed_runpod(db)
     before = _snapshot(db)
     with db.begin() as conn:
         counts = rotate_crypto_key.rotate(conn, OLD, NEW, dry_run=True)

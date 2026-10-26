@@ -29,18 +29,25 @@ describe('SettingsLayout', () => {
     expect(screen.getByText('treść zakładki')).toBeInTheDocument()
   })
 
-  it('renderuje trzy zakładki-linki w kolejności z kontraktu', async () => {
+  it('renderuje zakładki-linki w kolejności z kontraktu', async () => {
     await renderLayout()
     await screen.findByRole('heading', { level: 1 })
 
     const tabs = screen.getAllByRole('tab')
-    expect(tabs.map((tab) => tab.textContent)).toEqual(['Dostawcy modeli', 'Profil', 'Klucze API'])
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      'Dostawcy modeli',
+      'Profil',
+      'Klucze API',
+      'RunPod',
+    ])
     expect(tabs[0]).toHaveAttribute('href', '/user-setting/model')
     expect(tabs[1]).toHaveAttribute('href', '/user-setting/profile')
     expect(tabs[2]).toHaveAttribute('href', '/user-setting/api')
+    expect(tabs[3]).toHaveAttribute('href', '/user-setting/runpod')
     expect(screen.getByTestId('settings-tab-model')).toBeInTheDocument()
     expect(screen.getByTestId('settings-tab-profile')).toBeInTheDocument()
     expect(screen.getByTestId('settings-tab-api')).toBeInTheDocument()
+    expect(screen.getByTestId('settings-tab-runpod')).toBeInTheDocument()
   })
 
   it('zaznacza zakładkę wskazaną przez `active`', async () => {

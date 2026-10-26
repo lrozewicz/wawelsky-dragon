@@ -22,6 +22,7 @@ from app.api.wd.dataset_usage import router as wd_dataset_usage_router
 from app.api.wd.integrations import routers as wd_integration_routers
 from app.api.wd.kb_export import router as wd_kb_export_router
 from app.api.wd.kb_import import router as wd_kb_import_router
+from app.api.wd.runpod import router as wd_runpod_router
 from app.api.wd.system import routers as wd_system_routers
 from app.api.wd.tasks import router as wd_tasks_router
 from app.api.wd.test_reset import router as test_reset_router
@@ -55,6 +56,7 @@ def include_routers(app: FastAPI, settings: Settings) -> None:
         wd_kb_export_router,
         wd_kb_import_router,
         wd_dataset_usage_router,
+        wd_runpod_router,
     ):
         app.include_router(router)
     if settings.integrations_enabled:  # trasy WD integracji tylko z włączoną integracją (§1)

@@ -6,6 +6,7 @@ ze środowiska; moduł nigdy nie wypisuje ani nie loguje kluczy ani odszyfrowany
 """
 
 import argparse
+import base64
 import os
 import re
 import sys
@@ -27,6 +28,11 @@ _KEY_HEX = re.compile(r"[0-9a-fA-F]{64}")
 # sięga po `services.provider_common` ani `services.web_search.keys`.
 _PROVIDER_AAD_PREFIX = b"provider-instance:"  # provider_instances.api_key_enc (C1)
 _WEB_SEARCH_AAD_PREFIX = b"web-search-provider:"  # web_search_providers.api_key_enc (E6-3f §C3)
+_RUNPOD_POD_AAD_PREFIX = b"runpod-pod:"  # runpod_pods.api_token_enc (klucz vLLM poda)
+# `wd_settings.runpod_api_key`: base64 szyfrogramu z AAD stałą (klucz API RunPod z panelu).
+RUNPOD_KEY_SETTING = "runpod_api_key"
+_RUNPOD_KEY_AAD = b"runpod-api-key"
+RUNPOD_KEY_LABEL = f"wd_settings.{RUNPOD_KEY_SETTING}"
 
 
 @dataclass(frozen=True)
@@ -48,6 +54,8 @@ class ColumnSpec:
             return _PROVIDER_AAD_PREFIX + str(row_id).encode()
         if self.table == "web_search_providers":
             return _WEB_SEARCH_AAD_PREFIX + str(row_id).encode()
+        if self.table == "runpod_pods":
+            return _RUNPOD_POD_AAD_PREFIX + str(row_id).encode()
         return None
 
 
@@ -58,6 +66,7 @@ COLUMNS: tuple[ColumnSpec, ...] = (
     ColumnSpec("provider_instances", "api_key_enc", "blob"),
     ColumnSpec("web_search_providers", "api_key_enc", "blob"),
     ColumnSpec("integrations", "secret_enc", "secret"),
+    ColumnSpec("runpod_pods", "api_token_enc", "blob"),
 )
 
 
@@ -108,7 +117,28 @@ def rotate(conn: Connection, old_hex: str, new_hex: str, *, dry_run: bool) -> di
                 ),
                 {"v": value, "id": row_id},
             )
+    counts[RUNPOD_KEY_LABEL] = _rotate_runpod_key(conn, old_hex, new_hex, dry_run=dry_run)
     return counts
+
+
+def _rotate_runpod_key(conn: Connection, old_hex: str, new_hex: str, *, dry_run: bool) -> int:
+    """Klucz API RunPod z `wd_settings` (base64 szyfrogramu); brak wiersza → 0."""
+    row = conn.execute(
+        text("SELECT value FROM wd_settings WHERE name = :name"), {"name": RUNPOD_KEY_SETTING}
+    ).first()
+    if row is None:
+        return 0
+    try:
+        plain = decrypt(old_hex, base64.b64decode(row[0]), _RUNPOD_KEY_AAD)
+    except ValidationFailed:
+        raise ValidationFailed(f"cannot decrypt {RUNPOD_KEY_LABEL}") from None
+    if not dry_run:
+        value = base64.b64encode(encrypt(new_hex, plain, _RUNPOD_KEY_AAD)).decode()
+        conn.execute(
+            text("UPDATE wd_settings SET value = :v WHERE name = :name"),
+            {"v": value, "name": RUNPOD_KEY_SETTING},
+        )
+    return 1
 
 
 def _valid_key(value: str) -> bool:

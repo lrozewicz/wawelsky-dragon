@@ -26,6 +26,7 @@ from app.worker.kb_handlers import KB_HANDLERS
 from app.worker.loop import Worker, make_worker_id
 from app.worker.outline_sweep import outline_sweep_loop
 from app.worker.pool import ParsePool
+from app.worker.runpod_loop import runpod_loop
 
 # Rejestr produkcyjny handlerów (kontrakt C8); pula procesów docelowo w ``_amain``.
 # ``integration_sync`` i ``build_outline`` dochodzą w ``create_worker`` — leniwy import
@@ -110,6 +111,8 @@ async def _amain() -> None:
     cleanup_task = asyncio.create_task(cleanup_loop(container, stop), name="kb-cleanup")
     # Przegląd uzupełniania profili spisu (K21 §2 p. 4): start + co ``WD_OUTLINE_SWEEP_S``.
     sweep_task = asyncio.create_task(outline_sweep_loop(container, stop), name="outline-sweep")
+    # Pody RunPod (modele OCR na GPU w chmurze): postęp stanów i kasowanie po skończonej pracy.
+    runpod_task = asyncio.create_task(runpod_loop(container, stop), name="runpod")
     try:
         logger.info(
             "worker started",
@@ -125,6 +128,7 @@ async def _amain() -> None:
             await sched_task
         await cleanup_task
         await sweep_task
+        await runpod_task
         await container.aclose()
         pool.shutdown(wait=True, cancel_futures=True)
 

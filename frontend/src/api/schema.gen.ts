@@ -2293,6 +2293,162 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/wd/v1/runpod/key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stan klucza API RunPod
+         * @description Czy klucz jest zapisany (bez jego wartości).
+         */
+        get: operations["runpod_key_status"];
+        /**
+         * Zapisuje klucz API RunPod (po sprawdzeniu w RunPod)
+         * @description Superuser zapisuje klucz; zły klucz → 400.
+         */
+        put: operations["runpod_key_set"];
+        post?: never;
+        /**
+         * Usuwa klucz API RunPod
+         * @description Usuwa klucz; z działającymi podami → 409.
+         */
+        delete: operations["runpod_key_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/runpod/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Modele, które można uruchomić na RunPod
+         * @description Lista modeli hostowanych.
+         */
+        get: operations["runpod_models"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/runpod/gpus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lista GPU RunPod z cenami i dostępnością (filtry: VRAM, region, kraj)
+         * @description GPU posortowane od najtańszych; wymaga zapisanego klucza.
+         */
+        get: operations["runpod_gpus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/runpod/preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Czy parsowanie wymaga włączenia poda RunPod
+         * @description Wołane przez UI przed startem parsowania; bez efektów ubocznych.
+         */
+        post: operations["runpod_preflight"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/runpod/deployments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ostatnie wdrożenia modeli na RunPod
+         * @description Najnowsze pierwsze (aktywne i zakończone).
+         */
+        get: operations["runpod_deployments"];
+        put?: never;
+        /**
+         * Uruchamia model na GPU w RunPod
+         * @description Tworzy poda; po gotowości WD parsuje ``parse``. Brak GPU → 409 z zamiennikami.
+         */
+        post: operations["runpod_deploy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/runpod/deployments/{deployment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stan wdrożenia
+         * @description Stan do odpytywania z UI.
+         */
+        get: operations["runpod_deployment"];
+        put?: never;
+        post?: never;
+        /**
+         * Kasuje poda (koniec kosztów)
+         * @description Ręczne wyłączenie wdrożenia.
+         */
+        delete: operations["runpod_terminate"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/runpod/deployments/{deployment_id}/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Zleca parsowanie dokumentów po uruchomieniu poda (albo od razu, gdy działa)
+         * @description Dla poda w trakcie wdrażania dopisuje dokumenty; dla gotowego startuje parsowanie.
+         */
+        post: operations["runpod_queue_parse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/wd/v1/integrations": {
         parameters: {
             query?: never;
@@ -3573,6 +3729,37 @@ export interface components {
             next_after_id: number | null;
         };
         /**
+         * DataCenterView
+         * @description Centrum danych z dostępnością GPU.
+         */
+        DataCenterView: {
+            /**
+             * Id
+             * @description Id centrum danych, np. EU-RO-1
+             */
+            id: string;
+            /**
+             * Name
+             * @description Nazwa centrum danych
+             */
+            name: string;
+            /**
+             * Region
+             * @description Region (EUROPE, NORTH_AMERICA, …)
+             */
+            region: string;
+            /**
+             * Country
+             * @description Kod kraju, np. RO
+             */
+            country: string;
+            /**
+             * Availability
+             * @description NONE, LOW, MEDIUM albo HIGH
+             */
+            availability: string;
+        };
+        /**
          * DatabaseProbe
          * @description Blok database w /system/status (upstream v0.27.2 system_api.py:112).
          */
@@ -4136,6 +4323,127 @@ export interface components {
         DeletedCount: {
             /** Deleted */
             deleted: number;
+        };
+        /**
+         * DeployBody
+         * @description Wdrożenie modelu na wskazanym GPU.
+         */
+        DeployBody: {
+            /**
+             * Model
+             * @description Nazwa modelu z listy modeli
+             */
+            model: string;
+            /**
+             * Gpu Id
+             * @description Id GPU z katalogu
+             */
+            gpu_id: string;
+            /**
+             * Cloud
+             * @description SECURE albo COMMUNITY
+             * @default SECURE
+             * @enum {string}
+             */
+            cloud: "SECURE" | "COMMUNITY";
+            /**
+             * Region
+             * @description Zawężenie do regionu
+             */
+            region?: string | null;
+            /**
+             * Country
+             * @description Zawężenie do kraju (kod ISO)
+             */
+            country?: string | null;
+            /**
+             * Parse
+             * @description Dokumenty do sparsowania, gdy model będzie gotowy
+             */
+            parse?: components["schemas"]["ParseRequest"][];
+        };
+        /**
+         * Deployment
+         * @description Wdrożenie modelu na RunPod (pod).
+         */
+        Deployment: {
+            /**
+             * Id
+             * @description Id wdrożenia
+             */
+            id: string;
+            /**
+             * Model
+             * @description Nazwa modelu
+             */
+            model: string;
+            /**
+             * Title
+             * @description Nazwa wyświetlana
+             */
+            title: string;
+            /**
+             * Status
+             * @description requested, provisioning, starting, loading, ready, terminating, terminated, failed
+             */
+            status: string;
+            /**
+             * Active
+             * @description Czy pod trwa i generuje koszty
+             */
+            active: boolean;
+            /** @description GPU */
+            gpu: components["schemas"]["GpuRef"];
+            /**
+             * Cloud
+             * @description SECURE albo COMMUNITY
+             */
+            cloud: string;
+            /**
+             * Data Center Id
+             * @description Centrum danych przydzielone przez RunPod
+             */
+            data_center_id: string | null;
+            /**
+             * Price Per Hr
+             * @description Cena za godzinę (USD)
+             */
+            price_per_hr: number;
+            /**
+             * Cost So Far
+             * @description Szacowany koszt dotychczas (USD)
+             */
+            cost_so_far: number;
+            /**
+             * Error
+             * @description Przyczyna błędu albo uwagi
+             */
+            error: string | null;
+            /**
+             * Pending Documents
+             * @description Dokumenty czekające na start parsowania
+             */
+            pending_documents: number;
+            /**
+             * Created At
+             * @description Czas utworzenia (ms)
+             */
+            created_at: number;
+            /**
+             * Ready At
+             * @description Czas gotowości modelu (ms)
+             */
+            ready_at: number | null;
+            /**
+             * Ended At
+             * @description Czas zakończenia (ms)
+             */
+            ended_at: number | null;
+            /**
+             * Idle Shutdown S
+             * @description Po ilu sekundach bez zadań pod jest kasowany
+             */
+            idle_shutdown_s: number;
         };
         /**
          * DifyMetadataCondition
@@ -4711,6 +5019,10 @@ export interface components {
         Envelope_DatasetUsage_: {
             data: components["schemas"]["DatasetUsage"];
         };
+        /** Envelope[Deployment] */
+        Envelope_Deployment_: {
+            data: components["schemas"]["Deployment"];
+        };
         /** Envelope[DriveList] */
         Envelope_DriveList_: {
             data: components["schemas"]["DriveList"];
@@ -4718,6 +5030,10 @@ export interface components {
         /** Envelope[ExportPreview] */
         Envelope_ExportPreview_: {
             data: components["schemas"]["ExportPreview"];
+        };
+        /** Envelope[GpuCatalog] */
+        Envelope_GpuCatalog_: {
+            data: components["schemas"]["GpuCatalog"];
         };
         /** Envelope[IntegrationRun] */
         Envelope_IntegrationRun_: {
@@ -4739,6 +5055,18 @@ export interface components {
         Envelope_Items_AssistantGrant__: {
             data: components["schemas"]["Items_AssistantGrant_"];
         };
+        /** Envelope[Items[Deployment]] */
+        Envelope_Items_Deployment__: {
+            data: components["schemas"]["Items_Deployment_"];
+        };
+        /** Envelope[Items[HostedModelView]] */
+        Envelope_Items_HostedModelView__: {
+            data: components["schemas"]["Items_HostedModelView_"];
+        };
+        /** Envelope[KeyStatus] */
+        Envelope_KeyStatus_: {
+            data: components["schemas"]["KeyStatus"];
+        };
         /** Envelope[Page[AuditEntry]] */
         Envelope_Page_AuditEntry__: {
             data: components["schemas"]["Page_AuditEntry_"];
@@ -4750,6 +5078,10 @@ export interface components {
         /** Envelope[Page[WdUser]] */
         Envelope_Page_WdUser__: {
             data: components["schemas"]["Page_WdUser_"];
+        };
+        /** Envelope[Preflight] */
+        Envelope_Preflight_: {
+            data: components["schemas"]["Preflight"];
         };
         /** Envelope[SourceLink] */
         Envelope_SourceLink_: {
@@ -5059,6 +5391,131 @@ export interface components {
             type: "folder";
             /** Parent Id */
             parent_id?: string | null;
+        };
+        /**
+         * GpuCatalog
+         * @description Lista GPU po filtrach i dostępne wartości filtrów.
+         */
+        GpuCatalog: {
+            /**
+             * Model
+             * @description Model, dla którego liczono wymagania
+             */
+            model: string;
+            /**
+             * Min Vram Gb
+             * @description Minimalny VRAM modelu
+             */
+            min_vram_gb: number;
+            /**
+             * Gpus
+             * @description GPU, najtańsze pierwsze
+             */
+            gpus: components["schemas"]["GpuView"][];
+            /**
+             * Regions
+             * @description Dostępne regiony
+             */
+            regions: string[];
+            /**
+             * Countries
+             * @description Dostępne kraje
+             */
+            countries: string[];
+        };
+        /**
+         * GpuRef
+         * @description GPU wdrożenia.
+         */
+        GpuRef: {
+            /**
+             * Id
+             * @description Id GPU
+             */
+            id: string;
+            /**
+             * Name
+             * @description Nazwa GPU
+             */
+            name: string;
+            /**
+             * Vram Gb
+             * @description VRAM w GB
+             */
+            vram_gb: number;
+        };
+        /**
+         * GpuView
+         * @description GPU z katalogu RunPod.
+         */
+        GpuView: {
+            /**
+             * Id
+             * @description Id GPU do utworzenia poda
+             */
+            id: string;
+            /**
+             * Name
+             * @description Nazwa GPU
+             */
+            name: string;
+            /**
+             * Vram Gb
+             * @description VRAM w GB
+             */
+            vram_gb: number;
+            /**
+             * Price Per Hr
+             * @description Cena za godzinę (USD, 1 GPU)
+             */
+            price_per_hr: number;
+            /**
+             * Availability
+             * @description NONE, LOW, MEDIUM albo HIGH
+             */
+            availability: string;
+            /**
+             * Data Centers
+             * @description Centra z wolnymi GPU
+             */
+            data_centers: components["schemas"]["DataCenterView"][];
+            /**
+             * Fits
+             * @description Czy VRAM wystarcza dla modelu
+             * @default true
+             */
+            fits: boolean;
+        };
+        /**
+         * HostedModelView
+         * @description Model, który można uruchomić na RunPod.
+         */
+        HostedModelView: {
+            /**
+             * Name
+             * @description Nazwa modelu w rejestrze WD (to wpisujesz jako parser)
+             */
+            name: string;
+            /**
+             * Title
+             * @description Nazwa wyświetlana
+             */
+            title: string;
+            /**
+             * Hf Model
+             * @description Model na Hugging Face
+             */
+            hf_model: string;
+            /**
+             * Min Vram Gb
+             * @description Minimalny VRAM GPU
+             */
+            min_vram_gb: number;
+            /**
+             * Recommended Vram Gb
+             * @description Zalecany VRAM GPU
+             */
+            recommended_vram_gb: number;
         };
         /**
          * ImportEmbedding
@@ -5897,6 +6354,49 @@ export interface components {
              */
             items: components["schemas"]["AssistantGrant"][];
         };
+        /** Items[Deployment] */
+        Items_Deployment_: {
+            /**
+             * Items
+             * @description Elementy listy
+             */
+            items: components["schemas"]["Deployment"][];
+        };
+        /** Items[HostedModelView] */
+        Items_HostedModelView_: {
+            /**
+             * Items
+             * @description Elementy listy
+             */
+            items: components["schemas"]["HostedModelView"][];
+        };
+        /**
+         * KeyBody
+         * @description Nowy klucz API RunPod.
+         */
+        KeyBody: {
+            /**
+             * Api Key
+             * @description Klucz API RunPod
+             */
+            api_key: string;
+        };
+        /**
+         * KeyStatus
+         * @description Stan klucza API RunPod (sam klucz nigdy nie wraca).
+         */
+        KeyStatus: {
+            /**
+             * Configured
+             * @description Czy klucz jest zapisany
+             */
+            configured: boolean;
+            /**
+             * Hint
+             * @description Końcówka klucza (…abcd) albo null
+             */
+            hint: string | null;
+        };
         /**
          * Language
          * @description Data /language (upstream v0.27.2 system_api.py:66) — backend w Pythonie.
@@ -5904,6 +6404,27 @@ export interface components {
         Language: {
             /** Language */
             language: string;
+        };
+        /**
+         * LastGpu
+         * @description GPU z poprzedniego wdrożenia (domyślny wybór w oknie pytania).
+         */
+        LastGpu: {
+            /**
+             * Id
+             * @description Id GPU
+             */
+            id: string;
+            /**
+             * Name
+             * @description Nazwa GPU
+             */
+            name: string;
+            /**
+             * Vram Gb
+             * @description VRAM w GB
+             */
+            vram_gb: number;
         };
         /**
          * LoginChannel
@@ -6297,6 +6818,22 @@ export interface components {
             page_size: number;
         };
         /**
+         * ParseRequest
+         * @description Dokumenty do sparsowania po gotowości poda.
+         */
+        ParseRequest: {
+            /**
+             * Dataset Id
+             * @description Id datasetu
+             */
+            dataset_id: string;
+            /**
+             * Document Ids
+             * @description Id dokumentów
+             */
+            document_ids: string[];
+        };
+        /**
          * PasswordRequest
          * @description Ciało ``POST /api/wd/v1/users/{user_id}/password`` (kontrakt §3).
          */
@@ -6306,6 +6843,60 @@ export interface components {
              * @description Nowe hasło konta
              */
             new_password: string;
+        };
+        /**
+         * Preflight
+         * @description Czy parsowanie wymaga włączenia poda RunPod.
+         */
+        Preflight: {
+            /**
+             * Needs Pod
+             * @description True, gdy model działa na RunPod i pod jest wyłączony
+             */
+            needs_pod: boolean;
+            /**
+             * Model
+             * @description Nazwa modelu w rejestrze
+             */
+            model?: string | null;
+            /**
+             * Title
+             * @description Nazwa wyświetlana modelu
+             */
+            title?: string | null;
+            /**
+             * State
+             * @description off, provisioning, starting, loading, ready
+             */
+            state?: string | null;
+            /**
+             * Deployment Id
+             * @description Trwające wdrożenie, jeśli jest
+             */
+            deployment_id?: string | null;
+            /** @description GPU z poprzedniego wdrożenia */
+            last_gpu?: components["schemas"]["LastGpu"] | null;
+            /**
+             * Min Vram Gb
+             * @description Minimalny VRAM modelu
+             */
+            min_vram_gb?: number | null;
+        };
+        /**
+         * PreflightBody
+         * @description Dokumenty, które użytkownik chce sparsować.
+         */
+        PreflightBody: {
+            /**
+             * Dataset Id
+             * @description Id datasetu
+             */
+            dataset_id: string;
+            /**
+             * Document Ids
+             * @description Id dokumentów
+             */
+            document_ids: string[];
         };
         /**
          * Probe
@@ -15338,6 +15929,572 @@ export interface operations {
             };
             /** @description Nie znaleziono zasobu */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_key_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_KeyStatus_"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_key_set: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KeyBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_KeyStatus_"];
+                };
+            };
+            /** @description Niepoprawne żądanie (walidacja ciała lub parametrów) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Błąd usługi zewnętrznej (Microsoft Graph) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_key_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Konflikt ze stanem zasobu */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_models: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Items_HostedModelView__"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_gpus: {
+        parameters: {
+            query: {
+                model: string;
+                cloud?: "SECURE" | "COMMUNITY";
+                min_vram?: number | null;
+                max_vram?: number | null;
+                region?: string | null;
+                country?: string | null;
+                only_available?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_GpuCatalog_"];
+                };
+            };
+            /** @description Niepoprawne żądanie (walidacja ciała lub parametrów) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Konflikt ze stanem zasobu */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Błąd usługi zewnętrznej (Microsoft Graph) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_preflight: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreflightBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Preflight_"];
+                };
+            };
+            /** @description Niepoprawne żądanie (walidacja ciała lub parametrów) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Nie znaleziono zasobu */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_deployments: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Items_Deployment__"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_deploy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeployBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Deployment_"];
+                };
+            };
+            /** @description Niepoprawne żądanie (walidacja ciała lub parametrów) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Konflikt ze stanem zasobu */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Błąd usługi zewnętrznej (Microsoft Graph) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_deployment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identyfikator wdrożenia */
+                deployment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Deployment_"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Nie znaleziono zasobu */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_terminate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identyfikator wdrożenia */
+                deployment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Deployment_"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Nie znaleziono zasobu */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Błąd usługi zewnętrznej (Microsoft Graph) */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_queue_parse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Identyfikator wdrożenia */
+                deployment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Deployment_"];
+                };
+            };
+            /** @description Niepoprawne żądanie (walidacja ciała lub parametrów) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Nie znaleziono zasobu */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Konflikt ze stanem zasobu */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
