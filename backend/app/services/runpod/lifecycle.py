@@ -31,9 +31,13 @@ PROVISION_TIMEOUT_S = 300  # brak maszyny dłużej niż 5 min = GPU niedostępne
 # Maszyna jest, ale kontener nie wstał (powolne pobieranie obrazu, błędy hosta przy `create`).
 # Zdrowy pod: obraz ~5 min + start ~1 min, więc 12 min to już zły host — wolimy inne GPU niż 25 min.
 CONTAINER_START_TIMEOUT_S = 12 * 60
-IDLE_GRACE_S = 120  # tyle po ostatnim zadaniu pod jeszcze żyje (kolejne pliki, ponowne próby)
+# Pod ze startu parsowania (`origin=parse`): tyle po ostatnim zadaniu jeszcze żyje (kolejne pliki,
+# ponowne próby). Pod z panelu (`origin=panel`) nie wygasa — kasuje go tylko człowiek.
+IDLE_GRACE_S = 300
 MAX_LIFETIME_S = 8 * 3600  # twardy bezpiecznik kosztów
 HEALTH_TIMEOUT_S = 5.0
+PANEL_ORIGIN = "panel"
+PARSE_ORIGIN = "parse"
 HTTP_OK = 200
 HTTP_NOT_FOUND = 404
 _RUNPOD_TO_STATUS = {"PROVISIONING": "provisioning", "STARTING": "starting", "RUNNING": "loading"}
@@ -140,7 +144,8 @@ async def advance(  # noqa: PLR0911 — automat stanów: każdy stan końcowy to
             await _update(container, row, status="failed", error="deployment request was lost")
         return
     if model is None or row.pod_id is None:
-        await _update(container, row, status="failed", error="unknown model or missing pod")
+        # Model zniknął z kodu, a pod w RunPod nadal kosztuje — kasujemy go (bez poda: tylko stan).
+        await _terminate(container, client, row, status="failed", error="unknown model or pod")
         return
     if age_s > MAX_LIFETIME_S:
         await _terminate(container, client, row, status="terminated", error="max lifetime reached")
@@ -203,7 +208,13 @@ def _with(row: PodRow, **changes: Any) -> PodRow:
 async def _while_ready(
     container: Container, client: RunpodClient, row: PodRow, model: HostedModel, now: int
 ) -> None:
-    """Pod gotowy: dopóki są zadania używające modelu, żyje; po zwłoce bezczynności — kasowanie."""
+    """Pod gotowy: dopóki są zadania używające modelu, żyje; po zwłoce bezczynności — kasowanie.
+
+    Pod uruchomiony z panelu RunPod jest pomijany: zostaje do ręcznego wyłączenia (poza
+    ``MAX_LIFETIME_S``, który sprawdza ``advance``).
+    """
+    if row.origin == PANEL_ORIGIN:
+        return
     assert container.sessionmaker is not None  # noqa: S101
     async with transaction(container.sessionmaker) as session:
         pending = await pods_repo.count_pending_parse_tasks(session, model.name)

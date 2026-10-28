@@ -155,7 +155,18 @@ class Deployment(BaseModel):
     created_at: int = Field(description="Czas utworzenia (ms)")
     ready_at: int | None = Field(description="Czas gotowości modelu (ms)")
     ended_at: int | None = Field(description="Czas zakończenia (ms)")
-    idle_shutdown_s: int = Field(description="Po ilu sekundach bez zadań pod jest kasowany")
+    origin: Literal["panel", "parse"] = Field(
+        description="panel = z Ustawień → RunPod (tylko ręcznie); parse = ze startu parsowania"
+    )
+    idle_shutdown_s: int | None = Field(
+        description="Po ilu sekundach bez zadań pod jest kasowany; null = tylko ręcznie"
+    )
+
+
+class HistoryCleared(BaseModel):
+    """Wynik czyszczenia historii wdrożeń."""
+
+    deleted: int = Field(description="Ile zakończonych wdrożeń usunięto z listy")
 
 
 def _svc(request: Request) -> RunpodService:
@@ -294,6 +305,19 @@ async def deployments(request: Request, principal: PrincipalDep) -> Envelope[Ite
     """Najnowsze pierwsze (aktywne i zakończone)."""
     rows = [Deployment.model_validate(d) for d in await _svc(request).list_deployments()]
     return Envelope[Items[Deployment]](data=Items[Deployment](items=rows))
+
+
+@router.delete(
+    "/deployments",
+    operation_id="runpod_clear_history",
+    summary="Czyści historię: usuwa z listy zakończone wdrożenia (terminated, failed)",
+    response_model=Envelope[HistoryCleared],
+    responses=wd_responses(401, 403),
+)
+async def clear_history(request: Request, principal: PrincipalDep) -> Envelope[HistoryCleared]:
+    """Aktywnych wdrożeń nie rusza; tylko superuser."""
+    deleted = await _svc(request).clear_history(principal)
+    return Envelope[HistoryCleared](data=HistoryCleared(deleted=deleted))
 
 
 @router.get(

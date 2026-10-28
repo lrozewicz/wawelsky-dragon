@@ -159,7 +159,9 @@ export function DeployFlow(props: DeployFlowProps): JSX.Element {
           price: gpu.price_per_hr.toFixed(2),
         })}
       </Typography>
-      <Alert severity="info">{t('runpod.confirm.autoDelete')}</Alert>
+      <Alert severity="info">
+        {t(parse.length > 0 ? 'runpod.confirm.autoDelete' : 'runpod.confirm.manualDelete')}
+      </Alert>
       {parse.length > 0 ? <Alert severity="info">{t('runpod.confirm.autoParse')}</Alert> : null}
       {error ? <Alert severity="error">{error}</Alert> : null}
       <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>

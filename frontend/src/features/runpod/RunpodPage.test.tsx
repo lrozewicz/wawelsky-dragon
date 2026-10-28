@@ -13,6 +13,7 @@ import {
   makeRunpodState,
   runpodHandlers,
 } from '../../test/msw/handlers'
+import { MODEL } from '../../test/msw/handlers/runpod'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/renderWithProviders'
 
@@ -141,5 +142,62 @@ describe('RunpodPage', () => {
         true,
       ),
     )
+  })
+
+  it('wiersz ma datę i opis wygasania, a „Wyczyść historię” usuwa tylko zakończone', async () => {
+    const state = makeRunpodState({
+      deployments: [
+        makeDeployment({
+          id: 'dep-panel',
+          status: 'ready',
+          origin: 'panel',
+          idle_shutdown_s: null,
+          created_at: Date.UTC(2026, 9, 27, 10, 5),
+        }),
+        makeDeployment({ id: 'dep-parse', status: 'ready', origin: 'parse' }),
+        makeDeployment({ id: 'dep-old', status: 'terminated', active: false }),
+        makeDeployment({ id: 'dep-bad', status: 'failed', active: false }),
+      ],
+    })
+    server.use(...runpodHandlers(state))
+    const user = userEvent.setup()
+    await renderPage()
+
+    expect(await screen.findByTestId('runpod-date-dep-panel')).toHaveTextContent('2026')
+    expect(screen.getByTestId('runpod-lifetime-dep-panel')).toHaveTextContent(
+      'do ręcznego wyłączenia',
+    )
+    expect(screen.getByTestId('runpod-lifetime-dep-parse')).toHaveTextContent('po 5 min')
+    expect(screen.queryByTestId('runpod-lifetime-dep-old')).not.toBeInTheDocument()
+
+    await user.click(screen.getByTestId('runpod-clear-history'))
+    await waitFor(() => expect(screen.queryByTestId('runpod-deployment-dep-old')).toBeNull())
+    expect(screen.queryByTestId('runpod-deployment-dep-bad')).toBeNull()
+    expect(screen.getByTestId('runpod-deployment-dep-panel')).toBeInTheDocument()
+    expect(screen.getByTestId('runpod-deployment-dep-parse')).toBeInTheDocument()
+    expect(screen.getByTestId('runpod-clear-history')).toBeDisabled()
+  })
+
+  it('zwykły użytkownik nie widzi przycisku czyszczenia historii', async () => {
+    server.use(...runpodHandlers(makeRunpodState()))
+    await renderPage(regular)
+    await screen.findByTestId('runpod-key-ok')
+    expect(screen.queryByTestId('runpod-clear-history')).not.toBeInTheDocument()
+  })
+
+  it('pokazuje osobną kartę dla każdego modelu hostowanego', async () => {
+    const other = {
+      name: 'other-vlm-runpod',
+      title: 'Other VLM (RunPod)',
+      hf_model: 'acme/other-vlm',
+      min_vram_gb: 24,
+      recommended_vram_gb: 48,
+    }
+    server.use(...runpodHandlers(makeRunpodState({ models: [MODEL, other] })))
+    await renderPage()
+
+    const cards = await screen.findAllByTestId('runpod-model-card')
+    expect(cards.map((c) => c.getAttribute('data-model'))).toEqual([MODEL.name, other.name])
+    expect(within(cards[1]!).getByText('Other VLM (RunPod)')).toBeInTheDocument()
   })
 })

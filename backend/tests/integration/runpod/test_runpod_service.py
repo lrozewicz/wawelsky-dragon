@@ -13,6 +13,7 @@ from app.db.repositories import documents as documents_repo
 from app.db.repositories import models as models_repo
 from app.db.uow import transaction
 from app.domain.policy import Principal
+from app.services.runpod import hosted as hosted_registry
 from app.services.runpod import lifecycle
 from app.services.runpod.client import RunpodClient
 from app.services.runpod.guard import ensure_pod_ready
@@ -356,3 +357,148 @@ async def test_proxy_network_error_does_not_kill_a_starting_pod(
 
     await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
     assert (await service.get(view["id"]))["status"] == "loading"
+
+
+async def test_panel_pod_is_never_deleted_for_idleness_only_by_hand_or_max_lifetime(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40)  # bez parse = z panelu
+    assert view["origin"] == "panel" and view["idle_shutdown_s"] is None
+    fake.set_status("pod0001", "RUNNING")
+    healthy["ok"] = True
+    await _tick(container, fake)
+    await _tick(container, fake)  # ready
+    await _tick(container, fake, advance_s=lifecycle.IDLE_GRACE_S * 10)
+    assert (await service.get(view["id"]))["status"] == "ready"
+
+    await _tick(container, fake, advance_s=lifecycle.MAX_LIFETIME_S)  # bezpiecznik kosztów
+    ended = await service.get(view["id"])
+    assert ended["status"] == "terminated" and ended["error"] == "max lifetime reached"
+
+
+async def test_parse_pod_gets_the_idle_shutdown_and_panel_pod_can_be_terminated_by_hand(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    service = await _with_key(container, admin)
+    view = await service.deploy(
+        admin, model=MODEL, gpu_id=A40, parse=[{"dataset_id": "d", "document_ids": []}]
+    )
+    assert view["origin"] == "parse"
+    assert view["idle_shutdown_s"] == lifecycle.IDLE_GRACE_S
+    fake.set_status("pod0001", "RUNNING")
+    healthy["ok"] = True
+    await _tick(container, fake)
+    await _tick(container, fake)
+    await _tick(container, fake, advance_s=lifecycle.IDLE_GRACE_S - 30)
+    assert (await service.get(view["id"]))["status"] == "ready"
+    await _tick(container, fake, advance_s=60)
+    assert (await service.get(view["id"]))["status"] == "terminated"
+
+
+async def test_clear_history_removes_only_ended_deployments(
+    container: Container, admin: Principal, user: Principal, fake: FakeRunpod
+) -> None:
+    service = await _with_key(container, admin)
+    first = await service.deploy(admin, model=MODEL, gpu_id=A40)
+    await service.terminate(admin, first["id"])
+    second = await service.deploy(admin, model=MODEL, gpu_id=A40)  # aktywny
+
+    with pytest.raises(PermissionDenied):
+        await service.clear_history(user)
+    assert await service.clear_history(admin) == 1
+    ids = [d["id"] for d in await service.list_deployments()]
+    assert ids == [second["id"]]
+    assert await service.clear_history(admin) == 0
+
+
+OTHER = "other-vlm-runpod"
+
+
+async def test_a_second_hosted_model_needs_only_a_registry_entry(
+    container: Container,
+    admin: Principal,
+    fake: FakeRunpod,
+    healthy: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Nowy model = jeden wpis w ``HOSTED_MODELS``; panel, pod i rejestr WD działają bez zmian."""
+    monkeypatch.setitem(
+        hosted_registry.HOSTED_MODELS,
+        OTHER,
+        hosted_registry.HostedModel(
+            name=OTHER,
+            title="Other VLM (RunPod)",
+            hf_model="acme/other-vlm",
+            image="vllm/vllm-openai:v0.31.0",
+            model_type="image2text",
+            min_vram_gb=24,
+            recommended_vram_gb=48,
+            container_disk_gb=60,
+            max_model_len=32768,
+            max_concurrency=4,
+            startup_timeout_s=1800,
+            recognition_profile="html",
+            extra_args=("--enable-prefix-caching",),
+        ),
+    )
+    service = await _with_key(container, admin)
+    assert {m["name"] for m in service.hosted_models()} == {MODEL, OTHER}
+
+    first = await service.deploy(admin, model=MODEL, gpu_id=A40)
+    second = await service.deploy(admin, model=OTHER, gpu_id=A40)  # drugi model obok pierwszego
+    assert first["id"] != second["id"] and second["title"] == "Other VLM (RunPod)"
+
+    cmd = fake.pods["pod0002"]["body"]["cmd"]
+    assert cmd[cmd.index("--model") + 1] == "acme/other-vlm"
+    assert "--enable-prefix-caching" in cmd and "--limit-mm-per-prompt" not in cmd
+    assert "--limit-mm-per-prompt" in fake.pods["pod0001"]["body"]["cmd"]
+    assert fake.pods["pod0002"]["body"]["image"] == "vllm/vllm-openai:v0.31.0"
+
+    sm = container.sessionmaker
+    assert sm is not None
+    async with transaction(sm) as session:
+        xiaomi = await models_repo.get_by_name(session, MODEL, "image2text")
+        other = await models_repo.get_by_name(session, OTHER, "image2text")
+    assert xiaomi is not None and (xiaomi.extra or {})["recognition_profile"] == "otsl"
+    assert other is not None
+    assert other.extra == {"max_concurrency": 4, "recognition_profile": "html"}
+    assert other.max_tokens == 32768  # noqa: PLR2004
+
+
+async def test_pod_of_a_model_removed_from_the_registry_is_deleted_not_forgotten(
+    container: Container,
+    admin: Principal,
+    fake: FakeRunpod,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Model zniknął z ``HOSTED_MODELS`` (nowe wdrożenie kodu), a pod nadal kosztuje."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40)
+    fake.set_status("pod0001", "RUNNING")
+    monkeypatch.delitem(hosted_registry.HOSTED_MODELS, MODEL)
+
+    await _tick(container, fake)
+    ended = await service.get(view["id"])
+    assert ended["status"] == "failed" and "unknown model" in (ended["error"] or "")
+    assert fake.pods["pod0001"]["status"] == "TERMINATED"  # koniec kosztów
+
+
+async def test_stuck_terminating_pod_is_kept_by_clear_history_and_retried(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    """DELETE odrzucony: `terminating` zostaje na liście, jest ponawiany, historia go nie rusza."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40)
+    fake.set_status("pod0001", "RUNNING")
+    fake.delete_error = (500, "boom")
+    await _tick(container, fake, advance_s=lifecycle.MAX_LIFETIME_S + 60)
+    assert (await service.get(view["id"]))["status"] == "terminating"
+
+    assert await service.clear_history(admin) == 0
+    assert [d["status"] for d in await service.list_deployments()] == ["terminating"]
+
+    fake.delete_error = None
+    await _tick(container, fake)
+    assert (await service.get(view["id"]))["status"] == "terminated"
+    assert fake.pods["pod0001"]["status"] == "TERMINATED"

@@ -2399,7 +2399,11 @@ export interface paths {
          * @description Tworzy poda; po gotowości WD parsuje ``parse``. Brak GPU → 409 z zamiennikami.
          */
         post: operations["runpod_deploy"];
-        delete?: never;
+        /**
+         * Czyści historię: usuwa z listy zakończone wdrożenia (terminated, failed)
+         * @description Aktywnych wdrożeń nie rusza; tylko superuser.
+         */
+        delete: operations["runpod_clear_history"];
         options?: never;
         head?: never;
         patch?: never;
@@ -4440,10 +4444,16 @@ export interface components {
              */
             ended_at: number | null;
             /**
-             * Idle Shutdown S
-             * @description Po ilu sekundach bez zadań pod jest kasowany
+             * Origin
+             * @description panel = z Ustawień → RunPod (tylko ręcznie); parse = ze startu parsowania
+             * @enum {string}
              */
-            idle_shutdown_s: number;
+            origin: "panel" | "parse";
+            /**
+             * Idle Shutdown S
+             * @description Po ilu sekundach bez zadań pod jest kasowany; null = tylko ręcznie
+             */
+            idle_shutdown_s: number | null;
         };
         /**
          * DifyMetadataCondition
@@ -5035,6 +5045,10 @@ export interface components {
         Envelope_GpuCatalog_: {
             data: components["schemas"]["GpuCatalog"];
         };
+        /** Envelope[HistoryCleared] */
+        Envelope_HistoryCleared_: {
+            data: components["schemas"]["HistoryCleared"];
+        };
         /** Envelope[IntegrationRun] */
         Envelope_IntegrationRun_: {
             data: components["schemas"]["IntegrationRun"];
@@ -5485,6 +5499,17 @@ export interface components {
              * @default true
              */
             fits: boolean;
+        };
+        /**
+         * HistoryCleared
+         * @description Wynik czyszczenia historii wdrożeń.
+         */
+        HistoryCleared: {
+            /**
+             * Deleted
+             * @description Ile zakończonych wdrożeń usunięto z listy
+             */
+            deleted: number;
         };
         /**
          * HostedModelView
@@ -16328,6 +16353,44 @@ export interface operations {
             };
             /** @description Błąd usługi zewnętrznej (Microsoft Graph) */
             502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    runpod_clear_history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_HistoryCleared_"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -172,6 +172,15 @@ export function useTerminate() {
   })
 }
 
+/** Czyści historię: backend usuwa z listy tylko wdrożenia `terminated` i `failed`. */
+export function useClearHistory() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => wdCall<{ deleted: number }>(api.DELETE('/api/wd/v1/runpod/deployments')),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: runpodKeys.deployments }),
+  })
+}
+
 export function useQueueParse() {
   const queryClient = useQueryClient()
   return useMutation({

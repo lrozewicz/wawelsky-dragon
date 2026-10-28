@@ -7,17 +7,17 @@ Kolumny JSON (`data_center_ids`, `pending_parse`): kodowane przy zapisie, dekodo
 
 import json
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import bindparam, text
-from sqlalchemy.engine import RowMapping
+from sqlalchemy.engine import CursorResult, RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 
 # Stany, w których pod jeszcze kosztuje albo jest w drodze (nie `terminated`/`failed`).
 ACTIVE_STATUSES = ("requested", "provisioning", "starting", "loading", "ready", "terminating")
 
 _COLUMNS = (
-    "id, model_name, status, pod_id, gpu_id, gpu_name, vram_gb, cloud, data_center_ids,"
+    "id, model_name, origin, status, pod_id, gpu_id, gpu_name, vram_gb, cloud, data_center_ids,"
     " data_center_id, price_per_hr, base_url, api_token_enc, pending_parse, error, created_by,"
     " create_time, update_time, ready_time, busy_time, end_time"
 )
@@ -46,6 +46,7 @@ class PodRow:
 
     id: str
     model_name: str
+    origin: str  # `panel` (Ustawienia → RunPod) albo `parse` (start parsowania z Bazy Wiedzy)
     status: str
     pod_id: str | None
     gpu_id: str
@@ -71,6 +72,7 @@ def _row(row: RowMapping) -> PodRow:
     return PodRow(
         id=row["id"],
         model_name=row["model_name"],
+        origin=row["origin"],
         status=row["status"],
         pod_id=row["pod_id"],
         gpu_id=row["gpu_id"],
@@ -94,10 +96,10 @@ def _row(row: RowMapping) -> PodRow:
 
 
 _INSERT_SQL = text(
-    "INSERT INTO runpod_pods (id, model_name, status, gpu_id, gpu_name, vram_gb, cloud,"
+    "INSERT INTO runpod_pods (id, model_name, origin, status, gpu_id, gpu_name, vram_gb, cloud,"
     " data_center_ids, price_per_hr, api_token_enc, pending_parse, created_by, create_time,"
     " update_time, busy_time)"
-    " VALUES (:id, :model_name, 'requested', :gpu_id, :gpu_name, :vram_gb, :cloud,"
+    " VALUES (:id, :model_name, :origin, 'requested', :gpu_id, :gpu_name, :vram_gb, :cloud,"
     " :data_center_ids, :price_per_hr, :api_token_enc, :pending_parse, :created_by, :now_ms,"
     " :now_ms, :now_ms)"
 )
@@ -107,6 +109,8 @@ _GET_SQL = text(f"SELECT {_COLUMNS} FROM runpod_pods WHERE id = CAST(:id AS BINA
 _ACTIVE_SQL = text(
     f"SELECT {_COLUMNS} FROM runpod_pods WHERE status IN :statuses ORDER BY create_time"  # noqa: S608
 ).bindparams(bindparam("statuses", expanding=True))
+
+_DELETE_ENDED_SQL = text("DELETE FROM runpod_pods WHERE status IN ('terminated', 'failed')")
 
 _RECENT_SQL = text(
     f"SELECT {_COLUMNS} FROM runpod_pods ORDER BY create_time DESC LIMIT :limit"  # noqa: S608
@@ -125,6 +129,7 @@ async def insert(  # noqa: PLR0913 — kolumny wiersza
     *,
     deployment_id: str,
     model_name: str,
+    origin: str,
     gpu_id: str,
     gpu_name: str,
     vram_gb: int,
@@ -142,6 +147,7 @@ async def insert(  # noqa: PLR0913 — kolumny wiersza
         {
             "id": deployment_id,
             "model_name": model_name,
+            "origin": origin,
             "gpu_id": gpu_id,
             "gpu_name": gpu_name,
             "vram_gb": vram_gb,
@@ -172,6 +178,12 @@ async def list_recent(session: AsyncSession, limit: int = 20) -> list[PodRow]:
     """Ostatnie wdrożenia (najnowsze pierwsze) — aktywne i zakończone."""
     rows = (await session.execute(_RECENT_SQL, {"limit": limit})).mappings()
     return [_row(row) for row in rows]
+
+
+async def delete_ended(session: AsyncSession) -> int:
+    """Czyści historię: kasuje zakończone wdrożenia (terminated, failed); aktywnych nie rusza."""
+    result = cast("CursorResult[Any]", await session.execute(_DELETE_ENDED_SQL))
+    return int(result.rowcount or 0)
 
 
 async def update_fields(

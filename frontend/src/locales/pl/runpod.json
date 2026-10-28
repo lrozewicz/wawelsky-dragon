@@ -85,5 +85,10 @@
   "runpod.units.gb": "{{value}} GB",
   "runpod.units.perHour": "${{value}}/h",
   "runpod.units.usd": "${{value}}",
-  "runpod.deployments.gpuCell": "{{name}} · {{vram}} GB"
+  "runpod.deployments.gpuCell": "{{name}} · {{vram}} GB",
+  "runpod.deployments.date": "Data",
+  "runpod.deployments.clearHistory": "Wyczyść historię (usuwa z listy zakończone wdrożenia)",
+  "runpod.deployments.manualOnly": "Działa do ręcznego wyłączenia",
+  "runpod.deployments.autoOff": "Wyłączy się sam po {{minutes}} min bez zadań",
+  "runpod.confirm.manualDelete": "Pod nie wygasa sam: działa (i kosztuje), dopóki go ręcznie nie wyłączysz w tej sekcji."
 }

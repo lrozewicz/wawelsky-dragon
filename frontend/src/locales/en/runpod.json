@@ -85,5 +85,10 @@
   "runpod.units.gb": "{{value}} GB",
   "runpod.units.perHour": "${{value}}/h",
   "runpod.units.usd": "${{value}}",
-  "runpod.deployments.gpuCell": "{{name}} · {{vram}} GB"
+  "runpod.deployments.gpuCell": "{{name}} · {{vram}} GB",
+  "runpod.deployments.date": "Date",
+  "runpod.deployments.clearHistory": "Clear history (removes ended deployments from the list)",
+  "runpod.deployments.manualOnly": "Runs until you turn it off",
+  "runpod.deployments.autoOff": "Turns off by itself after {{minutes}} min without tasks",
+  "runpod.confirm.manualDelete": "The pod does not expire: it keeps running (and billing) until you turn it off in this section."
 }

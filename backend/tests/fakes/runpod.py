@@ -94,6 +94,7 @@ class FakeRunpod:
         self.pods: dict[str, dict[str, Any]] = {}
         self.requests: list[tuple[str, str]] = []
         self.create_error: tuple[int, str] | None = None
+        self.delete_error: tuple[int, str] | None = None
         self.next_status = "PROVISIONING"
 
     def client(self) -> httpx.AsyncClient:
@@ -121,6 +122,9 @@ class FakeRunpod:
         if request.method == "GET":
             return httpx.Response(200, json=self.pods[pod_id])
         if request.method == "DELETE":
+            if self.delete_error is not None:
+                status, detail = self.delete_error
+                return httpx.Response(status, json={"detail": detail})
             self.pods[pod_id]["status"] = "TERMINATED"
             return httpx.Response(204)
         return httpx.Response(405)

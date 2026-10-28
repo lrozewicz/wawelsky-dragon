@@ -9,7 +9,7 @@ import subprocess
 from collections.abc import AsyncIterator, Awaitable, Callable, Sequence
 from dataclasses import dataclass, replace
 from io import BytesIO
-from typing import Literal, Protocol
+from typing import Protocol
 
 import pytesseract
 from markdown_it import MarkdownIt
@@ -24,6 +24,7 @@ from app.parsing.errors import binary_missing, empty_document
 from app.parsing.html import paragraphs_html, sanitize_html, section_html, text_chars
 from app.parsing.otsl import otsl_to_html
 from app.parsing.types import ConvertedDocument, PendingPage
+from app.parsing.vision_profile import vision_profile
 
 VLM_MAX_TOKENS: int = 4096
 
@@ -44,18 +45,8 @@ OTSL_PROMPT: str = (
     "parsing should be organized according to the reading order."
 )
 
-VisionProfile = Literal["html", "otsl"]
-
 # Renderer Markdown→HTML OTSL; HTML bloków <table> przechodzi (commonmark: html=True).
 _OTSL_MD = MarkdownIt("commonmark").enable("table")
-
-
-def vision_profile(model_name: str) -> VisionProfile:
-    """Profil wizji wg nazwy modelu: modele OTSL (Xiaomi-OCR-0) → "otsl", reszta → "html"."""
-    lowered = model_name.lower()
-    if "xiaomi-ocr" in lowered or "fake-ocr" in lowered:
-        return "otsl"
-    return "html"
 
 
 # Porażka próby: RuntimeError obejmuje pytesseract.TesseractError, OSError — NotFoundError.
@@ -122,7 +113,7 @@ class VlmRecognizer:
         self._llm = llm
         self._model = model
         self._timeout_s = timeout_s
-        self._profile = vision_profile(model.name)
+        self._profile = vision_profile(model.name, model.extra)
         self.warnings: list[str] = []
         # Nazwa w logach to nazwa modelu (kontrakt C1 WP E5-H8a); klasowe "vlm" zostaje fallbackiem.
         if model.name:

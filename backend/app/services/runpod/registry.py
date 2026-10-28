@@ -88,7 +88,7 @@ async def _ensure_model(  # noqa: PLR0913, PLR0917 — kontekst transakcji
         instance_id=instance_id,
         max_tokens=model.max_model_len,
         dimension=None,
-        extra={"max_concurrency": model.max_concurrency},
+        extra=model.registry_extra(),
         created_by=created_by,
         now_ms=now_ms,
     )

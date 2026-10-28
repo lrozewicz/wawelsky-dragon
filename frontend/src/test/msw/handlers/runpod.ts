@@ -33,11 +33,14 @@ export type FakeDeployment = {
   created_at: number
   ready_at: number | null
   ended_at: number | null
-  idle_shutdown_s: number
+  origin: 'panel' | 'parse'
+  idle_shutdown_s: number | null
 }
 
 export type RunpodState = {
   keyConfigured: boolean
+  /** Modele hostowane (domyślnie tylko `MODEL`). */
+  models: (typeof MODEL)[]
   gpus: FakeGpu[]
   deployments: FakeDeployment[]
   preflight: Record<string, unknown>
@@ -63,6 +66,7 @@ export function makeRunpodState(overrides: Partial<RunpodState> = {}): RunpodSta
       { id: 'A4000', name: 'RTX A4000', vram_gb: 16, price_per_hr: 0.25, availability: 'NONE' },
       { id: '3060', name: 'RTX 3060', vram_gb: 12, price_per_hr: 0.2, availability: 'HIGH' },
     ],
+    models: [MODEL],
     deployments: [],
     preflight: { needs_pod: false },
     unavailable: [],
@@ -88,7 +92,8 @@ export function makeDeployment(overrides: Partial<FakeDeployment> = {}): FakeDep
     created_at: 0,
     ready_at: null,
     ended_at: null,
-    idle_shutdown_s: 120,
+    origin: 'parse',
+    idle_shutdown_s: 300,
     ...overrides,
   }
 }
@@ -131,21 +136,22 @@ export function runpodHandlers(state: RunpodState): HttpHandler[] {
       state.keyConfigured = false
       return new HttpResponse(null, { status: 204 })
     }),
-    http.get(apiUrl('/api/wd/v1/runpod/models'), () => envelope({ items: [MODEL] })),
+    http.get(apiUrl('/api/wd/v1/runpod/models'), () => envelope({ items: state.models })),
     http.get(apiUrl('/api/wd/v1/runpod/gpus'), async ({ request }) => {
       await record(request)
       const q = new URL(request.url).searchParams
       const min = Number(q.get('min_vram') ?? 0)
       const max = Number(q.get('max_vram') ?? 1e9)
       const onlyAvailable = q.get('only_available') === 'true'
+      const model = state.models.find((m) => m.name === q.get('model')) ?? MODEL
       const gpus = state.gpus
         .filter((g) => g.vram_gb >= min && g.vram_gb <= max)
         .filter((g) => !onlyAvailable || g.availability !== 'NONE')
         .sort((a, b) => a.price_per_hr - b.price_per_hr)
-        .map((g) => toView(g, MODEL.min_vram_gb))
+        .map((g) => toView(g, model.min_vram_gb))
       return envelope({
-        model: MODEL.name,
-        min_vram_gb: MODEL.min_vram_gb,
+        model: model.name,
+        min_vram_gb: model.min_vram_gb,
         gpus,
         regions: ['EUROPE', 'NORTH_AMERICA'],
         countries: ['CZ', 'RO', 'US'],
@@ -191,6 +197,12 @@ export function runpodHandlers(state: RunpodState): HttpHandler[] {
       return found
         ? envelope(found)
         : HttpResponse.json({ error: { code: 'not_found', message: 'x' } }, { status: 404 })
+    }),
+    http.delete(apiUrl('/api/wd/v1/runpod/deployments'), async ({ request }) => {
+      await record(request)
+      const before = state.deployments.length
+      state.deployments = state.deployments.filter((d) => d.active)
+      return envelope({ deleted: before - state.deployments.length })
     }),
     http.delete(apiUrl('/api/wd/v1/runpod/deployments/:id'), async ({ request, params }) => {
       await record(request)

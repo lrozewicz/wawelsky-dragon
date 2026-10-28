@@ -10225,6 +10225,46 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "runpod"
+        ],
+        "summary": "Czyści historię: usuwa z listy zakończone wdrożenia (terminated, failed)",
+        "description": "Aktywnych wdrożeń nie rusza; tylko superuser.",
+        "operationId": "runpod_clear_history",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_HistoryCleared_"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Brak lub niepoprawne uwierzytelnienie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Brak uprawnień administratora",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/wd/v1/runpod/deployments/{deployment_id}": {
@@ -15542,10 +15582,26 @@
             "title": "Ended At",
             "description": "Czas zakończenia (ms)"
           },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "panel",
+              "parse"
+            ],
+            "title": "Origin",
+            "description": "panel = z Ustawień → RunPod (tylko ręcznie); parse = ze startu parsowania"
+          },
           "idle_shutdown_s": {
-            "type": "integer",
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Idle Shutdown S",
-            "description": "Po ilu sekundach bez zadań pod jest kasowany"
+            "description": "Po ilu sekundach bez zadań pod jest kasowany; null = tylko ręcznie"
           }
         },
         "type": "object",
@@ -15565,6 +15621,7 @@
           "created_at",
           "ready_at",
           "ended_at",
+          "origin",
           "idle_shutdown_s"
         ],
         "title": "Deployment",
@@ -16886,6 +16943,18 @@
         ],
         "title": "Envelope[GpuCatalog]"
       },
+      "Envelope_HistoryCleared_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/HistoryCleared"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Envelope[HistoryCleared]"
+      },
       "Envelope_IntegrationRun_": {
         "properties": {
           "data": {
@@ -17808,6 +17877,21 @@
         ],
         "title": "GpuView",
         "description": "GPU z katalogu RunPod."
+      },
+      "HistoryCleared": {
+        "properties": {
+          "deleted": {
+            "type": "integer",
+            "title": "Deleted",
+            "description": "Ile zakończonych wdrożeń usunięto z listy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deleted"
+        ],
+        "title": "HistoryCleared",
+        "description": "Wynik czyszczenia historii wdrożeń."
       },
       "HostedModelView": {
         "properties": {
