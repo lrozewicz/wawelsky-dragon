@@ -144,7 +144,8 @@ async def advance(  # noqa: PLR0911 — automat stanów: każdy stan końcowy to
             await _update(container, row, status="failed", error="deployment request was lost")
         return
     if model is None or row.pod_id is None:
-        await _update(container, row, status="failed", error="unknown model or missing pod")
+        # Model zniknął z kodu, a pod w RunPod nadal kosztuje — kasujemy go (bez poda: tylko stan).
+        await _terminate(container, client, row, status="failed", error="unknown model or pod")
         return
     if age_s > MAX_LIFETIME_S:
         await _terminate(container, client, row, status="terminated", error="max lifetime reached")

@@ -464,3 +464,41 @@ async def test_a_second_hosted_model_needs_only_a_registry_entry(
     assert other is not None
     assert other.extra == {"max_concurrency": 4, "recognition_profile": "html"}
     assert other.max_tokens == 32768  # noqa: PLR2004
+
+
+async def test_pod_of_a_model_removed_from_the_registry_is_deleted_not_forgotten(
+    container: Container,
+    admin: Principal,
+    fake: FakeRunpod,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Model zniknął z ``HOSTED_MODELS`` (nowe wdrożenie kodu), a pod nadal kosztuje."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40)
+    fake.set_status("pod0001", "RUNNING")
+    monkeypatch.delitem(hosted_registry.HOSTED_MODELS, MODEL)
+
+    await _tick(container, fake)
+    ended = await service.get(view["id"])
+    assert ended["status"] == "failed" and "unknown model" in (ended["error"] or "")
+    assert fake.pods["pod0001"]["status"] == "TERMINATED"  # koniec kosztów
+
+
+async def test_stuck_terminating_pod_is_kept_by_clear_history_and_retried(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    """DELETE odrzucony: `terminating` zostaje na liście, jest ponawiany, historia go nie rusza."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40)
+    fake.set_status("pod0001", "RUNNING")
+    fake.delete_error = (500, "boom")
+    await _tick(container, fake, advance_s=lifecycle.MAX_LIFETIME_S + 60)
+    assert (await service.get(view["id"]))["status"] == "terminating"
+
+    assert await service.clear_history(admin) == 0
+    assert [d["status"] for d in await service.list_deployments()] == ["terminating"]
+
+    fake.delete_error = None
+    await _tick(container, fake)
+    assert (await service.get(view["id"]))["status"] == "terminated"
+    assert fake.pods["pod0001"]["status"] == "TERMINATED"
