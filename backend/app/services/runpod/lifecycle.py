@@ -164,9 +164,11 @@ async def advance(  # noqa: PLR0911 — automat stanów: każdy stan końcowy to
         fields["data_center_id"] = pod["dataCenterId"]
     base_url = row.base_url or proxy_url(row.pod_id)
     fields["base_url"] = base_url
-    health = await _health_status(base_url) if new_status == "loading" else None
-    if new_status == "loading" and not _container_started(pod, health):
-        new_status = "starting"  # RunPod: RUNNING, ale kontener jeszcze pobiera obraz / startuje
+    health = await _health_status(base_url) if new_status in {"starting", "loading"} else None
+    if new_status in {"starting", "loading"}:
+        # RunPod potrafi zgłaszać RUNNING przed startem kontenera, a STARTING mimo działającego
+        # kontenera — o etapie decyduje to, czy kontener faktycznie odpowiada.
+        new_status = "loading" if _container_started(pod, health) else "starting"
     if (error := _timeout_error(new_status, age_s, model)) is not None:
         await _terminate(container, client, row, status="failed", error=error)
         return

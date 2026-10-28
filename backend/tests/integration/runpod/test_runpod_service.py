@@ -51,8 +51,10 @@ def healthy(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     """
     state: dict[str, Any] = {"ok": False, "code": 502}
 
-    async def fake_health(_: str) -> int:
-        return 200 if state["ok"] else int(state["code"])
+    async def fake_health(_: str) -> int | None:
+        if state["ok"]:
+            return 200
+        return None if state["code"] is None else int(state["code"])
 
     monkeypatch.setattr(lifecycle, "_health_status", fake_health)
     return state
@@ -326,6 +328,31 @@ async def test_slow_model_load_is_not_cut_by_the_container_timeout(
     view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
     fake.set_status("pod0001", "RUNNING")
     healthy["code"] = 502
+
+    await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
+    assert (await service.get(view["id"]))["status"] == "loading"
+
+
+async def test_starting_status_with_a_live_container_is_not_cut_at_twelve_minutes(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    """RunPod zgłasza STARTING, ale proxy odpowiada 502 (kontener działa): to „loading”."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
+    fake.set_status("pod0001", "STARTING")
+    healthy["code"] = 502
+
+    await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
+    assert (await service.get(view["id"]))["status"] == "loading"
+
+
+async def test_proxy_network_error_does_not_kill_a_starting_pod(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
+    fake.set_status("pod0001", "RUNNING")
+    healthy["code"] = None
 
     await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
     assert (await service.get(view["id"]))["status"] == "loading"
