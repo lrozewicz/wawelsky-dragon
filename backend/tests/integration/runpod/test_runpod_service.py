@@ -356,3 +356,56 @@ async def test_proxy_network_error_does_not_kill_a_starting_pod(
 
     await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
     assert (await service.get(view["id"]))["status"] == "loading"
+
+
+async def test_panel_pod_is_never_deleted_for_idleness_only_by_hand_or_max_lifetime(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40)  # bez parse = z panelu
+    assert view["origin"] == "panel" and view["idle_shutdown_s"] is None
+    fake.set_status("pod0001", "RUNNING")
+    healthy["ok"] = True
+    await _tick(container, fake)
+    await _tick(container, fake)  # ready
+    await _tick(container, fake, advance_s=lifecycle.IDLE_GRACE_S * 10)
+    assert (await service.get(view["id"]))["status"] == "ready"
+
+    await _tick(container, fake, advance_s=lifecycle.MAX_LIFETIME_S)  # bezpiecznik kosztów
+    ended = await service.get(view["id"])
+    assert ended["status"] == "terminated" and ended["error"] == "max lifetime reached"
+
+
+async def test_parse_pod_gets_the_idle_shutdown_and_panel_pod_can_be_terminated_by_hand(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    service = await _with_key(container, admin)
+    view = await service.deploy(
+        admin, model=MODEL, gpu_id=A40, parse=[{"dataset_id": "d", "document_ids": []}]
+    )
+    assert view["origin"] == "parse"
+    assert view["idle_shutdown_s"] == lifecycle.IDLE_GRACE_S
+    fake.set_status("pod0001", "RUNNING")
+    healthy["ok"] = True
+    await _tick(container, fake)
+    await _tick(container, fake)
+    await _tick(container, fake, advance_s=lifecycle.IDLE_GRACE_S - 30)
+    assert (await service.get(view["id"]))["status"] == "ready"
+    await _tick(container, fake, advance_s=60)
+    assert (await service.get(view["id"]))["status"] == "terminated"
+
+
+async def test_clear_history_removes_only_ended_deployments(
+    container: Container, admin: Principal, user: Principal, fake: FakeRunpod
+) -> None:
+    service = await _with_key(container, admin)
+    first = await service.deploy(admin, model=MODEL, gpu_id=A40)
+    await service.terminate(admin, first["id"])
+    second = await service.deploy(admin, model=MODEL, gpu_id=A40)  # aktywny
+
+    with pytest.raises(PermissionDenied):
+        await service.clear_history(user)
+    assert await service.clear_history(admin) == 1
+    ids = [d["id"] for d in await service.list_deployments()]
+    assert ids == [second["id"]]
+    assert await service.clear_history(admin) == 0

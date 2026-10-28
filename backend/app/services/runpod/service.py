@@ -29,7 +29,7 @@ from app.services.runpod.client import (
     RunpodError,
 )
 from app.services.runpod.hosted import HOSTED_MODELS, HostedModel, get_model, pod_body
-from app.services.runpod.lifecycle import IDLE_GRACE_S, start_parse
+from app.services.runpod.lifecycle import IDLE_GRACE_S, PANEL_ORIGIN, PARSE_ORIGIN, start_parse
 from app.services.runpod.registry import ensure_registered
 
 if TYPE_CHECKING:
@@ -252,6 +252,7 @@ class RunpodService:
                 session,
                 deployment_id=deployment_id,
                 model_name=hosted.name,
+                origin=PARSE_ORIGIN if parse else PANEL_ORIGIN,
                 gpu_id=chosen.id,
                 gpu_name=chosen.name,
                 vram_gb=chosen.vram_gb,
@@ -338,6 +339,13 @@ class RunpodService:
             rows = await pods_repo.list_recent(session, limit)
         return [self._view(r) for r in rows]
 
+    async def clear_history(self, principal: Principal) -> int:
+        """Kasuje z listy wdrożenia zakończone (`terminated`, `failed`); zwraca ich liczbę."""
+        require_superuser(principal)
+        assert self._c.sessionmaker is not None  # noqa: S101
+        async with transaction(self._c.sessionmaker) as session:
+            return await pods_repo.delete_ended(session)
+
     async def queue_parse(
         self, principal: Principal, deployment_id: str, dataset_id: str, document_ids: list[str]
     ) -> dict[str, Any]:
@@ -423,7 +431,8 @@ class RunpodService:
             "created_at": row.create_time,
             "ready_at": row.ready_time,
             "ended_at": row.end_time,
-            "idle_shutdown_s": IDLE_GRACE_S,
+            "origin": row.origin,
+            "idle_shutdown_s": IDLE_GRACE_S if row.origin == PARSE_ORIGIN else None,
         }
 
 

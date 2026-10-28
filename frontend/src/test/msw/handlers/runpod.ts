@@ -33,7 +33,8 @@ export type FakeDeployment = {
   created_at: number
   ready_at: number | null
   ended_at: number | null
-  idle_shutdown_s: number
+  origin: 'panel' | 'parse'
+  idle_shutdown_s: number | null
 }
 
 export type RunpodState = {
@@ -88,7 +89,8 @@ export function makeDeployment(overrides: Partial<FakeDeployment> = {}): FakeDep
     created_at: 0,
     ready_at: null,
     ended_at: null,
-    idle_shutdown_s: 120,
+    origin: 'parse',
+    idle_shutdown_s: 300,
     ...overrides,
   }
 }
@@ -191,6 +193,12 @@ export function runpodHandlers(state: RunpodState): HttpHandler[] {
       return found
         ? envelope(found)
         : HttpResponse.json({ error: { code: 'not_found', message: 'x' } }, { status: 404 })
+    }),
+    http.delete(apiUrl('/api/wd/v1/runpod/deployments'), async ({ request }) => {
+      await record(request)
+      const before = state.deployments.length
+      state.deployments = state.deployments.filter((d) => d.active)
+      return envelope({ deleted: before - state.deployments.length })
     }),
     http.delete(apiUrl('/api/wd/v1/runpod/deployments/:id'), async ({ request, params }) => {
       await record(request)

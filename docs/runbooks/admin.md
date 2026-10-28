@@ -905,8 +905,14 @@ plików) pyta „Pod … jest wyłączony — włączyć?”. *Tak* → wybór G
 samym lub większym VRAM) → wdrożenie → parsowanie ruszy samo po gotowości modelu. Zwykły użytkownik dostaje prośbę
 o kontakt z administratorem.
 
-**Koszty:** worker (pętla co 15 s) kasuje poda (`DELETE`, koniec naliczania), gdy nie ma zadań parsowania używających modelu
-i minęły 2 minuty bezczynności. Dodatkowe bezpieczniki: pod bez maszyny przez 5 min, bez wystartowanego kontenera przez 12 min lub model niegotowy po 25 min są
+**Skąd pod, taki los:** kolumna `runpod_pods.origin`. Pod uruchomiony w *Ustawieniach → RunPod* (`panel`) nie wygasa przy
+bezczynności — działa do ręcznego *Wyłącz teraz* (lub do twardego limitu 8 h). Pod uruchomiony przy parsowaniu z Bazy Wiedzy
+(`parse`, wdrożenie ze zleconymi dokumentami) jest kasowany po 5 minutach bez zadań. Parsowanie na już działającym podzie z panelu
+nie zmienia jego trybu. Sekcja *Wdrożenia* pokazuje datę i tryb każdego poda; ikona miotły obok nagłówka usuwa z listy tylko
+wdrożenia `terminated` i `failed` (aktywnych nie rusza).
+
+**Koszty:** worker (pętla co 15 s) kasuje poda z `origin=parse` (`DELETE`, koniec naliczania), gdy nie ma zadań parsowania
+używających modelu i minęło 5 minut bezczynności. Dodatkowe bezpieczniki: pod bez maszyny przez 5 min, bez wystartowanego kontenera przez 12 min lub model niegotowy po 25 min są
 kasowane jako nieudane, twardy limit życia 8 h, przycisk *Wyłącz teraz* w liście wdrożeń. Parsowanie zlecone w tle (integracje) bez
 działającego poda kończy się błędem „… is not running on RunPod” — uruchom poda i ponów. Koszt dotychczasowy jest w liście
 wdrożeń (cena/h × czas). Na koncie RunPod warto ustawić limit wydatków.
