@@ -18,6 +18,11 @@ const envMaxWorkers = Number.parseInt(process.env.VITEST_MAX_WORKERS ?? '', 10)
 const maxWorkers =
   Number.isInteger(envMaxWorkers) && envMaxWorkers > 0 ? envMaxWorkers : defaultMaxWorkers
 
+// Stała strefa czasowa: testy porównują sformatowane daty (np. `1.01.2025, 00:00:00` dla
+// `2025-01-01T00:00:00Z`), więc w strefie lokalnej (Europe/Warsaw) padały, a w CI (UTC) przechodziły.
+// Workery dziedziczą środowisko, dlatego ustawiamy ją już w konfiguracji.
+process.env.TZ = 'UTC'
+
 export default defineConfig({
   plugins: [react()],
   test: {
