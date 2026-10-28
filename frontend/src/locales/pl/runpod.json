@@ -60,7 +60,7 @@
   "runpod.progress.background": "Zamknij (wdrożenie trwa w tle)",
   "runpod.status.requested": "Zlecanie…",
   "runpod.status.provisioning": "Przydzielanie GPU w RunPod…",
-  "runpod.status.starting": "Pobieranie obrazu i uruchamianie kontenera… (zwykle 3–7 min; po 12 min zaproponujemy inne GPU)",
+  "runpod.status.starting": "Pobieranie obrazu i uruchamianie kontenera… (zwykle 3–15 min; po 20 min zaproponujemy inne GPU)",
   "runpod.status.loading": "Ładowanie modelu do pamięci GPU…",
   "runpod.status.ready": "Gotowe — model działa",
   "runpod.status.terminating": "Usuwanie poda…",
