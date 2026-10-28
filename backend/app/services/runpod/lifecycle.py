@@ -29,8 +29,9 @@ logger = logging.getLogger("app.runpod")
 REQUEST_TIMEOUT_S = 120
 PROVISION_TIMEOUT_S = 300  # brak maszyny dłużej niż 5 min = GPU niedostępne
 # Maszyna jest, ale kontener nie wstał (powolne pobieranie obrazu, błędy hosta przy `create`).
-# Zdrowy pod: obraz ~5 min + start ~1 min, więc 12 min to już zły host — wolimy inne GPU niż 25 min.
-CONTAINER_START_TIMEOUT_S = 12 * 60
+# Obraz vLLM (~10 GB) schodzi 5-15 min zależnie od centrum danych (EUR-IS-1: ponad 11 min), start
+# kontenera ~1 min. 20 min zostawia 5 min z 25 na załadowanie modelu; dłużej to już zły host.
+CONTAINER_START_TIMEOUT_S = 20 * 60
 # Pod ze startu parsowania (`origin=parse`): tyle po ostatnim zadaniu jeszcze żyje (kolejne pliki,
 # ponowne próby). Pod z panelu (`origin=panel`) nie wygasa — kasuje go tylko człowiek.
 IDLE_GRACE_S = 300

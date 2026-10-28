@@ -306,7 +306,7 @@ async def test_running_pod_without_container_stays_in_starting(
 async def test_container_that_never_starts_is_deleted_early_with_gpu_alternatives(
     container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
 ) -> None:
-    """Po 12 min bez kontenera pod jest kasowany z `gpu_unavailable` (panel proponuje inne GPU)."""
+    """Po 20 min bez kontenera pod jest kasowany z `gpu_unavailable` (panel proponuje inne GPU)."""
     service = await _with_key(container, admin)
     view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
     fake.set_status("pod0001", "RUNNING")
@@ -324,7 +324,7 @@ async def test_container_that_never_starts_is_deleted_early_with_gpu_alternative
 async def test_slow_model_load_is_not_cut_by_the_container_timeout(
     container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
 ) -> None:
-    """Kontener działa (502), więc obowiązuje dłuższy limit startu modelu, nie 12 minut."""
+    """Kontener działa (502), więc obowiązuje limit startu modelu, nie kontenera."""
     service = await _with_key(container, admin)
     view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
     fake.set_status("pod0001", "RUNNING")
@@ -334,7 +334,7 @@ async def test_slow_model_load_is_not_cut_by_the_container_timeout(
     assert (await service.get(view["id"]))["status"] == "loading"
 
 
-async def test_starting_status_with_a_live_container_is_not_cut_at_twelve_minutes(
+async def test_starting_status_with_a_live_container_is_not_cut_at_the_container_timeout(
     container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
 ) -> None:
     """RunPod zgłasza STARTING, ale proxy odpowiada 502 (kontener działa): to „loading”."""

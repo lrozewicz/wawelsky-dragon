@@ -912,7 +912,7 @@ nie zmienia jego trybu. Sekcja *Wdrożenia* pokazuje datę i tryb każdego poda;
 wdrożenia `terminated` i `failed` (aktywnych nie rusza).
 
 **Koszty:** worker (pętla co 15 s) kasuje poda z `origin=parse` (`DELETE`, koniec naliczania), gdy nie ma zadań parsowania
-używających modelu i minęło 5 minut bezczynności. Dodatkowe bezpieczniki: pod bez maszyny przez 5 min, bez wystartowanego kontenera przez 12 min lub model niegotowy po 25 min są
+używających modelu i minęło 5 minut bezczynności. Dodatkowe bezpieczniki: pod bez maszyny przez 5 min, bez wystartowanego kontenera przez 20 min lub model niegotowy po 25 min są
 kasowane jako nieudane, twardy limit życia 8 h, przycisk *Wyłącz teraz* w liście wdrożeń. Parsowanie zlecone w tle (integracje) bez
 działającego poda kończy się błędem „… is not running on RunPod” — uruchom poda i ponów. Koszt dotychczasowy jest w liście
 wdrożeń (cena/h × czas). Na koncie RunPod warto ustawić limit wydatków.
@@ -923,7 +923,7 @@ i klucze podów. API: `/api/wd/v1/runpod/*` (klucz, modele, gpus, preflight, dep
 
 **Etapy startu:** *Przydzielanie GPU* → *Pobieranie obrazu i uruchamianie kontenera* (pod `RUNNING` w RunPod, ale proxy zwraca 404
 na `/health`, a `runtime` jest puste) → *Ładowanie modelu* (kontener działa, proxy 502) → *Gotowe* (`/health` 200). Etap pobierania obrazu
-to zwykle 3–7 min; na wolnym hoście bywa dłużej i z błędami `error creating container` w logach systemowych poda.
+to zwykle 3–15 min (zależy od centrum danych); po 20 min pod jest kasowany; na wolnym hoście bywa dłużej i z błędami `error creating container` w logach systemowych poda.
 
 **Dodanie kolejnego modelu na RunPod:** jeden wpis w `HOSTED_MODELS` (`backend/app/services/runpod/hosted.py`) — nazwa w rejestrze,
 tytuł, model HF, obraz vLLM, typ, wymagania VRAM/dysku, `max_model_len`, `max_concurrency`, `startup_timeout_s`, opcjonalnie
@@ -932,7 +932,7 @@ tytuł, model HF, obraz vLLM, typ, wymagania VRAM/dysku, `max_model_len`, `max_c
 zmian. Nie trzeba zmieniać migracji ani frontendu. Jeśli model wymaga innego sposobu rozmowy niż `otsl`/`html`, dodaj profil w
 `backend/app/parsing/vision_profile.py` i jego obsługę w `VlmRecognizer`.
 
-**Diagnostyka:** `failed` z `gpu_unavailable` = RunPod nie dał maszyny w 5 min albo kontener nie wystartował w 12 min (wybierz inne
+**Diagnostyka:** `failed` z `gpu_unavailable` = RunPod nie dał maszyny w 5 min albo kontener nie wystartował w 20 min (wybierz inne
 GPU / centrum danych); `model did not start in time` = model nie wstał w 25 min (sprawdź logi poda w konsoli RunPod). Lokalny model z §11 i ten z RunPod mają różne nazwy
 (`xiaomi-ocr-0` vs `xiaomi-ocr-0-runpod`) i mogą działać obok siebie.
 
