@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 from sqlalchemy import text
 
@@ -41,14 +43,20 @@ async def _tick(container: Container, fake: FakeRunpod, *, advance_s: int = 20) 
 
 
 @pytest.fixture(autouse=True)
-def healthy(monkeypatch: pytest.MonkeyPatch) -> dict[str, bool]:
-    """Zdrowie vLLM sterowane z testu (zamiast prawdziwego GET /health)."""
-    state = {"ok": False}
+def healthy(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
+    """Odpowiedź proxy na ``GET /health`` sterowana z testu (zamiast prawdziwej sieci).
 
-    async def fake_health(_: str) -> bool:
-        return state["ok"]
+    ``ok`` = vLLM gotowy (200); inaczej ``code``: 502 = kontener działa, model się ładuje,
+    404 = kontener jeszcze nie wystartował (pobieranie obrazu, błąd hosta).
+    """
+    state: dict[str, Any] = {"ok": False, "code": 502}
 
-    monkeypatch.setattr(lifecycle, "_model_healthy", fake_health)
+    async def fake_health(_: str) -> int | None:
+        if state["ok"]:
+            return 200
+        return None if state["code"] is None else int(state["code"])
+
+    monkeypatch.setattr(lifecycle, "_health_status", fake_health)
     return state
 
 
@@ -91,7 +99,7 @@ async def test_catalog_requires_superuser_and_filters(
 
 
 async def test_deploy_walks_through_states_and_registers_the_model(
-    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, bool]
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
 ) -> None:
     service = await _with_key(container, admin)
     sm = container.sessionmaker
@@ -137,7 +145,7 @@ async def test_deploy_walks_through_states_and_registers_the_model(
 
 
 async def test_pod_is_deleted_only_after_the_work_is_done(
-    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, bool]
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
 ) -> None:
     service = await _with_key(container, admin)
     sm = container.sessionmaker
@@ -249,7 +257,7 @@ async def test_preflight_ignores_other_parsers(container: Container, admin: Prin
 
 
 async def test_queue_parse_waits_for_the_pod_or_starts_at_once(
-    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, bool]
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
 ) -> None:
     service = await _with_key(container, admin)
     sm = container.sessionmaker
@@ -275,3 +283,76 @@ async def test_queue_parse_waits_for_the_pod_or_starts_at_once(
     await service.terminate(admin, view["id"])
     with pytest.raises(Conflict, match="no longer running"):
         await service.queue_parse(admin, view["id"], dataset.id, [docs[0].id])
+
+
+async def test_running_pod_without_container_stays_in_starting(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    """RUNNING bez kontenera (proxy 404) = „pobieranie obrazu”; „ładowanie” dopiero po starcie."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
+    fake.set_status("pod0001", "RUNNING")
+    healthy["code"] = 404
+
+    await _tick(container, fake)
+    assert (await service.get(view["id"]))["status"] == "starting"
+
+    healthy["code"] = 502  # kontener wstał, vLLM jeszcze nie nasłuchuje
+    await _tick(container, fake)
+    assert (await service.get(view["id"]))["status"] == "loading"
+
+
+async def test_container_that_never_starts_is_deleted_early_with_gpu_alternatives(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    """Po 12 min bez kontenera pod jest kasowany z `gpu_unavailable` (panel proponuje inne GPU)."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
+    fake.set_status("pod0001", "RUNNING")
+    healthy["code"] = 404
+
+    await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S - 60)
+    assert (await service.get(view["id"]))["status"] == "starting"  # jeszcze czekamy
+
+    await _tick(container, fake, advance_s=120)
+    failed = await service.get(view["id"])
+    assert failed["status"] == "failed" and failed["error"].startswith("gpu_unavailable")
+    assert fake.pods["pod0001"]["status"] == "TERMINATED"  # koniec kosztów
+
+
+async def test_slow_model_load_is_not_cut_by_the_container_timeout(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    """Kontener działa (502), więc obowiązuje dłuższy limit startu modelu, nie 12 minut."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
+    fake.set_status("pod0001", "RUNNING")
+    healthy["code"] = 502
+
+    await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
+    assert (await service.get(view["id"]))["status"] == "loading"
+
+
+async def test_starting_status_with_a_live_container_is_not_cut_at_twelve_minutes(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    """RunPod zgłasza STARTING, ale proxy odpowiada 502 (kontener działa): to „loading”."""
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
+    fake.set_status("pod0001", "STARTING")
+    healthy["code"] = 502
+
+    await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
+    assert (await service.get(view["id"]))["status"] == "loading"
+
+
+async def test_proxy_network_error_does_not_kill_a_starting_pod(
+    container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
+) -> None:
+    service = await _with_key(container, admin)
+    view = await service.deploy(admin, model=MODEL, gpu_id=A40, parse=[])
+    fake.set_status("pod0001", "RUNNING")
+    healthy["code"] = None
+
+    await _tick(container, fake, advance_s=lifecycle.CONTAINER_START_TIMEOUT_S + 60)
+    assert (await service.get(view["id"]))["status"] == "loading"
