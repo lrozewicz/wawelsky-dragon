@@ -6,11 +6,8 @@ stanu (preflight, lista wdrożeń) jest dostępny dla każdego, kto ma prawo do 
 
 from __future__ import annotations
 
-import secrets
-from dataclasses import asdict
 from typing import TYPE_CHECKING, Any
 
-from app.core.crypto import encrypt
 from app.core.errors import Conflict, NotFound, UpstreamError, ValidationFailed, WDError
 from app.db.repositories import documents as documents_repo
 from app.db.repositories import runpod_pods as pods_repo
@@ -24,36 +21,18 @@ from app.services.runpod import keystore
 from app.services.runpod.client import (
     HttpClient,
     RunpodAuthError,
-    RunpodCapacityError,
     RunpodClient,
     RunpodError,
 )
-from app.services.runpod.hosted import HOSTED_MODELS, HostedModel, get_model, pod_body
-from app.services.runpod.lifecycle import IDLE_GRACE_S, PANEL_ORIGIN, PARSE_ORIGIN, start_parse
+from app.services.runpod.deployer import GpuUnavailable, PodDeployer, gpu_view, unavailable
+from app.services.runpod.hosted import HOSTED_MODELS, HostedModel, get_model
+from app.services.runpod.lifecycle import IDLE_GRACE_S, PARSE_ORIGIN, start_parse
 from app.services.runpod.registry import ensure_registered
 
 if TYPE_CHECKING:
     from app.core.container import Container
 
 _ENDED = ("terminated", "failed")
-
-
-class GpuUnavailable(Conflict):
-    """Brak wolnych maszyn dla GPU; ``details.alternatives`` = zamienniki o VRAM ≥ wybranego."""
-
-    slug = "gpu_unavailable"
-
-
-def gpu_view(gpu: gpu_catalog.Gpu) -> dict[str, Any]:
-    """GPU do JSON-a panelu."""
-    return {
-        "id": gpu.id,
-        "name": gpu.name,
-        "vram_gb": gpu.vram_gb,
-        "price_per_hr": gpu.price_per_hr,
-        "availability": gpu.availability,
-        "data_centers": [asdict(dc) for dc in gpu.data_centers],
-    }
 
 
 class RunpodService:
@@ -63,6 +42,7 @@ class RunpodService:
         self._c = container
         # ``container.runpod_http``: klient wstrzykiwany w testach (``httpx.MockTransport``).
         self._http = http or getattr(container, "runpod_http", None)
+        self._deployer = PodDeployer(container, self._http, self.get)
 
     # --- klucz API ---------------------------------------------------------------------------
 
@@ -224,104 +204,12 @@ class RunpodService:
             raise ValidationFailed(f"{hosted.title} needs at least {hosted.min_vram_gb} GB VRAM")
         centers = gpu_catalog.placement(chosen, region=region, country=country)
         if (region or country) and not centers:
-            raise self._unavailable(chosen, gpus, region, country)
+            raise unavailable(chosen, gpus, region, country)
         if not chosen.available:
-            raise self._unavailable(chosen, gpus, region, country)
-        return await self._create(principal, hosted, chosen, gpus, cloud, centers, parse or [])
-
-    async def _create(  # noqa: PLR0913, PLR0917
-        self,
-        principal: Principal,
-        hosted: HostedModel,
-        chosen: gpu_catalog.Gpu,
-        gpus: list[gpu_catalog.Gpu],
-        cloud: str,
-        centers: list[str],
-        parse: list[dict[str, Any]],
-    ) -> dict[str, Any]:
-        assert self._c.sessionmaker is not None  # noqa: S101
-        deployment_id = self._c.id_gen.new_id()
-        token = secrets.token_urlsafe(32)
-        enc = encrypt(
-            self._c.settings.crypto_key.get_secret_value(),
-            token.encode(),
-            f"runpod-pod:{deployment_id}".encode(),
+            raise unavailable(chosen, gpus, region, country)
+        return await self._deployer.create(
+            principal, hosted, chosen, gpus, cloud, centers, parse or []
         )
-        async with transaction(self._c.sessionmaker) as session:
-            await pods_repo.insert(
-                session,
-                deployment_id=deployment_id,
-                model_name=hosted.name,
-                origin=PARSE_ORIGIN if parse else PANEL_ORIGIN,
-                gpu_id=chosen.id,
-                gpu_name=chosen.name,
-                vram_gb=chosen.vram_gb,
-                cloud=cloud,
-                data_center_ids=centers,
-                price_per_hr=chosen.price_per_hr,
-                api_token_enc=enc,
-                pending_parse=parse,
-                created_by=principal.user_id,
-                now_ms=self._c.clock.now_ms(),
-            )
-        await ensure_registered(
-            self._c, hosted, base_url=None, api_token=None, created_by=principal.user_id
-        )
-        client = await keystore.client_for(self._c, http=self._http)
-        body = pod_body(
-            hosted,
-            pod_name=deployment_id[:12],
-            gpu_id=chosen.id,
-            api_token=token,
-            cloud=cloud,
-            data_center_ids=centers,
-        )
-        try:
-            pod = await client.create_pod(body)
-        except RunpodCapacityError as exc:
-            await self._fail(deployment_id, exc.message)
-            raise self._unavailable(chosen, gpus, None, None) from exc
-        except RunpodError as exc:
-            await self._fail(deployment_id, exc.message)
-            raise UpstreamError(f"RunPod could not create the pod: {exc.message}") from exc
-        async with transaction(self._c.sessionmaker) as session:
-            await pods_repo.update_fields(
-                session,
-                deployment_id,
-                now_ms=self._c.clock.now_ms(),
-                status="provisioning",
-                pod_id=str(pod["id"]),
-                price_per_hr=float(pod.get("cost") or chosen.price_per_hr),
-            )
-        return await self.get(deployment_id)
-
-    def _unavailable(
-        self,
-        chosen: gpu_catalog.Gpu,
-        gpus: list[gpu_catalog.Gpu],
-        region: str | None,
-        country: str | None,
-    ) -> GpuUnavailable:
-        pool = gpu_catalog.filter_gpus(gpus, only_available=True, region=region, country=country)
-        alts = gpu_catalog.alternatives(pool, chosen) or gpu_catalog.alternatives(
-            gpu_catalog.filter_gpus(gpus, only_available=True), chosen
-        )
-        return GpuUnavailable(
-            f"{chosen.name} is not available right now",
-            details={"alternatives": [gpu_view(g) for g in alts]},
-        )
-
-    async def _fail(self, deployment_id: str, error: str) -> None:
-        assert self._c.sessionmaker is not None  # noqa: S101
-        async with transaction(self._c.sessionmaker) as session:
-            await pods_repo.update_fields(
-                session,
-                deployment_id,
-                now_ms=self._c.clock.now_ms(),
-                status="failed",
-                error=error[:900],
-                end_time=self._c.clock.now_ms(),
-            )
 
     async def get(self, deployment_id: str) -> dict[str, Any]:
         """Widok wdrożenia (bez klucza vLLM)."""

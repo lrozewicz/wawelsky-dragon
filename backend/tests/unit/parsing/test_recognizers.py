@@ -228,6 +228,25 @@ def test_vision_profile_by_name(name: str, expected: str) -> None:
     assert vision_profile(name) == expected
 
 
+@pytest.mark.parametrize(
+    ("name", "extra", "expected"),
+    [
+        (
+            "custom-ocr",
+            {"recognition_profile": "otsl"},
+            "otsl",
+        ),  # jawny profil bez „xiaomi” w nazwie
+        ("xiaomi-ocr-0", {"recognition_profile": "html"}, "html"),  # jawny profil wygrywa z nazwą
+        ("xiaomi-ocr-0", {"max_concurrency": 4}, "otsl"),  # brak pola → zapas po nazwie
+        ("custom-ocr", {"recognition_profile": "bogus"}, "html"),  # nieznany profil ignorowany
+    ],
+)
+def test_vision_profile_prefers_the_declared_profile(
+    name: str, extra: dict[str, object], expected: str
+) -> None:
+    assert vision_profile(name, extra) == expected
+
+
 async def test_otsl_profile_call_parameters() -> None:
     gateway = FakeGateway([_OTSL_RESPONSE])
     vlm = VlmRecognizer(gateway, ModelRef(None, "xiaomi-ocr-0", "image2text"))

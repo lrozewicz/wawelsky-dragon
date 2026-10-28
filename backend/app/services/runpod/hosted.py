@@ -1,4 +1,8 @@
-"""Modele, które WD potrafi uruchomić na RunPod: obraz, polecenie vLLM i wymagania sprzętowe."""
+"""Modele, które WD potrafi uruchomić na RunPod: obraz, polecenie vLLM i wymagania sprzętowe.
+
+Dodanie modelu = jeden wpis w ``HOSTED_MODELS`` (nic więcej nie zna nazwy konkretnego modelu):
+panel, cykl życia poda, rejestracja w WD i parsowanie czytają wszystko z ``HostedModel``.
+"""
 
 from __future__ import annotations
 
@@ -6,6 +10,8 @@ import json
 import re
 from dataclasses import dataclass
 from typing import Any
+
+from app.parsing.vision_profile import PROFILE_KEY
 
 PORT = 8000
 POD_NAME_PREFIX = "wd-"
@@ -27,10 +33,21 @@ class HostedModel:
     max_model_len: int
     max_concurrency: int  # ``extra.max_concurrency`` modelu w rejestrze (równoległe strony OCR)
     startup_timeout_s: int  # pobranie obrazu i wag + start vLLM
+    # Jak WD rozmawia z modelem przy parsowaniu stron (`html` | `otsl`); trafia do `models.extra`.
+    recognition_profile: str | None = None
+    # Dodatkowe argumenty `vllm serve` specyficzne dla modelu (np. limity multimodalne).
+    extra_args: tuple[str, ...] = ()
 
     @property
     def instance_name(self) -> str:
         return f"{INSTANCE_PREFIX}{self.name}"
+
+    def registry_extra(self) -> dict[str, Any]:
+        """``models.extra`` modelu w rejestrze WD (równoległość i profil rozpoznawania)."""
+        extra: dict[str, Any] = {"max_concurrency": self.max_concurrency}
+        if self.recognition_profile:
+            extra[PROFILE_KEY] = self.recognition_profile
+        return extra
 
     def cmd(self, api_token: str) -> list[str]:
         """Argumenty vLLM (ENTRYPOINT to ``vllm serve``); token chroni publiczny adres proxy."""
@@ -45,8 +62,7 @@ class HostedModel:
             "0.85",
             "--max-num-seqs",
             str(self.max_concurrency * 2),
-            "--limit-mm-per-prompt",
-            json.dumps({"image": 1, "video": 0}),
+            *self.extra_args,
             "--api-key",
             api_token,
             "--port",
@@ -68,6 +84,8 @@ HOSTED_MODELS: dict[str, HostedModel] = {
         max_model_len=16384,
         max_concurrency=16,
         startup_timeout_s=1500,
+        recognition_profile="otsl",
+        extra_args=("--limit-mm-per-prompt", json.dumps({"image": 1, "video": 0})),
     )
 }
 
