@@ -925,6 +925,13 @@ i klucze podów. API: `/api/wd/v1/runpod/*` (klucz, modele, gpus, preflight, dep
 na `/health`, a `runtime` jest puste) → *Ładowanie modelu* (kontener działa, proxy 502) → *Gotowe* (`/health` 200). Etap pobierania obrazu
 to zwykle 3–7 min; na wolnym hoście bywa dłużej i z błędami `error creating container` w logach systemowych poda.
 
+**Dodanie kolejnego modelu na RunPod:** jeden wpis w `HOSTED_MODELS` (`backend/app/services/runpod/hosted.py`) — nazwa w rejestrze,
+tytuł, model HF, obraz vLLM, typ, wymagania VRAM/dysku, `max_model_len`, `max_concurrency`, `startup_timeout_s`, opcjonalnie
+`recognition_profile` (`otsl`/`html` — jak WD promptuje model przy parsowaniu stron; zapisywany w `models.extra`) i `extra_args`
+(dodatkowe flagi `vllm serve`). Panel pokaże osobną kartę modelu, a cykl życia poda, rejestracja w WD i guard workera działają bez
+zmian. Nie trzeba zmieniać migracji ani frontendu. Jeśli model wymaga innego sposobu rozmowy niż `otsl`/`html`, dodaj profil w
+`backend/app/parsing/vision_profile.py` i jego obsługę w `VlmRecognizer`.
+
 **Diagnostyka:** `failed` z `gpu_unavailable` = RunPod nie dał maszyny w 5 min albo kontener nie wystartował w 12 min (wybierz inne
 GPU / centrum danych); `model did not start in time` = model nie wstał w 25 min (sprawdź logi poda w konsoli RunPod). Lokalny model z §11 i ten z RunPod mają różne nazwy
 (`xiaomi-ocr-0` vs `xiaomi-ocr-0-runpod`) i mogą działać obok siebie.

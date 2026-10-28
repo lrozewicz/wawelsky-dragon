@@ -1,6 +1,6 @@
 /**
  * Zakładka „RunPod” w Ustawieniach: klucz API, wybór GPU z filtrami, uruchomienie modelu
- * (Xiaomi-OCR-0) i lista wdrożeń z możliwością ręcznego wyłączenia poda. Zmiany robi tylko
+ * (karta per model hostowany) i lista wdrożeń z możliwością ręcznego wyłączenia poda. Zmiany robi tylko
  * superużytkownik (koszty); pozostali widzą stan.
  */
 
@@ -10,48 +10,23 @@ import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Chip from '@mui/material/Chip'
-import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
-import IconButton from '@mui/material/IconButton'
 import Stack from '@mui/material/Stack'
-import Table from '@mui/material/Table'
-import TableBody from '@mui/material/TableBody'
-import TableCell from '@mui/material/TableCell'
-import TableHead from '@mui/material/TableHead'
-import TableRow from '@mui/material/TableRow'
 import TextField from '@mui/material/TextField'
-import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
-import { formatDateTime } from '../../lib/format'
-import { resolveLanguage } from '../../i18n'
 import { useIsSuperuser } from '../settings/useIsSuperuser'
 
 import { DeployFlow } from './DeployFlow'
+import { DeploymentsCard } from './DeploymentsCard'
 import { GpuPicker } from './GpuPicker'
 import type { GpuSelection } from './GpuPicker'
-import {
-  deploymentsQueryOptions,
-  keyQueryOptions,
-  modelsQueryOptions,
-  useClearHistory,
-  useDeleteKey,
-  useSaveKey,
-  useTerminate,
-} from './api'
-import type { RunpodDeployment } from './api'
-
-const STATUS_COLOR: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
-  ready: 'success',
-  failed: 'error',
-  terminated: 'default',
-  terminating: 'default',
-}
+import { keyQueryOptions, modelsQueryOptions, useDeleteKey, useSaveKey } from './api'
+import type { HostedModel } from './api'
 
 function KeyCard(props: { isSuperuser: boolean }): JSX.Element {
   const { isSuperuser } = props
@@ -117,130 +92,14 @@ function KeyCard(props: { isSuperuser: boolean }): JSX.Element {
   )
 }
 
-function DeploymentsCard(props: { isSuperuser: boolean }): JSX.Element {
-  const { isSuperuser } = props
-  const { t, i18n } = useTranslation()
-  const language = resolveLanguage(i18n.language)
-  const deployments = useQuery(deploymentsQueryOptions())
-  const terminate = useTerminate()
-  const clearHistory = useClearHistory()
-  const rows = deployments.data ?? []
-  const hasEnded = rows.some((row: RunpodDeployment) => !row.active)
-
-  return (
-    <Card data-testid="runpod-deployments-card">
-      <CardContent>
-        <Stack spacing={1.5}>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-            <Typography variant="h6">{t('runpod.deployments.title')}</Typography>
-            {isSuperuser ? (
-              <Tooltip title={t('runpod.deployments.clearHistory')}>
-                <span>
-                  <IconButton
-                    size="small"
-                    aria-label={t('runpod.deployments.clearHistory')}
-                    disabled={!hasEnded || clearHistory.isPending}
-                    onClick={() => clearHistory.mutate()}
-                    data-testid="runpod-clear-history"
-                  >
-                    <DeleteSweepIcon fontSize="small" />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            ) : null}
-          </Stack>
-          {rows.length === 0 ? (
-            <Typography color="text.secondary">{t('runpod.deployments.empty')}</Typography>
-          ) : (
-            <Table size="small" aria-label={t('runpod.deployments.title')}>
-              <TableHead>
-                <TableRow>
-                  <TableCell>{t('runpod.deployments.date')}</TableCell>
-                  <TableCell>{t('runpod.deployments.model')}</TableCell>
-                  <TableCell>{t('runpod.deployments.gpu')}</TableCell>
-                  <TableCell>{t('runpod.deployments.status')}</TableCell>
-                  <TableCell align="right">{t('runpod.deployments.cost')}</TableCell>
-                  <TableCell />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row: RunpodDeployment) => (
-                  <TableRow key={row.id} data-testid={`runpod-deployment-${row.id}`}>
-                    <TableCell data-testid={`runpod-date-${row.id}`}>
-                      {formatDateTime(row.created_at, language)}
-                    </TableCell>
-                    <TableCell>{row.title}</TableCell>
-                    <TableCell>
-                      {t('runpod.deployments.gpuCell', {
-                        name: row.gpu.name,
-                        vram: row.gpu.vram_gb,
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        color={STATUS_COLOR[row.status] ?? 'info'}
-                        label={t(`runpod.status.${row.status}`, { defaultValue: row.status })}
-                      />
-                      {row.active ? (
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: 'block' }}
-                          data-testid={`runpod-lifetime-${row.id}`}
-                        >
-                          {row.idle_shutdown_s === null
-                            ? t('runpod.deployments.manualOnly')
-                            : t('runpod.deployments.autoOff', {
-                                minutes: Math.round(row.idle_shutdown_s / 60),
-                              })}
-                        </Typography>
-                      ) : null}
-                      {row.error ? (
-                        <Typography variant="caption" color="error" sx={{ display: 'block' }}>
-                          {row.error}
-                        </Typography>
-                      ) : null}
-                    </TableCell>
-                    <TableCell align="right">
-                      {t('runpod.units.usd', { value: row.cost_so_far.toFixed(2) })}
-                    </TableCell>
-                    <TableCell align="right">
-                      {row.active && isSuperuser ? (
-                        <Button
-                          size="small"
-                          color="error"
-                          disabled={terminate.isPending}
-                          onClick={() => terminate.mutate(row.id)}
-                          data-testid={`runpod-terminate-${row.id}`}
-                        >
-                          {t('runpod.deployments.terminate')}
-                        </Button>
-                      ) : null}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </Stack>
-      </CardContent>
-    </Card>
-  )
-}
-
-function ModelCard(props: { isSuperuser: boolean }): JSX.Element | null {
-  const { isSuperuser } = props
+function ModelCard(props: { hosted: HostedModel }): JSX.Element {
+  const { hosted } = props
   const { t } = useTranslation()
-  const key = useQuery(keyQueryOptions())
-  const models = useQuery(modelsQueryOptions())
   const [selection, setSelection] = useState<GpuSelection | null>(null)
   const [deploying, setDeploying] = useState(false)
-  const hosted = models.data?.[0]
-  if (!isSuperuser || !key.data?.configured || hosted === undefined) return null
 
   return (
-    <Card data-testid="runpod-model-card">
+    <Card data-testid="runpod-model-card" data-model={hosted.name}>
       <CardContent>
         <Stack spacing={2}>
           <Typography variant="h6">{hosted.title}</Typography>
@@ -286,12 +145,26 @@ function ModelCard(props: { isSuperuser: boolean }): JSX.Element | null {
   )
 }
 
+/** Po jednej karcie na każdy model hostowany przez WD (lista pochodzi z backendu). */
+function ModelCards(props: { isSuperuser: boolean }): JSX.Element | null {
+  const key = useQuery(keyQueryOptions())
+  const models = useQuery(modelsQueryOptions())
+  if (!props.isSuperuser || !key.data?.configured) return null
+  return (
+    <>
+      {(models.data ?? []).map((hosted: HostedModel) => (
+        <ModelCard key={hosted.name} hosted={hosted} />
+      ))}
+    </>
+  )
+}
+
 export function RunpodPage(): JSX.Element {
   const isSuperuser = useIsSuperuser()
   return (
     <Stack spacing={2} data-testid="runpod-page">
       <KeyCard isSuperuser={isSuperuser} />
-      <ModelCard isSuperuser={isSuperuser} />
+      <ModelCards isSuperuser={isSuperuser} />
       <DeploymentsCard isSuperuser={isSuperuser} />
     </Stack>
   )

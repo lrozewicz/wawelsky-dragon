@@ -13,6 +13,7 @@ import {
   makeRunpodState,
   runpodHandlers,
 } from '../../test/msw/handlers'
+import { MODEL } from '../../test/msw/handlers/runpod'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/renderWithProviders'
 
@@ -182,5 +183,21 @@ describe('RunpodPage', () => {
     await renderPage(regular)
     await screen.findByTestId('runpod-key-ok')
     expect(screen.queryByTestId('runpod-clear-history')).not.toBeInTheDocument()
+  })
+
+  it('pokazuje osobną kartę dla każdego modelu hostowanego', async () => {
+    const other = {
+      name: 'other-vlm-runpod',
+      title: 'Other VLM (RunPod)',
+      hf_model: 'acme/other-vlm',
+      min_vram_gb: 24,
+      recommended_vram_gb: 48,
+    }
+    server.use(...runpodHandlers(makeRunpodState({ models: [MODEL, other] })))
+    await renderPage()
+
+    const cards = await screen.findAllByTestId('runpod-model-card')
+    expect(cards.map((c) => c.getAttribute('data-model'))).toEqual([MODEL.name, other.name])
+    expect(within(cards[1]!).getByText('Other VLM (RunPod)')).toBeInTheDocument()
   })
 })
