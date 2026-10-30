@@ -164,7 +164,7 @@ describe('ConfigurationTab', () => {
     await user.click(screen.getByRole('button', { name: 'Zapisz' }))
 
     await waitFor(() => {
-      expect(captured.body()).toEqual({ embedding_model: 'other-embd' })
+      expect(captured.body()).toEqual({ embedding_model: 'embd-2' })
     })
   })
 
