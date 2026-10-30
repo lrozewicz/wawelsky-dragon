@@ -15,6 +15,7 @@
 
 import { z } from 'zod'
 
+import type { Model } from '../../chats/modelsQuery'
 import { fieldsToWire } from '../../metadata/convert'
 import type { MetaFieldDef } from '../../metadata/types'
 import { CHUNK_METHODS } from '../queries'
@@ -230,6 +231,7 @@ export function buildConfigPatch(
   dataset: Dataset,
   values: ConfigValues,
   metadata?: MetaFieldDef[],
+  models: readonly Model[] = [],
 ): Record<string, unknown> {
   const initial = datasetToValues(dataset)
   const patch: Record<string, unknown> = {}
@@ -240,7 +242,11 @@ export function buildConfigPatch(
   if (values.language !== initial.language) patch.language = values.language
   if (values.permission !== initial.permission) patch.permission = values.permission
   if (dataset.chunk_count <= 0 && values.embedding_model !== initial.embedding_model) {
-    patch.embedding_model = values.embedding_model
+    // Backend chce `<nazwa>@<dostawca>` albo id modelu, nie samą nazwę.
+    const model = models.find(
+      (m) => m.model_type.includes('embedding') && m.name === values.embedding_model,
+    )
+    patch.embedding_model = model?.model_id ?? values.embedding_model
   }
   if (values.chunk_method !== initial.chunk_method) patch.chunk_method = values.chunk_method
 

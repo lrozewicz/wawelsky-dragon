@@ -87,7 +87,7 @@ export function ConfigurationTab(props: ConfigurationTabProps): JSX.Element {
   const reveal = (path: string): void => setRevealed((previous) => new Set(previous).add(path))
   const shownErrorAt = (path: string): string | null => (revealed.has(path) ? errorAt(path) : null)
   const fieldRefs = { name: nameRef, description: descriptionRef, layout_recognize: layoutRef }
-  const patch = buildConfigPatch(baseline, values, meta.fields ?? undefined)
+  const patch = buildConfigPatch(baseline, values, meta.fields ?? undefined, models.data)
   const embeddingLocked = baseline.chunk_count > 0
   const saveReason = configSaveReason(t, Object.keys(patch).length === 0, meta.hasError)
 
