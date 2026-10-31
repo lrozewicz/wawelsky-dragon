@@ -36,7 +36,9 @@ def make_engine(settings: Settings) -> AsyncEngine:
         echo=settings.db_echo,
         pool_pre_ping=True,
         pool_recycle=3600,
-        connect_args={"connect_timeout": 5},
+        # Tuż po starcie workera pula jest pusta, a pętla zdarzeń zajęta startem konwersji — 5 s
+        # kończyło się „Can't connect (2003)” i zabijało zadanie parsowania po 3 próbach.
+        connect_args={"connect_timeout": 30},
     )
 
 
