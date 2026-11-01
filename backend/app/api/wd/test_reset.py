@@ -32,8 +32,11 @@ async def reset(request: Request) -> JSONResponse:
         if isinstance(password, str) and password
         else settings.admin_password.get_secret_value() or "wd-test-admin-1"
     )
+    language = body.get("default_user_language")
     async with _LOCK:
         result = await ResetService(container_of(request)).reset(
-            admin_email=admin_email, admin_password=admin_password
+            admin_email=admin_email,
+            admin_password=admin_password,
+            default_user_language=language if language in {"", "pl", "en"} else None,
         )
     return JSONResponse({"data": result})

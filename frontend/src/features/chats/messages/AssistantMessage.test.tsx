@@ -131,4 +131,23 @@ describe('AssistantMessage', () => {
     expect(screen.queryByRole('button', { name: THUMB_DOWN })).toBeNull()
     expect(screen.queryByRole('button', { name: REGENERATE })).toBeNull()
   })
+
+  it('do pierwszego znaku odpowiedzi pokazuje wskaźnik zamiast akcji', async () => {
+    await renderAssistant({ message: chatMessage({ content: '', status: 'streaming' }) })
+
+    expect(screen.getByTestId('answer-loader')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: COPY })).not.toBeInTheDocument()
+  })
+
+  it('chowa wskaźnik, gdy odpowiedź zaczyna się wypisywać', async () => {
+    await renderAssistant({ message: chatMessage({ content: 'Pierwsze', status: 'streaming' }) })
+
+    expect(screen.queryByTestId('answer-loader')).not.toBeInTheDocument()
+  })
+
+  it('nie pokazuje wskaźnika po przerwaniu ani po błędzie', async () => {
+    await renderAssistant({ message: chatMessage({ content: '', status: 'aborted' }) })
+
+    expect(screen.queryByTestId('answer-loader')).not.toBeInTheDocument()
+  })
 })

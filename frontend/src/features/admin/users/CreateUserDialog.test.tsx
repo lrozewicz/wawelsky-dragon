@@ -92,7 +92,13 @@ describe('CreateUserDialog', () => {
 
     await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1))
     expect(bodies).toEqual([
-      { email: 'nowy@wd.test', password: null, nickname: 'Nowy', is_superuser: false },
+      {
+        email: 'nowy@wd.test',
+        password: null,
+        nickname: 'Nowy',
+        is_superuser: false,
+        language: '',
+      },
     ])
   })
 

@@ -59,7 +59,7 @@ async def test_insert_then_get_by_email(
             is_superuser=False,
             is_active=True,
             is_service=False,
-            language="Polish",
+            language="",
             timezone=None,
             avatar=None,
             last_login_time=None,

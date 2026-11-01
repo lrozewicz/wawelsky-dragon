@@ -9,15 +9,19 @@ z grantem widzi na `GET /api/v1/chats` dokładnie czat z grantem.
 
 import secrets
 import uuid
+from types import SimpleNamespace
+from typing import cast
 from urllib.parse import quote
 
 import httpx
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.api.hub_compat.views import user_detail
 from app.core.container import Container
 from app.db.repositories import chats as chats_repo
 from app.db.repositories.chats import ChatRow
+from app.db.repositories.users import UserRow
 from app.db.uow import transaction
 from tests.integration.ingest.conftest import TIME_MS
 
@@ -200,3 +204,21 @@ async def test_provisioning_flow(
     token = key.json()["data"]["token"]
     visible = await _chats(svc, token)
     assert [chat["id"] for chat in visible] == [sales_id]
+
+
+def test_user_detail_reports_english_for_account_without_language() -> None:
+    """Klient hub-compat dostaje nazwę języka także dla konta bez wyboru."""
+    row = SimpleNamespace(
+        id="u1",
+        email="u1@wd.test",
+        nickname="u1",
+        is_superuser=False,
+        is_active=True,
+        avatar=None,
+        language="",
+        last_login_time=None,
+        create_time=1,
+        update_time=1,
+        auth_source="local",
+    )
+    assert user_detail(cast("UserRow", row))["language"] == "English"

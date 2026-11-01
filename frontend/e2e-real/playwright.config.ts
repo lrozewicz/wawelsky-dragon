@@ -23,6 +23,13 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     locale: 'pl-PL',
+    // Aplikacja domyślnie startuje po angielsku, a scenariusze asertują polskie etykiety.
+    storageState: {
+      cookies: [],
+      origins: BASE_URL
+        ? [{ origin: BASE_URL, localStorage: [{ name: 'wd.language', value: 'pl' }] }]
+        : [],
+    },
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },

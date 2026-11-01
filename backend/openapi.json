@@ -25485,6 +25485,17 @@
             "title": "Is Superuser",
             "description": "Czy konto ma być administratorem",
             "default": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "",
+              "pl",
+              "en"
+            ],
+            "title": "Language",
+            "description": "Język interfejsu; pusty = nie ustawiono",
+            "default": ""
           }
         },
         "type": "object",
@@ -25531,6 +25542,23 @@
             ],
             "title": "Is Active",
             "description": "Nowy stan aktywności (brak = bez zmian)"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "",
+                  "pl",
+                  "en"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Nowy język; pusty = nie ustawiono (brak = bez zmian)"
           }
         },
         "type": "object",

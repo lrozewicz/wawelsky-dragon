@@ -9,6 +9,7 @@ import { useState } from 'react'
 import type { JSX } from 'react'
 import { styled } from '@mui/material/styles'
 import Alert from '@mui/material/Alert'
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -17,6 +18,8 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
 
+import { LanguageMenu } from '../../components/layout/LanguageMenu'
+import { chooseLanguageOnLogin } from '../../i18n'
 import { BrandLogo } from '../../theme/BrandLogo'
 import ColorModeSelect from '../../theme/ColorModeSelect'
 
@@ -104,14 +107,14 @@ export function LoginPage({ auth, redirectTo }: LoginPageProps): JSX.Element {
           {t('auth.login.theme')}
         </Typography>
         <ColorModeSelect size="small" aria-label={undefined} labelId="login-theme-label" />
+        <LanguageMenu onLanguageChange={(language) => void chooseLanguageOnLogin(language)} />
       </Stack>
       <Card variant="outlined" sx={{ width: '100%', maxWidth: 420 }}>
         <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', alignSelf: 'center' }}>
-            <BrandLogo size={28} />
-            <Typography variant="h6">{t('app.name')}</Typography>
-          </Stack>
-          <Typography component="h1" variant="h5">
+          <Box sx={{ alignSelf: 'center' }}>
+            <BrandLogo variant="full" size={240} />
+          </Box>
+          <Typography component="h1" variant="h5" sx={{ textAlign: 'center' }}>
             {registering ? t('auth.login.registerTitle') : t('auth.login.title')}
           </Typography>
           {notice === null ? null : <Alert severity="success">{notice}</Alert>}

@@ -31,4 +31,20 @@ describe('useSideMenuMini', () => {
     const { result } = renderHook(() => useSideMenuMini(true))
     expect(result.current.mini).toBe(true)
   })
+
+  it('autoMini startuje zwinięte, ale toggle rozwija menu bez zmiany zapisu', () => {
+    localStorage.setItem('wd.sideMenu.mini', '1')
+    const { result } = renderHook(() => useSideMenuMini(true))
+
+    act(() => {
+      result.current.toggle()
+    })
+    expect(result.current.mini).toBe(false)
+    expect(localStorage.getItem('wd.sideMenu.mini')).toBe('1')
+
+    act(() => {
+      result.current.toggle()
+    })
+    expect(result.current.mini).toBe(true)
+  })
 })

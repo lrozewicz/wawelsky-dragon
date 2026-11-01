@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 import type { WdUser } from '../queries'
 
 /** Rodzaje akcji wiersza (kontrakt §4); `role` obsługuje `UsersPage`, pozostałe dialogi T4. */
-export type UserActionKind = 'details' | 'password' | 'role' | 'keys' | 'delete'
+export type UserActionKind = 'details' | 'language' | 'password' | 'role' | 'keys' | 'delete'
 
 export type UserActionsMenuProps = {
   user: WdUser
@@ -50,6 +50,7 @@ export function UserActionsMenu(props: UserActionsMenuProps): JSX.Element {
 
       <Menu anchorEl={anchor} open={anchor !== null} onClose={() => setAnchor(null)}>
         <MenuItem onClick={() => pick('details')}>{t('admin.users.actions.details')}</MenuItem>
+        <MenuItem onClick={() => pick('language')}>{t('admin.users.actions.language')}</MenuItem>
         {user.auth_source === 'local' ? (
           <MenuItem onClick={() => pick('password')}>{t('admin.users.actions.password')}</MenuItem>
         ) : null}

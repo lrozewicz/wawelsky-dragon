@@ -14,6 +14,7 @@
   "chat.input.send": "Wyślij",
   "chat.input.stop": "Zatrzymaj",
   "chat.msg.aborted": "Przerwano",
+  "chat.msg.analyzing": "Analizuję pytanie…",
   "chat.msg.assistant": "Odpowiedź asystenta",
   "chat.msg.copy": "Kopiuj",
   "chat.msg.copied": "Skopiowano do schowka.",

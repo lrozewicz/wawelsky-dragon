@@ -3,6 +3,12 @@ import { defineConfig, devices } from '@playwright/test'
 // Konfiguracja Playwright (kontrakt WP E3-2, brief T1). Adres stosu testowego wstrzykuje
 // `e2e/run.sh` (WD_E2E_BASE_URL, WD_E2E_API_URL) — uruchamiany poza nim musi je ustawić sam.
 const BASE_URL = process.env.WD_E2E_BASE_URL
+const POLISH_UI = {
+  cookies: [],
+  origins: BASE_URL
+    ? [{ origin: BASE_URL, localStorage: [{ name: 'wd.language', value: 'pl' }] }]
+    : [],
+}
 
 export default defineConfig({
   testDir: './e2e',
@@ -31,10 +37,9 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      // `locale` pl-PL: aplikacja startuje z językiem `navigator.language` (i18n.ts
-      // `detectLanguage`), dopiero po zalogowaniu synchronizuje go z profilem — bez tego
-      // asercje etykiet (S6-01) zależałyby od domyślnego locale przeglądarki.
-      use: { ...devices['Desktop Chrome'], locale: 'pl-PL' },
+      // Aplikacja domyślnie startuje po angielsku, a po zalogowaniu przyjmuje język profilu.
+      // Scenariusze asertują polskie etykiety także przed zalogowaniem, stąd zapisany wybór.
+      use: { ...devices['Desktop Chrome'], locale: 'pl-PL', storageState: POLISH_UI },
     },
   ],
 })

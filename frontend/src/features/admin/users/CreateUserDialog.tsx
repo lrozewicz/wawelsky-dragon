@@ -25,6 +25,9 @@ import { isValidEmail } from '../../auth/authForm'
 import { useCreateUser } from '../queries'
 import { wdErrorKey } from '../wdClient'
 
+import { UserLanguageField } from './userLanguage'
+import type { AccountLanguage } from './userLanguage'
+
 export type CreateUserDialogProps = {
   open: boolean
   onClose: () => void
@@ -38,6 +41,7 @@ export function CreateUserDialog(props: CreateUserDialogProps): JSX.Element {
   const [password, setPassword] = useState('')
   const [nickname, setNickname] = useState('')
   const [superuser, setSuperuser] = useState(false)
+  const [language, setLanguage] = useState<AccountLanguage>('')
   // Walidacja U11 (kontrakt K2): `required` po próbie wysłania, `format` po opuszczeniu pola.
   const [emailError, setEmailError] = useState<'required' | 'format' | null>(null)
   const emailRef = useRef<HTMLInputElement>(null)
@@ -55,6 +59,7 @@ export function CreateUserDialog(props: CreateUserDialogProps): JSX.Element {
     setPassword('')
     setNickname('')
     setSuperuser(false)
+    setLanguage('')
     setEmailError(null)
     onClose()
   }
@@ -71,6 +76,7 @@ export function CreateUserDialog(props: CreateUserDialogProps): JSX.Element {
         password: password === '' ? null : password,
         nickname: nickname === '' ? null : nickname,
         is_superuser: superuser,
+        language,
       },
       { onSuccess: close },
     )
@@ -122,6 +128,7 @@ export function CreateUserDialog(props: CreateUserDialogProps): JSX.Element {
             value={nickname}
             onChange={(event) => setNickname(event.target.value)}
           />
+          <UserLanguageField value={language} onChange={setLanguage} />
           <FormControlLabel
             control={
               <Checkbox checked={superuser} onChange={(_event, checked) => setSuperuser(checked)} />

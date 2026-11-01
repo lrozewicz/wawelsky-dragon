@@ -21,11 +21,11 @@
 Wawelsky Dragon (WD) to lekki, zgodny z API RAGFlow system RAG dla hub-compat: SPA na MUI (IA RAGFlow), backend FastAPI
 z jedną bazą MariaDB 11.8 i plikami na dysku, `/api/v1` zgodne z RAGFlow v0.27 **i** v0.24 (shim), natywne powierzchnie
 hub-compat (`/api` + `/user-api` + `/sharepoint-sync-api`), rozszerzenia `/api/wd/v1` i narzędzie migracji danych z RAGFlow.
-Etapy E0–E5 są zrealizowane (E6 — Agent, web search, RAPTOR — należy do v1.x / poza v1.0). Numeracja modułów M1–M12
+Etapy E0–E5 są zrealizowane; z E6 (v1.x) gotowe są metadane i MCP, a Agent i web search mają tylko fundament (§5). RAPTOR został skreślony. Numeracja modułów M1–M12
 pochodzi z [`ARCHITECTURE.md` §6](ARCHITECTURE.md#6-mapa-modułów).
 
 Wersja aplikacji: `APP_VERSION` w [`backend/app/core/version.py`](../backend/app/core/version.py). Schemat bazy:
-`SCHEMA_HEAD = "0007"` ([`backend/app/db/schema.py`](../backend/app/db/schema.py)); migracje `0001`–`0007`
+`SCHEMA_HEAD = "0012"` ([`backend/app/db/schema.py`](../backend/app/db/schema.py)); migracje `0001`–`0012`
 ([`backend/alembic/versions/`](../backend/alembic/versions/)).
 
 ## 2. Moduły
@@ -92,8 +92,12 @@ Tylko te, które wprost wynikają z dokumentów modułów:
 
 - **Retrieval bez indeksu ANN** — pełny skan cosinusowy; zmierzone p95 1,27 s przy 100 tys. wektorów × 3072 (pula InnoDB 6 GB),
   7,7 s przy puli 1 GB. Progi nieskalibrowane ([m6-retrieval.md](modules/m6-retrieval.md), [`docs/perf/E5-1b.md`](perf/E5-1b.md)).
-- **Poza v1** świadomie: knowledge graph, RAPTOR, parent-child, tagi/metadane automatyczne, audio/ASR, TTS, web search,
-  pełny canvas agenta; endpointy „beta” RAGFlow ([ARCHITECTURE.md §2](ARCHITECTURE.md#2-zakres-co-budujemy-czego-nie)).
+- **Nie ma w kodzie**: knowledge graph, RAPTOR, parent-child, grupy tagów, audio/ASR, TTS, mindmapa, EPUB/ODT/ODS/ODP, pełny canvas
+  agenta, endpointy „beta” RAGFlow. Część tych ustawień (np. `raptor`, `graphrag`, `parent_child`) API przyjmuje i zapisuje dla zgodności,
+  ale nic ich nie wykonuje ([ARCHITECTURE.md §2](ARCHITECTURE.md#2-zakres-co-budujemy-czego-nie)).
+- **Agent i wyszukiwanie w internecie są niedokończone**: jest tylko fundament M12 (tabele z migracji `0008`, dostawcy `app/services/web_search`,
+  usługa `searxng`), ale nie ma API `/agents`, usługi agenta ani UI, a dostawców nic nie wywołuje ([m12-agent.md](modules/m12-agent.md)).
+- **Zrealizowane w E6**: metadane z auto-metadanymi i filtrami ([m10-metadata.md](modules/m10-metadata.md)) oraz serwer MCP ([m11-mcp.md](modules/m11-mcp.md)).
 - **fake-llm nie daje semantyki** — jakość retrievalu mierzona trybem termowym; `refine` wieloturowe niepokryte pod fake-llm
   ([m6-retrieval.md](modules/m6-retrieval.md), [m8-hub-compat-ragflow-calls.md](modules/m8-hub-compat-ragflow-calls.md)).
 - **Migracja**: kolizje nazw dla skrajnego unicode (np. `Café`/`cafe`) kończą bieg wyjątkiem UNIQUE + rollbackiem;

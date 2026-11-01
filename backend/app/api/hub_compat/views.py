@@ -27,7 +27,8 @@ def user_detail(row: UserRow) -> dict[str, object]:
     return {
         **user_item(row),
         "avatar": row.avatar,
-        "language": row.language,
+        # Klient oczekuje niepustej nazwy języka; pusta wartość = konto bez wyboru.
+        "language": row.language or "English",
         "last_login_time": rfc1123(row.last_login_time) if row.last_login_time else None,
         "update_date": rfc1123(row.update_time),
         "status": "1" if row.is_active else "0",

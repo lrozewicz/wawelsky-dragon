@@ -18,6 +18,16 @@ import { setProfileLanguage } from './helpers/models'
 import { uiSession } from './helpers/session'
 
 const NO_SESSION = { cookies: [], origins: [] }
+// Bez zapisanego wyboru aplikacja startuje po angielsku, więc polski wariant loginu go ustawia.
+const polishNoSession = () => ({
+  cookies: [],
+  origins: [
+    {
+      origin: process.env.WD_E2E_BASE_URL ?? '',
+      localStorage: [{ name: 'wd.language', value: 'pl' }],
+    },
+  ],
+})
 
 let adminTokenPromise: Promise<string> | undefined
 function adminToken(request: APIRequestContext): Promise<string> {
@@ -127,7 +137,7 @@ for (const viewport of [
 }
 
 test.describe('SC-E67-07 krok 3: etykieta selecta motywu na loginie', () => {
-  test.use({ storageState: NO_SESSION })
+  test.use({ storageState: polishNoSession() })
 
   for (const viewport of [
     { width: 1280, height: 800 },
@@ -158,7 +168,7 @@ test.describe('SC-E67-07 krok 3: etykieta selecta motywu na loginie', () => {
   }
 
   test.describe('EN', () => {
-    test.use({ locale: 'en-US' })
+    test.use({ storageState: NO_SESSION, locale: 'en-US' })
     test('SC-E67-07 krok 3 (EN): etykieta „Theme”', async ({ page }) => {
       await page.goto('/login')
       await expect(page.getByTestId('login-email')).toBeVisible()

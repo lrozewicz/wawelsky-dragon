@@ -10,16 +10,19 @@ const bundles = import.meta.glob<Record<string, string>>('../locales/*/*.json', 
   import: 'default',
 })
 
-// Prefiks kodu języka ('en-US' → 'en', 'PL' → 'pl'); nieznany, pusty lub brak → 'pl'.
+export const DEFAULT_LANGUAGE: Language = 'en'
+const LOGIN_CHOICE_STORAGE_KEY = 'wd.loginLanguage'
+
+// Kod albo nazwa języka: 'pl-PL', 'PL' i 'Polish' (domyślna wartość `users.language`) → 'pl';
+// inne, puste lub brak → język domyślny.
 export function resolveLanguage(candidate: string | null | undefined): Language {
   const prefix = candidate?.slice(0, 2).toLowerCase()
-  return prefix === 'en' ? 'en' : 'pl'
+  return prefix === 'pl' || prefix === 'po' ? 'pl' : DEFAULT_LANGUAGE
 }
 
-// Zapisany wybór użytkownika ma pierwszeństwo nad językiem przeglądarki.
+// Bez zapisanego wyboru obowiązuje język domyślny, niezależnie od języka przeglądarki.
 export function detectLanguage(): Language {
-  const stored = localStorage.getItem(LANGUAGE_STORAGE_KEY)
-  return resolveLanguage(stored ?? navigator.language)
+  return resolveLanguage(localStorage.getItem(LANGUAGE_STORAGE_KEY))
 }
 
 async function loadBundle(language: Language): Promise<void> {
@@ -41,13 +44,13 @@ export async function initI18n(language?: Language): Promise<typeof i18n> {
     // Klucze są płaskie (z kropkami), więc bez rozdzielania na sekcje i przestrzenie nazw.
     await i18n.use(initReactI18next).init({
       lng,
-      fallbackLng: 'pl',
+      fallbackLng: DEFAULT_LANGUAGE,
       keySeparator: false,
       nsSeparator: false,
       interpolation: { escapeValue: false },
     })
   }
-  // Język wykryty z przeglądarki nie jest wyborem użytkownika — zapis tylko przy jawnym języku.
+  // Język domyślny nie jest wyborem użytkownika — zapis tylko przy jawnym języku.
   if (language === undefined) await applySessionLanguage(lng)
   else await changeLanguage(lng)
   return i18n
@@ -64,6 +67,19 @@ export async function applySessionLanguage(language: Language): Promise<void> {
 export async function changeLanguage(language: Language): Promise<void> {
   await applySessionLanguage(language)
   localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
+}
+
+// Wybór na ekranie logowania ma zastąpić język konta. Trzymany w `sessionStorage`, bo logowanie
+// OIDC przechodzi przez przekierowanie, a wybór dotyczy tylko najbliższego logowania w tej karcie.
+export async function chooseLanguageOnLogin(language: Language): Promise<void> {
+  await changeLanguage(language)
+  sessionStorage.setItem(LOGIN_CHOICE_STORAGE_KEY, language)
+}
+
+export function takeLoginLanguageChoice(): Language | null {
+  const choice = sessionStorage.getItem(LOGIN_CHOICE_STORAGE_KEY)
+  sessionStorage.removeItem(LOGIN_CHOICE_STORAGE_KEY)
+  return choice === null ? null : resolveLanguage(choice)
 }
 
 export { i18n }

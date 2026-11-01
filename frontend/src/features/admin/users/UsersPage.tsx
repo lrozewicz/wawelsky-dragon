@@ -29,6 +29,7 @@ import { CreateUserDialog } from './CreateUserDialog'
 import { DeleteUserDialog } from './DeleteUserDialog'
 import { PasswordDialog } from './PasswordDialog'
 import { UserDetailsDialog } from './UserDetailsDialog'
+import { UserLanguageDialog } from './UserLanguageDialog'
 import type { UserActionKind } from './UserActionsMenu'
 
 /** Opóźnienie szukania (kontrakt §T3 pkt 4). */
@@ -160,6 +161,9 @@ export function UsersPage(): JSX.Element {
         <>
           {action.kind === 'details' ? (
             <UserDetailsDialog open user={action.user} onClose={clearAction} />
+          ) : null}
+          {action.kind === 'language' ? (
+            <UserLanguageDialog open user={action.user} onClose={clearAction} />
           ) : null}
           {action.kind === 'password' ? (
             <PasswordDialog open user={action.user} onClose={clearAction} />

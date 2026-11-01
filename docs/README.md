@@ -1,5 +1,7 @@
 # Wawelsky Dragon — dokumentacja
 
+Przewodniki: [pierwsze kroki](pl/getting-started.md), [architektura](pl/architecture.md), [zgodność z RAGFlow](pl/ragflow-compatibility.md). Po angielsku: [`en/`](en/). Poniżej dokumenty szczegółowe (po polsku).
+
 | Dokument | Faza | Zawartość |
 |---|---|---|
 | [01-analiza-ragflow.md](01-analiza-ragflow.md) | 1 | architektura RAGFlow v0.27.2, przepływy danych, ranking błędów, co zachować/wyrzucić, kontekst hub-compat, wnioski z bety |

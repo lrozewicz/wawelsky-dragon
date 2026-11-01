@@ -138,6 +138,7 @@ async def create_user(
         password=body.password,
         nickname=body.nickname,
         is_superuser=body.is_superuser,
+        language=body.language,
     )
     await _record(
         request, actor, action="user_created", target_id=row.id, details={"email": row.email}
@@ -177,6 +178,7 @@ async def update_user(
         nickname=body.nickname,
         is_active=body.is_active,
         is_superuser=body.is_superuser,
+        language=body.language,
     )
     if changes:
         await _record(

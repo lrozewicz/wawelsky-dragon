@@ -128,10 +128,10 @@ describe('CreateDatasetDialog', () => {
     await user.type(within(dialog).getByLabelText(/Nazwa/), 'Nowa baza')
 
     // Opis metody pod polem zmienia się razem z wyborem.
-    expect(within(dialog).getByText(/niezależnie od typu pliku/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/według limitu długości fragmentu/)).toBeInTheDocument()
     await user.click(within(dialog).getByRole('combobox', { name: 'Metoda chunkowania' }))
     await user.click(await screen.findByRole('option', { name: 'Q&A' }))
-    expect(within(dialog).getByText(/pary pytanie–odpowiedź/)).toBeInTheDocument()
+    expect(within(dialog).getByText(/par pytanie–odpowiedź/)).toBeInTheDocument()
 
     await user.click(within(dialog).getByRole('combobox', { name: 'Model embeddingu' }))
     await user.click(await screen.findByRole('option', { name: 'other-embd' }))

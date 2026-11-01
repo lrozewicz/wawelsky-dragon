@@ -267,6 +267,7 @@ class UserService:
         password: str | None,
         nickname: str | None,
         is_superuser: bool,
+        language: str = "",
     ) -> UserRow:
         """Konto zakładane trasą WD admina: e-mail luźny jak `create_managed` (kontrakt E3-6a §4).
 
@@ -277,13 +278,20 @@ class UserService:
             raise ValidationFailed(f"Invalid email address: {email}")
         if password is not None:
             validate_new_password(password)
-        return await self.create(
+        row = await self.create(
             email=email,
             password=password,
             nickname=nickname,
             is_superuser=is_superuser,
             auth_source="local",
         )
+        if not language:
+            return row
+        async with transaction(self._sessionmaker) as session:
+            await users_repo.update_fields(
+                session, row.id, {"language": language}, self._clock.now_ms()
+            )
+        return await self.get(row.id)
 
     async def update_managed(
         self,
@@ -292,6 +300,7 @@ class UserService:
         nickname: str | None = None,
         is_active: bool | None = None,
         is_superuser: bool | None = None,
+        language: str | None = None,
     ) -> list[str]:
         """Zmiany konta przez SVC; zwraca nazwy zastosowanych zmian w kolejności C4."""
         row = await self.require_by_email(email)
@@ -312,6 +321,12 @@ class UserService:
         if superuser is not None:
             await self.set_superuser(row.id, superuser)
             changes.append("is_superuser")
+        if language is not None:
+            async with transaction(self._sessionmaker) as session:
+                await users_repo.update_fields(
+                    session, row.id, {"language": language}, self._clock.now_ms()
+                )
+            changes.append("language")
         return changes
 
     async def set_password_by_email(self, email: str, new_password: str) -> None:

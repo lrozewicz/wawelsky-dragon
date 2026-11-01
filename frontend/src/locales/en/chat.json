@@ -14,6 +14,7 @@
   "chat.input.send": "Send",
   "chat.input.stop": "Stop",
   "chat.msg.aborted": "Stopped",
+  "chat.msg.analyzing": "Analyzing your question…",
   "chat.msg.assistant": "Assistant answer",
   "chat.msg.copy": "Copy",
   "chat.msg.copied": "Copied to clipboard.",

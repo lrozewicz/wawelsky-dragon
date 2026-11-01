@@ -287,3 +287,29 @@ async def test_routes_reject_non_admin(member: httpx.AsyncClient, method: str, p
 
     assert response.status_code == FORBIDDEN, response.text
     assert wd_error(response)["code"] == "permission_denied"
+
+
+async def test_new_account_has_no_language_until_chosen(admin: httpx.AsyncClient) -> None:
+    """Konto bez wyboru ma pusty język; administrator może go ustawić i wyczyścić."""
+    created = await admin.post(BASE, json={"email": "bez.jezyka@wd.test"})
+    assert created.status_code == CREATED
+    user = created.json()["data"]
+    assert user["language"] == ""
+
+    changed = await admin.patch(f"{BASE}/{user['id']}", json={"language": "en"})
+    assert changed.json()["data"]["language"] == "en"
+
+    untouched = await admin.patch(f"{BASE}/{user['id']}", json={"nickname": "Nowa"})
+    assert untouched.json()["data"]["language"] == "en"
+
+    cleared = await admin.patch(f"{BASE}/{user['id']}", json={"language": ""})
+    assert cleared.json()["data"]["language"] == ""
+
+
+async def test_create_with_language_and_rejects_unknown(admin: httpx.AsyncClient) -> None:
+    """Język przy zakładaniu konta trafia do bazy; wartość spoza listy → 400."""
+    created = await admin.post(BASE, json={"email": "pl@wd.test", "language": "pl"})
+    assert created.json()["data"]["language"] == "pl"
+
+    rejected = await admin.post(BASE, json={"email": "de@wd.test", "language": "de"})
+    assert rejected.status_code == BAD_REQUEST

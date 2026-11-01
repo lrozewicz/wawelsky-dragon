@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Mock } from 'vitest'
 
 import { ApiError } from '../../api/envelope'
+import { i18n } from '../../i18n'
 import { apiUrl, fixtureLoginChannel, fixtureUser } from '../../test/msw/handlers'
 import type { FixtureLoginChannel, FixtureSystemConfig } from '../../test/msw/handlers'
 import { server } from '../../test/msw/server'
@@ -223,5 +224,25 @@ describe('LoginPage — kanały OIDC i rejestracja', () => {
     expect(await screen.findByTestId('login-channel-keycloak')).toBeInTheDocument()
     expect(screen.queryByTestId('login-password')).toBeNull()
     expect(screen.queryByTestId('login-submit')).toBeNull()
+  })
+})
+
+describe('LoginPage — wybór języka', () => {
+  afterEach(async () => {
+    localStorage.removeItem('wd.language')
+    sessionStorage.removeItem('wd.loginLanguage')
+    await i18n.changeLanguage('pl')
+  })
+
+  it('przełącza interfejs i zapamiętuje wybór na najbliższe logowanie', async () => {
+    const user = userEvent.setup()
+    await renderLoginPage()
+
+    await user.click(screen.getByRole('button', { name: 'Język' }))
+    await user.click(screen.getByRole('menuitem', { name: 'English' }))
+
+    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
+    expect(localStorage.getItem('wd.language')).toBe('en')
+    expect(sessionStorage.getItem('wd.loginLanguage')).toBe('en')
   })
 })

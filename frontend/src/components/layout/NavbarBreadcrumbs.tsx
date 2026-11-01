@@ -16,6 +16,8 @@ export function NavbarBreadcrumbs(props: { pathname: string }) {
       separator={<NavigateNextRoundedIcon fontSize="small" />}
       sx={{
         margin: (theme) => theme.spacing(1, 0),
+        // Padding, bo margines nadpisuje spacing nadrzędnego Stack w Header.
+        paddingLeft: '20px',
         [`& .${breadcrumbsClasses.separator}`]: {
           color: 'action.disabled',
           margin: 1,

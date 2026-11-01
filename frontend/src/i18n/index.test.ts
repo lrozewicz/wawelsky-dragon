@@ -11,14 +11,16 @@ import {
 } from './index'
 
 describe('resolveLanguage', () => {
-  it('mapuje prefiks kodu języka, domyślnie pl', () => {
+  it('mapuje kod lub nazwę języka, domyślnie en', () => {
     expect(resolveLanguage('en-US')).toBe('en')
     expect(resolveLanguage('en')).toBe('en')
     expect(resolveLanguage('PL')).toBe('pl')
     expect(resolveLanguage('pl-PL')).toBe('pl')
-    expect(resolveLanguage('de')).toBe('pl')
-    expect(resolveLanguage(null)).toBe('pl')
-    expect(resolveLanguage(undefined)).toBe('pl')
+    expect(resolveLanguage('Polish')).toBe('pl')
+    expect(resolveLanguage('English')).toBe('en')
+    expect(resolveLanguage('de')).toBe('en')
+    expect(resolveLanguage(null)).toBe('en')
+    expect(resolveLanguage(undefined)).toBe('en')
   })
 })
 
@@ -48,9 +50,9 @@ describe('initI18n bez jawnego języka', () => {
     localStorage.removeItem(LANGUAGE_STORAGE_KEY)
   })
 
-  it('nie zapisuje języka przeglądarki jako wyboru użytkownika (SC-E67-07 krok 6)', async () => {
+  it('bez wyboru startuje po angielsku mimo polskiej przeglądarki i niczego nie zapisuje', async () => {
     localStorage.removeItem(LANGUAGE_STORAGE_KEY)
-    vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('pl-PL')
 
     await initI18n()
 
@@ -94,21 +96,15 @@ describe('detectLanguage', () => {
     localStorage.clear()
   })
 
-  it('czyta localStorage przed navigator.language', () => {
+  it('zapisany wybór ma pierwszeństwo', () => {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, 'pl')
     vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')
     expect(detectLanguage()).toBe('pl')
   })
 
-  it('spada na navigator.language, gdy brak zapisu', () => {
+  it('bez zapisu daje en, także przy polskiej przeglądarce', () => {
     localStorage.removeItem(LANGUAGE_STORAGE_KEY)
-    vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-GB')
+    vi.spyOn(navigator, 'language', 'get').mockReturnValue('pl-PL')
     expect(detectLanguage()).toBe('en')
-  })
-
-  it('nieznany język przeglądarki daje pl', () => {
-    localStorage.removeItem(LANGUAGE_STORAGE_KEY)
-    vi.spyOn(navigator, 'language', 'get').mockReturnValue('de-DE')
-    expect(detectLanguage()).toBe('pl')
   })
 })

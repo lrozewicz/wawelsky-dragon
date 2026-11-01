@@ -172,7 +172,7 @@ async function loginUiResilient(page: Page): Promise<void> {
 test.describe('SC-E5-H9-04 język trwały i spójny', () => {
   // Persona: przeglądarka w EN (krok 5 „stan obecny”: pierwsze wejście bez wyboru → język
   // przeglądarki — asercja na starcie pierwszego testu). Świeży kontekst, bez sesji pliku.
-  test.use({ storageState: undefined, locale: 'en-US' })
+  test.use({ storageState: { cookies: [], origins: [] }, locale: 'en-US' })
   // Flaga sprzątania: czat z kroku 4 znika także wtedy, gdy asercja T5 padnie (MINOR review T1a).
   let chatCreated = false
 

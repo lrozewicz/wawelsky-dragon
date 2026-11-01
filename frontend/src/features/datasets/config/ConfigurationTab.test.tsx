@@ -103,7 +103,7 @@ describe('ConfigurationTab', () => {
     await user.click(screen.getByRole('combobox', { name: 'Metoda chunkowania' }))
     await user.click(await screen.findByRole('option', { name: 'Q&A' }))
     // Karta po prawej opisuje wybraną metodę.
-    expect(screen.getByText(/pary pytanie–odpowiedź/)).toBeInTheDocument()
+    expect(screen.getByText(/par pytanie–odpowiedź/)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Zapisz' }))
     await waitFor(() => {
