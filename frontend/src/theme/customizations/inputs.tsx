@@ -564,6 +564,14 @@ export const inputsCustomizations: Components<Theme> = {
         // powierzchni (paper) imituje klasyczny notch MUI; poszerzenie i ujemny margines trzymają
         // tekst na pierwotnej siatce 14 px od krawędzi pola.
         ...(ownerState?.variant === 'outlined' && {
+          // Domyślne przesunięcie MUI zakłada pole o wysokości 56 px (40 px dla `small`), a motyw
+          // ma 40 px (36 px dla `small`). Bez tej reguły etykieta spoczynkowa leży za nisko.
+          [`&:not(.${inputLabelClasses.shrink})`]: {
+            transform:
+              ownerState.size === 'small'
+                ? 'translate(14px, 8px) scale(1)'
+                : 'translate(14px, 10px) scale(1)',
+          },
           [`&.${inputLabelClasses.shrink}`]: {
             backgroundColor: (theme.vars || theme).palette.background.paper,
             padding: '0 5px',

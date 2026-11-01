@@ -8987,6 +8987,13 @@ export interface components {
              * @default false
              */
             is_superuser: boolean;
+            /**
+             * Language
+             * @description Język interfejsu; pusty = nie ustawiono
+             * @default
+             * @enum {string}
+             */
+            language: "" | "pl" | "en";
         };
         /**
          * UserUpdateRequest
@@ -9008,6 +9015,11 @@ export interface components {
              * @description Nowy stan aktywności (brak = bez zmian)
              */
             is_active?: boolean | null;
+            /**
+             * Language
+             * @description Nowy język; pusty = nie ustawiono (brak = bez zmian)
+             */
+            language?: ("" | "pl" | "en") | null;
         };
         /**
          * WdError

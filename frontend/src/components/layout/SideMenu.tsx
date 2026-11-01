@@ -1,4 +1,4 @@
-// Źródło: material-ui v9.4.0 docs/data/material/getting-started/templates/dashboard/components/SideMenu.tsx (MIT). Zmiany: eksport named, bez SelectContent, nagłówek BrandLogo + app.name, przycisk zwijania (pełne/mini), szerokość 240/64 z przejściem, teksty i18n, stopka z OptionsMenu (onNavigate z useNavigate), formatowanie Prettier.
+// Źródło: material-ui v9.4.0 docs/data/material/getting-started/templates/dashboard/components/SideMenu.tsx (MIT). Zmiany: eksport named, bez SelectContent, nagłówek z BrandLogo, przycisk zwijania (pełne/mini), szerokość 240/64 z przejściem, teksty i18n, stopka z OptionsMenu (onNavigate z useNavigate), formatowanie Prettier.
 import Avatar from '@mui/material/Avatar'
 import MuiDrawer, { drawerClasses } from '@mui/material/Drawer'
 import Box from '@mui/material/Box'
@@ -83,22 +83,15 @@ export function SideMenu(props: {
       <Box
         sx={{
           display: 'flex',
+          // W 64 px znak i przycisk nie mieszczą się obok siebie.
+          flexDirection: mini ? 'column' : 'row',
           alignItems: 'center',
           gap: 1,
           p: 1.5,
-          justifyContent: mini ? 'center' : 'flex-start',
+          justifyContent: mini ? 'center' : 'space-between',
         }}
       >
-        <BrandLogo />
-        {mini ? null : (
-          <Typography
-            variant="subtitle1"
-            noWrap
-            sx={{ flexGrow: 1, ml: 1, fontSize: '0.95rem', fontWeight: 600 }}
-          >
-            {t('app.name')}
-          </Typography>
-        )}
+        {mini ? <BrandLogo size={36} /> : <BrandLogo variant="full" size={150} />}
         <IconButton onClick={onToggleMini} aria-label={mini ? t('nav.expand') : t('nav.collapse')}>
           {mini ? <ChevronRightRoundedIcon /> : <ChevronLeftRoundedIcon />}
         </IconButton>

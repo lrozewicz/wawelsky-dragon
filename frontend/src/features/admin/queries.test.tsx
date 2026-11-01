@@ -183,13 +183,13 @@ describe('mutacje użytkowników', () => {
     const update = renderHook(() => useUpdateUser(), { wrapper: wrapperFor(client) })
 
     const created = await actMutate(() =>
-      create.result.current.mutateAsync({ email: 'u2@wd.test', is_superuser: false }),
+      create.result.current.mutateAsync({ email: 'u2@wd.test', is_superuser: false, language: '' }),
     )
     await actMutate(() =>
       update.result.current.mutateAsync({ id: 'u1', body: { nickname: 'Nowy' } }),
     )
 
-    expect(createBody).toEqual({ email: 'u2@wd.test', is_superuser: false })
+    expect(createBody).toEqual({ email: 'u2@wd.test', is_superuser: false, language: '' })
     expect(created).toMatchObject({ id: 'u1' })
     expect(patchPath).toBe('/api/wd/v1/users/u1')
     expect(patchBody).toEqual({ nickname: 'Nowy' })

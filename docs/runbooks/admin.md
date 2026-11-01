@@ -108,6 +108,15 @@ Panel administracyjny: `/admin/{users,access,integrations,status}`; ustawienia o
 
 ---
 
+### Język interfejsu
+
+Bez zapisanego wyboru interfejs startuje po angielsku, niezależnie od języka przeglądarki. Użytkownik wybiera język ikoną
+na stronie logowania albo w panelu i ten wybór zapisuje się na koncie. Administrator ustawia język w oknie „Nowy użytkownik”
+albo akcją „Język” w Administracja → Użytkownicy. Nowe konto ma pole `users.language` puste („Nie ustawiono”); starsze konta
+zachowują swoją wartość, także `Polish`. Trasy hub-compat zwracają wtedy `English`, a `/api/v1/users/me` pusty napis.
+
+---
+
 ## 2. Konfiguracja dostawców modeli (LLM/embedding/rerank)
 
 WD ma **jedną** bramkę zgodną z OpenAI (LiteLLM). Dwa poziomy konfiguracji:
@@ -659,42 +668,26 @@ bazą ani MinIO, tylko woła API WD po HTTP kluczem klienta.
 
 ## 14. Wyszukiwanie w internecie (SearXNG)
 
-Agent ma węzeł `SearXNG` (`WEBSearch`): zapytanie użytkownika trafia do wyszukiwarek świata **przez usługę
-`searxng`** stosu WD, a wyniki (tytuł, URL, fragment) wracają do modelu. Usługa jest **domyślnie włączona**
-(decyzja Q23 b) razem ze stosem: nie ma profilu compose ani osobnego kroku instalacji, a `api`/`worker` nie mają
-jej w `depends_on` — `docker compose up -d` podnosi ją jak `mariadb` czy `web`.
+> **Stan: funkcja niedokończona.** Usługa `searxng` startuje ze stosem, ale **nic z niej nie korzysta**: nie ma jeszcze
+> agenta (API `/agents`, usługi ani UI), czat i wyszukiwarka nie wyszukują w internecie, a w panelu nie ma ustawień
+> dostawców wyszukiwania. Dopóki to się nie zmieni, żadne zapytanie nie trafia przez WD do zewnętrznych wyszukiwarek.
+> Istnieje tylko fundament: dostawcy w `backend/app/services/web_search` i tabela `web_search_providers`
+> ([m12-agent.md](../modules/m12-agent.md)).
 
-### 14.1 Jak działa i jak wyłączyć
+Usługa jest **domyślnie włączona** (decyzja Q23 b): nie ma profilu compose, a `api`/`worker` nie mają jej w `depends_on`,
+więc `docker compose up -d` podnosi ją jak `mariadb` czy `web`.
+
 - Kontener `searxng` (obraz `wawelsky/searxng` z przypiętego `searxng/searxng:2026.10.4-d48c4b555`, własny
-  `docker/searxng/settings.yml`) słucha na porcie **8080 tylko w sieci `wd-net`** — **nie publikuje portu na host**,
-  więc z zewnątrz nie da się go użyć jako publicznej wyszukiwarki. Siegają do niego wyłącznie `api`/`worker`
-  pod adresem `http://searxng:8080`. Limiter i tryb instancji publicznej są wyłączone (ruch przychodzi z sieci wewnętrznej).
-- Rekord dostawcy `searxng` (typu `searxng`, `base_url: http://searxng:8080`, `is_default=1`) zakłada migracja
-  `0008` — jest widoczny w Ustawieniach → Dostawcy wyszukiwania i domyślnie wybierany przez węzeł `SearXNG` agenta.
-- **Wyłączenie usługi**: `docker compose stop searxng` (albo `docker compose rm -sf searxng`, by nie startowała przy
-  kolejnych `up`). Stos działa dalej — narzędzie wyszukiwania zwraca wtedy modelowi czytelny komunikat
-  („searxng: …”), a agent kończy odpowiedź bez wyników z sieci. Ponowne włączenie: `docker compose up -d searxng`.
+  `docker/searxng/settings.yml`) słucha na porcie **8080 tylko w sieci `wd-net`** i **nie publikuje portu na host**.
+  Limiter i tryb instancji publicznej są wyłączone.
+- Rekord dostawcy `searxng` (`base_url: http://searxng:8080`, `is_default=1`) zakłada migracja `0008`.
+- **Wyłączenie usługi**: `docker compose stop searxng` (albo `docker compose rm -sf searxng`). Dziś nie wpływa to na żadną
+  funkcję WD i oszczędza do 256 MB RAM. Kolejne `docker compose up -d` uruchomi ją ponownie.
 - **Zmienne** (`.env`, sekcja SearXNG): `WD_SEARXNG_MEM_LIMIT` (domyślnie `256m`, limit pamięci kontenera) i
   `SEARXNG_SECRET` (sekret SearXNG; **puste = pochodna `WD_SECRET_KEY`**, więc aktualizacja istniejącej instalacji
-  nie wymaga nowej zmiennej — ustaw jawnie tylko, gdy chcesz rotować go niezależnie).
-
-### 14.2 Prywatność — co wychodzi na zewnątrz
-- **Zapytania agenta opuszczają host**: trafiają do `searxng`, a stamtąd do zewnętrznych wyszukiwarek (Google,
-  Brave, DuckDuckGo, Wikipedia…). Nie wysyłaj przez agenta treści, których nie chcesz przekazać wyszukiwarkom.
-- SearXNG pośredniczy anonimowo (nie zakłada kont, nie profiluje użytkowników, usuwa identyfikatory), ale
-  wyszukiwarki widzą zapytanie i adres IP **instancji WD**, nie adres użytkownika. Nie ma tu osobnego serwera proxy/Tor.
-- Zapytanie przechodzi przez `api`/`worker` (a więc przez procesy, które widzą już treść rozmowy) — kieruj na
-  wyszukiwanie tylko to, co może opuścić instalację.
-
-### 14.3 Brak internetu i typowe objawy
-- **Host bez dostępu do internetu**: `searxng` zwraca HTTP **200 z pustymi `results`** i listą `unresponsive_engines`
-  — nic się nie zawiesza, a `api`/`worker` działają normalnie (limit czasu żądania do wyszukiwarek to 6 s).
-  Wtedy węzeł `SearXNG` zwraca modelowi komunikat o braku wyników; reszta agenta (retrieval, odpowiedź) działa.
-- **Agent nie używa wyszukiwania mimo wpisowego zapytania** — sprawdź, czy węzeł `SearXNG` jest podłączony w edytorze
-  agenta i czy dostawca `searxng` jest domyślny (Ustawienia → Dostawcy wyszukiwania).
-- **`searxng` nie odpowiada** — `docker compose ps searxng` (powinno być `healthy`), `docker logs searxng`.
-  Kontener działa jako użytkownik `searxng` (nie root) i ma limit pamięci `WD_SEARXNG_MEM_LIMIT`; OOM widać w `docker inspect searxng`.
-- Podniesienie/usunięcie usługi nie wymaga migracji ani restartu `api`/`worker` (brak `depends_on`).
+  nie wymaga nowej zmiennej).
+- **`searxng` nie odpowiada**: `docker compose ps searxng` (powinno być `healthy`), `docker logs searxng`. Kontener działa
+  jako użytkownik `searxng` (nie root). Bez internetu zwraca HTTP 200 z pustymi `results` i listą `unresponsive_engines`.
 
 ## 15. Import bazy wiedzy (API)
 

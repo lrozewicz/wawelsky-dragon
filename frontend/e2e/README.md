@@ -30,10 +30,10 @@ test`), seeduje bazę, uruchamia Playwright na kontenerze `web` i **zawsze** spr
    weryfikacji konfiguracji). Bieg zostawia stos wyłączony — nie uruchamiaj `run.sh`
    równolegle z `./.claude/verify.sh`, bo oba używają tego samego projektu stosu.
 
-Scenariusze dziedziczą `locale: pl-PL` z `playwright.config.ts`. To celowe: aplikacja startuje
-z językiem `navigator.language` (`i18n.ts` → `detectLanguage`), a język profilu dochodzi dopiero
-z `GET /users/me` po zalogowaniu — bez `locale` etykiety zależałyby od domyślnego locale Chromium.
-Scenariusze, które nie zakładają konkretnego języka, mogą go nadpisać per plik (`test.use`).
+Scenariusze dziedziczą z `playwright.config.ts` `locale: pl-PL` i zapisany `wd.language=pl`. To celowe:
+aplikacja bez zapisanego wyboru startuje po angielsku (`i18n/index.ts` → `detectLanguage`), a język profilu
+dochodzi dopiero z `GET /users/me` po zalogowaniu. Inny `storageState` albo własny kontekst nie dziedziczy
+tego wpisu. Scenariusze, które nie zakładają konkretnego języka, mogą go nadpisać per plik (`test.use`).
 
 ## Argumenty (`bun run e2e -- …`)
 

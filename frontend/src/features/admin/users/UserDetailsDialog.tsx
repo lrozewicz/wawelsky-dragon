@@ -16,6 +16,8 @@ import { useTranslation } from 'react-i18next'
 
 import type { WdUser } from '../queries'
 
+import { accountLanguage } from './userLanguage'
+
 export type UserDetailsDialogProps = {
   user: WdUser
   open: boolean
@@ -32,6 +34,12 @@ export function UserDetailsDialog(props: UserDetailsDialogProps): JSX.Element {
   const { t, i18n } = useTranslation()
   const language = i18n.language
 
+  const languageLabel = {
+    '': t('admin.users.language.unset'),
+    pl: t('language.pl'),
+    en: t('language.en'),
+  }
+
   const rows: { label: string; value: string }[] = [
     { label: t('admin.users.col.email'), value: user.email },
     { label: t('admin.users.col.nickname'), value: user.nickname },
@@ -44,7 +52,10 @@ export function UserDetailsDialog(props: UserDetailsDialogProps): JSX.Element {
       value: t(`admin.users.source.${user.auth_source}`, { defaultValue: user.auth_source }),
     },
     { label: t('admin.users.details.id'), value: user.id },
-    { label: t('admin.users.details.language'), value: user.language },
+    {
+      label: t('admin.users.details.language'),
+      value: languageLabel[accountLanguage(user.language)],
+    },
     { label: t('admin.users.details.timezone'), value: user.timezone ?? '—' },
     {
       label: t('admin.users.details.lastLogin'),

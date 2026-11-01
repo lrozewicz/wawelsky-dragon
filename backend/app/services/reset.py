@@ -43,14 +43,22 @@ class ResetService:
     def __init__(self, container: Container) -> None:
         self._container = container
 
-    async def reset(self, *, admin_email: str, admin_password: str) -> dict[str, object]:
-        """Czyści bazę, storage i limiter, zasiewa modele, admina i jego klucz (K9 §4)."""
+    async def reset(
+        self, *, admin_email: str, admin_password: str, default_user_language: str | None = None
+    ) -> dict[str, object]:
+        """Czyści bazę, storage i limiter, zasiewa modele, admina i jego klucz (K9 §4).
+
+        `default_user_language` zmienia wartość domyślną `users.language` na czas życia stosu
+        testowego: scenariusze e2e zakładają konta z polskim interfejsem.
+        """
         container = self._container
         sessionmaker = cast(async_sessionmaker[AsyncSession], container.sessionmaker)
         storage = container.storage
         # (1) Baza: DELETE FROM każdej tabeli poza alembic_version w jednej transakcji.
         async with transaction(sessionmaker) as session:
             await maintenance_repo.wipe_all(session)
+            if default_user_language is not None:
+                await maintenance_repo.set_default_user_language(session, default_user_language)
         # (2) Storage: prefiksy files/images/filemanager.
         for prefix in _STORAGE_PREFIXES:
             await storage.delete_prefix(StorageKey(prefix))

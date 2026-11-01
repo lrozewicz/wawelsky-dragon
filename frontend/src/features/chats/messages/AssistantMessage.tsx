@@ -30,6 +30,7 @@ import type { ChatMessage } from '../sessions/chatMessages'
 
 import { copyToClipboard } from '../../settings/api/copyToClipboard'
 import { copyErrorSx } from '../../settings/api/copyErrorSx'
+import { AnswerLoader } from './AnswerLoader'
 import { FeedbackDialog } from './FeedbackDialog'
 import { MarkdownWithCitations } from './MarkdownWithCitations'
 
@@ -53,6 +54,9 @@ export function AssistantMessage(props: AssistantMessageProps): JSX.Element {
   // Rozwinięty tylko w trakcie streamu z niepustym myśleniem; zmiana klucza przy zejściu ze stanu
   // „streaming” montuje akordeon od nowa (zwinięty), a użytkownik może go potem otworzyć ręcznie.
   const thinkingWhileStreaming = message.status === 'streaming' && message.thinking !== ''
+
+  // Do pierwszego znaku odpowiedzi nie ma czego kopiować ani oceniać: zamiast akcji jest wskaźnik.
+  const waitingForAnswer = message.status === 'streaming' && message.content.trim() === ''
 
   // Prologue nie ma akcji poza Kopiuj — nie ma go czemu oceniać ani powtarzać.
   const isGreeting = message.key === 'greeting'
@@ -101,6 +105,8 @@ export function AssistantMessage(props: AssistantMessageProps): JSX.Element {
           <Alert severity="error">{message.error ?? t('chat.msg.error')}</Alert>
         ) : null}
 
+        {waitingForAnswer ? <AnswerLoader /> : null}
+
         <MarkdownWithCitations
           text={message.content}
           citations={message.citations}
@@ -121,7 +127,11 @@ export function AssistantMessage(props: AssistantMessageProps): JSX.Element {
           </Stack>
         )}
 
-        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+        <Stack
+          direction="row"
+          spacing={0.5}
+          sx={{ alignItems: 'center', display: waitingForAnswer ? 'none' : 'flex' }}
+        >
           <Tooltip title={t('chat.msg.copy')}>
             <IconButton
               size="small"

@@ -37,8 +37,8 @@ TENANT_MODEL_COLUMNS: tuple[str, ...] = ("llm_id", "embd_id", "rerank_id", "img2
 #: Tabele źródłowe objęte etapem (liczniki inwentarza).
 SOURCE_TABLES: tuple[str, ...] = ("user", "tenant", "user_tenant")
 
-#: Domyślna wartość `users.language`, gdy źródło nie podaje języka (schemat WD: 'Polish').
-DEFAULT_LANGUAGE = "Polish"
+#: Domyślna wartość `users.language`, gdy źródło nie podaje języka (pusta = bez wyboru).
+DEFAULT_LANGUAGE = ""
 
 _COLUMN_LIST = ", ".join(COLUMNS)
 # Nazwy kolumn pochodzą ze stałej ``COLUMNS`` (nie z danych), więc interpolacja jest bezpieczna.

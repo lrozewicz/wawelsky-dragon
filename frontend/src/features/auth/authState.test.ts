@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { api, setSessionExpiredHandler } from '../../api/client'
 import { ApiError } from '../../api/envelope'
-import { i18n, initI18n } from '../../i18n'
+import { chooseLanguageOnLogin, i18n, initI18n } from '../../i18n'
 import {
   LOGIN_EMAIL,
   LOGIN_PASSWORD,
@@ -93,6 +93,57 @@ describe('login', () => {
 
     await auth.login(LOGIN_EMAIL, LOGIN_PASSWORD)
 
+    expect(i18n.language).toBe('en')
+  })
+
+  it('język wybrany na ekranie logowania trafia na konto', async () => {
+    const { auth } = setupAuth()
+    const patched: unknown[] = []
+    server.use(
+      http.get(apiUrl('/api/v1/users/me'), () =>
+        HttpResponse.json({
+          code: 0,
+          message: 'success',
+          data: { ...fixtureUser, language: 'Polish' },
+        }),
+      ),
+      http.patch(apiUrl('/api/v1/users/me'), async ({ request }) => {
+        patched.push(await request.json())
+        return HttpResponse.json({ code: 0, message: 'success', data: fixtureUser })
+      }),
+    )
+    await chooseLanguageOnLogin('en')
+
+    const user = await auth.login(LOGIN_EMAIL, LOGIN_PASSWORD)
+
+    expect(patched).toEqual([{ language: 'en' }])
+    expect(user.language).toBe('Polish')
+    expect(auth.user?.language).toBe('en')
+    expect(i18n.language).toBe('en')
+    expect(sessionStorage.getItem('wd.loginLanguage')).toBeNull()
+  })
+
+  it('konto bez wyboru zachowuje język sesji, a wybór z logowania zapisuje', async () => {
+    const { auth } = setupAuth()
+    const patched: unknown[] = []
+    server.use(
+      http.get(apiUrl('/api/v1/users/me'), () =>
+        HttpResponse.json({ code: 0, message: 'success', data: { ...fixtureUser, language: '' } }),
+      ),
+      http.patch(apiUrl('/api/v1/users/me'), async ({ request }) => {
+        patched.push(await request.json())
+        return HttpResponse.json({ code: 0, message: 'success', data: fixtureUser })
+      }),
+    )
+
+    await i18n.changeLanguage('pl')
+    await auth.login(LOGIN_EMAIL, LOGIN_PASSWORD)
+    expect(i18n.language).toBe('pl')
+    expect(patched).toEqual([])
+
+    await chooseLanguageOnLogin('en')
+    await auth.login(LOGIN_EMAIL, LOGIN_PASSWORD)
+    expect(patched).toEqual([{ language: 'en' }])
     expect(i18n.language).toBe('en')
   })
 })

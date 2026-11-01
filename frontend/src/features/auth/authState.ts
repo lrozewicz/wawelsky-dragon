@@ -8,7 +8,13 @@ import type { QueryClient } from '@tanstack/react-query'
 
 import { api, apiCall, refreshSession, setSessionExpiredHandler } from '../../api/client'
 import type { components } from '../../api/schema.gen'
-import { LANGUAGE_STORAGE_KEY, changeLanguage, i18n, resolveLanguage } from '../../i18n'
+import {
+  LANGUAGE_STORAGE_KEY,
+  changeLanguage,
+  i18n,
+  resolveLanguage,
+  takeLoginLanguageChoice,
+} from '../../i18n'
 import { clearAccessToken, setAccessToken } from './tokenStore'
 
 export type AuthUser = components['schemas']['User']
@@ -54,10 +60,26 @@ export function createAuthState({ queryClient, invalidate }: AuthStateDeps): Aut
     await invalidate()
   }
 
+  // Język wybrany na ekranie logowania trafia na konto. Gdy zapis się nie uda, logowanie trwa dalej
+  // w języku konta.
+  async function withLoginLanguageChoice(fetched: AuthUser): Promise<AuthUser> {
+    const choice = takeLoginLanguageChoice()
+    if (choice === null) return fetched
+    if (fetched.language !== '' && choice === resolveLanguage(fetched.language)) return fetched
+    const body = { language: choice } as unknown as components['schemas']['UpdateMeRequest']
+    try {
+      await apiCall(api.PATCH('/api/v1/users/me', { body }))
+      return { ...fetched, language: choice }
+    } catch {
+      return fetched
+    }
+  }
+
   // Po ustaleniu profilu preferencja konta wygrywa w sesji (K4) i jest zapisywana do
   // `wd.language` (E67-z2 SC-19), by ekran logowania po wylogowaniu i F5 miał język konta;
   // puste `language` zostawia bieżący język (DEC-306).
-  async function applyUser(next: AuthUser): Promise<AuthUser> {
+  async function applyUser(fetched: AuthUser): Promise<AuthUser> {
+    const next = await withLoginLanguageChoice(fetched)
     user = next
     queryClient.setQueryData(ME_QUERY_KEY, next)
     if (next.language !== '') await changeLanguage(resolveLanguage(next.language))

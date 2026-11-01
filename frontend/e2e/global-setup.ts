@@ -6,7 +6,8 @@ export default async function globalSetup(): Promise<void> {
   const response = await fetch(`${API_URL}/api/wd/v1/test/reset`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: '{}',
+    // Konta tworzone w scenariuszach mają polski interfejs (asercje etykiet).
+    body: JSON.stringify({ default_user_language: 'pl' }),
   })
   if (response.status !== 200) {
     throw new Error(`test/reset ${response.status}: ${await response.text()}`)

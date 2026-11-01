@@ -46,7 +46,7 @@ describe('SideMenu', () => {
   it('w trybie pełnym pokazuje nazwę aplikacji i dane użytkownika', async () => {
     await renderSideMenu()
 
-    expect(screen.getByText('Wawelsky Dragon')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Wawelsky Dragon' })).toBeInTheDocument()
     expect(screen.getByText('jan@example.com')).toBeInTheDocument()
     expect(screen.getByTitle('jan@example.com')).toBeInTheDocument()
   })

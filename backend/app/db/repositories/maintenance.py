@@ -33,3 +33,11 @@ async def wipe_all(session: AsyncSession) -> list[str]:
         await session.execute(text(f"DELETE FROM `{table}`"))  # noqa: S608
     await session.execute(text("SET FOREIGN_KEY_CHECKS=1"))
     return tables
+
+
+async def set_default_user_language(session: AsyncSession, language: str) -> None:
+    """Zmienia wartość domyślną `users.language`; tylko dla resetu stanu testowego (K9)."""
+    await session.execute(
+        text("ALTER TABLE users ALTER COLUMN language SET DEFAULT :language"),
+        {"language": language},
+    )

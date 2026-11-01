@@ -23,7 +23,7 @@ describe('BrandLogo', () => {
     expect(screen.getByRole('img', { name: 'Wawelsky Dragon' })).toBeInTheDocument()
   })
 
-  it('ma domyślny rozmiar 32, a size={48} ustawia width/height na 48', () => {
+  it('ma domyślny rozmiar 32, a size={48} ustawia width/height na 48; full zachowuje proporcje', () => {
     const { rerender } = render(
       <AppTheme>
         <BrandLogo />
@@ -43,5 +43,15 @@ describe('BrandLogo', () => {
     const bigger = screen.getByRole('img', { name: 'Wawelsky Dragon' })
     expect(bigger).toHaveAttribute('width', '48')
     expect(bigger).toHaveAttribute('height', '48')
+
+    rerender(
+      <AppTheme>
+        <BrandLogo variant="full" size={240} />
+      </AppTheme>,
+    )
+
+    const full = screen.getByRole('img', { name: 'Wawelsky Dragon' })
+    expect(full).toHaveAttribute('width', '240')
+    expect(full).toHaveAttribute('height', '124')
   })
 })

@@ -12,7 +12,12 @@ do nazw z modułem — przez co ``frontend/src/features/auth/authState.ts`` (``s
 przestaje się kompilować, a plików frontendu poza ``schema.gen.ts`` nie zmieniamy.
 """
 
+from typing import Literal
+
 from pydantic import BaseModel, Field, StrictBool
+
+# Pusty napis = użytkownik nie wybrał języka; interfejs używa wtedy języka bieżącej sesji.
+AccountLanguage = Literal["", "pl", "en"]
 
 
 class WdUser(BaseModel):
@@ -41,6 +46,9 @@ class UserCreateRequest(BaseModel):
     )
     nickname: str | None = Field(default=None, description="Nazwa wyświetlana (opcjonalna)")
     is_superuser: StrictBool = Field(default=False, description="Czy konto ma być administratorem")
+    language: AccountLanguage = Field(
+        default="", description="Język interfejsu; pusty = nie ustawiono"
+    )
 
 
 class UserUpdateRequest(BaseModel):
@@ -52,6 +60,9 @@ class UserUpdateRequest(BaseModel):
     )
     is_active: StrictBool | None = Field(
         default=None, description="Nowy stan aktywności (brak = bez zmian)"
+    )
+    language: AccountLanguage | None = Field(
+        default=None, description="Nowy język; pusty = nie ustawiono (brak = bez zmian)"
     )
 
 
