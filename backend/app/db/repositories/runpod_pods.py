@@ -110,7 +110,10 @@ _ACTIVE_SQL = text(
     f"SELECT {_COLUMNS} FROM runpod_pods WHERE status IN :statuses ORDER BY create_time"  # noqa: S608
 ).bindparams(bindparam("statuses", expanding=True))
 
-_DELETE_ENDED_SQL = text("DELETE FROM runpod_pods WHERE status IN ('terminated', 'failed')")
+_DELETE_ENDED_SQL = text(
+    "DELETE FROM runpod_pods WHERE status IN ('terminated', 'failed')"
+    " AND (:local IS NULL OR (cloud = 'LOCAL') = :local)"
+)
 
 _RECENT_SQL = text(
     f"SELECT {_COLUMNS} FROM runpod_pods ORDER BY create_time DESC LIMIT :limit"  # noqa: S608
@@ -180,9 +183,9 @@ async def list_recent(session: AsyncSession, limit: int = 20) -> list[PodRow]:
     return [_row(row) for row in rows]
 
 
-async def delete_ended(session: AsyncSession) -> int:
-    """Czyści historię: kasuje zakończone wdrożenia (terminated, failed); aktywnych nie rusza."""
-    result = cast("CursorResult[Any]", await session.execute(_DELETE_ENDED_SQL))
+async def delete_ended(session: AsyncSession, *, local: bool | None = None) -> int:
+    """Kasuje zakończone wdrożenia (``local``: GPU serwera / RunPod / ``None`` = oba)."""
+    result = cast("CursorResult[Any]", await session.execute(_DELETE_ENDED_SQL, {"local": local}))
     return int(result.rowcount or 0)
 
 

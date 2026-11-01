@@ -96,6 +96,9 @@ class Settings(BaseSettings):
     # Odstęp przeglądu dokumentów bez profilu spisu, w sekundach (K21 §2 p. 4); 0 = wyłączony.
     outline_sweep_s: int = 600
     ocr_engine: Literal["none", "tesseract", "vlm"] = "vlm"
+    # Usługa `gpu-agent` (profil compose `gpu`): modele na GPU serwera WD; pusty adres = brak.
+    gpu_agent_url: str = ""
+    gpu_agent_token: SecretStr = SecretStr("")
     ocr_langs: str = "pol+eng"
     rate_limit_login: str = "10/min"
     metrics_enabled: bool = False

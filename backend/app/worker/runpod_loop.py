@@ -11,6 +11,7 @@ import contextlib
 import logging
 
 from app.core.container import Container
+from app.services.gpu_local.lifecycle import register_local_models, tick_local
 from app.services.runpod.lifecycle import tick
 
 INTERVAL_S: float = 15.0
@@ -23,10 +24,18 @@ async def runpod_loop(
 ) -> None:
     """Przebieg ``tick`` co ``interval_s`` (domyślnie ``INTERVAL_S``) do ``stop.set()``."""
     wait_s = INTERVAL_S if interval_s is None else interval_s
+    registered = False
     while not stop.is_set():
         try:
             await tick(container)
         except Exception:
             logger.exception("runpod loop failed")
+        try:
+            if not registered:
+                await register_local_models(container)
+                registered = True
+            await tick_local(container)
+        except Exception:
+            logger.exception("local gpu loop failed")
         with contextlib.suppress(TimeoutError):
             await asyncio.wait_for(stop.wait(), timeout=wait_s)

@@ -300,3 +300,27 @@ def test_smoke_detect_then_convert(ext: str, content: bytes, tmp_path: Path) -> 
     assert doc.html or doc.pending_pages
     if ext == ".png":
         assert doc.pending_pages
+
+
+@pytest.mark.parametrize(
+    ("suffix", "expected"),
+    [
+        ("pdf", True),
+        (".PDF", True),
+        ("pptx", True),
+        ("jpeg", True),
+        ("tif", True),
+        ("xlsx", False),
+        ("xlsm", False),
+        ("xls", False),
+        ("csv", False),
+        ("docx", False),
+        ("doc", False),
+        ("ppt", False),
+        ("txt", False),
+        ("nieznany", True),
+        ("", True),
+    ],
+)
+def test_may_use_vision_only_for_formats_with_pending_pages(suffix: str, expected: bool) -> None:
+    assert registry.may_use_vision(suffix) is expected

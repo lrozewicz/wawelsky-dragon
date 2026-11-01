@@ -17,7 +17,9 @@ import { useRouteContext } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
+import { DatasetParserNotice } from './DatasetParserNotice'
 import { DeployFlow } from './DeployFlow'
+import { LocalPrompt } from './LocalPrompt'
 import { GpuPicker } from './GpuPicker'
 import type { GpuSelection } from './GpuPicker'
 import { gpusQueryOptions } from './api'
@@ -48,7 +50,9 @@ export function PodPromptHost(): JSX.Element | null {
   const prompt = useRunpodPrompt()
   useEffect(() => registerRunpodPromptHost(), [])
   if (prompt === null) return null
-  return <PromptDialog key={`${prompt.datasetId}:${prompt.documentIds.join(',')}`} />
+  const key = `${prompt.datasetId}:${prompt.documentIds.join(',')}`
+  if (prompt.preflight.provider === 'local') return <LocalPrompt key={key} prompt={prompt} />
+  return <PromptDialog key={key} />
 }
 
 function PromptDialog(): JSX.Element | null {
@@ -118,6 +122,7 @@ function PromptDialog(): JSX.Element | null {
             onClose={closeRunpodPrompt}
           />
         ) : null}
+        {step === 'ask' ? <DatasetParserNotice prompt={prompt} /> : null}
       </DialogContent>
       {step !== 'deploy' ? (
         <DialogActions>

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from app.db.repositories import runpod_pods as pods_repo
 from app.db.uow import transaction
-from app.services.runpod.hosted import get_model
+from app.services.runpod.hosted import PROVIDER_LOCAL, get_model
 from app.worker.errors import PermanentError
 
 if TYPE_CHECKING:
@@ -26,7 +26,12 @@ async def ensure_pod_ready(container: Container, model_name: object) -> None:
     async with transaction(container.sessionmaker) as session:
         active = await pods_repo.list_active(session)
     if not any(row.model_name == model.name and row.status == "ready" for row in active):
+        if model.provider == PROVIDER_LOCAL:
+            raise PermanentError(
+                f"{model.title} is not running on this server. Start it (Settings → GPU → This "
+                "server, or parse the document again and confirm) and retry."
+            )
         raise PermanentError(
-            f"{model.title} is not running on RunPod. Start it (Settings → RunPod, or parse the "
-            "document again and confirm) and retry."
+            f"{model.title} is not running on RunPod. Start it (Settings → GPU → RunPod, or parse "
+            "the document again and confirm) and retry."
         )

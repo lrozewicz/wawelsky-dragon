@@ -122,6 +122,20 @@ async def test_pdf_docx_xlsx_produce_committed_chunks(
     assert dataset.chunk_count == total
 
 
+async def test_xlsx_parses_without_a_pod_despite_a_pod_parser(
+    container: Container, sm: async_sessionmaker[AsyncSession]
+) -> None:
+    """Arkusz nie używa wizji: parser na RunPod przy wyłączonym podzie nie blokuje parsowania."""
+    ds = await seed_dataset(sm, parser_config={"layout_recognize": "xiaomi-ocr-0-runpod"})
+    doc = await container.ingest.upload(
+        ds.id, make_source(make_xlsx_bytes(), "dane.xlsx"), created_by=ds.tenant_id
+    )
+    ctx = await claim_context(container, doc.id)
+    await run_parse(container, ctx.task, ctx, executor=None)
+    row = await _document(sm, doc.id)
+    assert row.run == "3" and row.chunk_count > 0
+
+
 async def test_progress_msg_lines_in_order(
     container: Container, sm: async_sessionmaker[AsyncSession]
 ) -> None:

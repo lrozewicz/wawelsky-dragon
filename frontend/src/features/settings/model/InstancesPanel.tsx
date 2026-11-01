@@ -5,7 +5,7 @@
  */
 
 import { useState } from 'react'
-import type { JSX } from 'react'
+import type { JSX, MouseEvent } from 'react'
 import AddRoundedIcon from '@mui/icons-material/AddRounded'
 import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
@@ -18,7 +18,9 @@ import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
+import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
@@ -113,7 +115,10 @@ export function InstancesPanel(props: InstancesPanelProps): JSX.Element {
       ) : (
         <List>
           {items.map((instance) => {
-            const managed = instance.instance_name.toLowerCase() === DEFAULT_INSTANCE_NAME
+            const environment = instance.instance_name.toLowerCase() === DEFAULT_INSTANCE_NAME
+            // Adres i klucz ustawia WD przy każdym starcie modelu (Ustawienia → GPU).
+            const gpuProvider = instance.wd_gpu_provider ?? null
+            const managed = environment || gpuProvider !== null
             const selected = instance.id === selectedId
             return (
               // `ListItem` renderuje `<li>` — bez niego `ListItemButton` (domyślnie `div`)
@@ -126,8 +131,26 @@ export function InstancesPanel(props: InstancesPanelProps): JSX.Element {
                   onClick={() => onSelect(instance.id)}
                 >
                   <ListItemText primary={instance.instance_name} />
-                  {managed ? (
+                  {environment ? (
                     <Chip size="small" label={t('settings.instances.managed')} sx={{ mr: 1 }} />
+                  ) : null}
+                  {gpuProvider !== null ? (
+                    <Tooltip title={t('settings.instances.gpuManagedHint')}>
+                      <Chip
+                        size="small"
+                        clickable
+                        component={Link}
+                        to={
+                          gpuProvider === 'local'
+                            ? '/user-setting/gpu/local'
+                            : '/user-setting/gpu/runpod'
+                        }
+                        label={t('settings.instances.gpuManaged')}
+                        data-testid={`instance-gpu-managed-${instance.id}`}
+                        onClick={(event: MouseEvent) => event.stopPropagation()}
+                        sx={{ mr: 1 }}
+                      />
+                    </Tooltip>
                   ) : null}
                   {isSuperuser && !managed ? (
                     <>

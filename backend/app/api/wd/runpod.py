@@ -97,12 +97,16 @@ class Preflight(BaseModel):
     needs_pod: bool = Field(description="True, gdy model działa na RunPod i pod jest wyłączony")
     model: str | None = Field(default=None, description="Nazwa modelu w rejestrze")
     title: str | None = Field(default=None, description="Nazwa wyświetlana modelu")
+    provider: str | None = Field(default=None, description="runpod albo local (GPU tego serwera)")
     state: str | None = Field(
         default=None, description="off, provisioning, starting, loading, ready"
     )
     deployment_id: str | None = Field(default=None, description="Trwające wdrożenie, jeśli jest")
     last_gpu: LastGpu | None = Field(default=None, description="GPU z poprzedniego wdrożenia")
     min_vram_gb: int | None = Field(default=None, description="Minimalny VRAM modelu")
+    dataset_parser: str | None = Field(
+        default=None, description="Parser z konfiguracji zbioru, gdy inny niż w dokumentach"
+    )
 
 
 class ParseRequest(BaseModel):
@@ -146,7 +150,7 @@ class Deployment(BaseModel):
     )
     active: bool = Field(description="Czy pod trwa i generuje koszty")
     gpu: GpuRef = Field(description="GPU")
-    cloud: str = Field(description="SECURE albo COMMUNITY")
+    cloud: str = Field(description="SECURE, COMMUNITY albo LOCAL (GPU tego serwera)")
     data_center_id: str | None = Field(description="Centrum danych przydzielone przez RunPod")
     price_per_hr: float = Field(description="Cena za godzinę (USD)")
     cost_so_far: float = Field(description="Szacowany koszt dotychczas (USD)")
@@ -314,9 +318,11 @@ async def deployments(request: Request, principal: PrincipalDep) -> Envelope[Ite
     response_model=Envelope[HistoryCleared],
     responses=wd_responses(401, 403),
 )
-async def clear_history(request: Request, principal: PrincipalDep) -> Envelope[HistoryCleared]:
-    """Aktywnych wdrożeń nie rusza; tylko superuser."""
-    deleted = await _svc(request).clear_history(principal)
+async def clear_history(
+    request: Request, principal: PrincipalDep, local: bool | None = None
+) -> Envelope[HistoryCleared]:
+    """Aktywnych nie rusza; ``local``: tylko GPU serwera albo tylko RunPod; tylko superuser."""
+    deleted = await _svc(request).clear_history(principal, local=local)
     return Envelope[HistoryCleared](data=HistoryCleared(deleted=deleted))
 
 

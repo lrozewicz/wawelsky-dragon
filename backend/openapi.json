@@ -10116,36 +10116,6 @@
       }
     },
     "/api/wd/v1/runpod/deployments": {
-      "get": {
-        "tags": [
-          "runpod"
-        ],
-        "summary": "Ostatnie wdrożenia modeli na RunPod",
-        "description": "Najnowsze pierwsze (aktywne i zakończone).",
-        "operationId": "runpod_deployments",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Envelope_Items_Deployment__"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Brak lub niepoprawne uwierzytelnienie",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WdErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
       "post": {
         "tags": [
           "runpod"
@@ -10154,14 +10124,14 @@
         "description": "Tworzy poda; po gotowości WD parsuje ``parse``. Brak GPU → 409 z zamiennikami.",
         "operationId": "runpod_deploy",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/DeployBody"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "201": {
@@ -10226,13 +10196,61 @@
           }
         }
       },
+      "get": {
+        "tags": [
+          "runpod"
+        ],
+        "summary": "Ostatnie wdrożenia modeli na RunPod",
+        "description": "Najnowsze pierwsze (aktywne i zakończone).",
+        "operationId": "runpod_deployments",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_Items_Deployment__"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Brak lub niepoprawne uwierzytelnienie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "tags": [
           "runpod"
         ],
         "summary": "Czyści historię: usuwa z listy zakończone wdrożenia (terminated, failed)",
-        "description": "Aktywnych wdrożeń nie rusza; tylko superuser.",
+        "description": "Aktywnych nie rusza; ``local``: tylko GPU serwera albo tylko RunPod; tylko superuser.",
         "operationId": "runpod_clear_history",
+        "parameters": [
+          {
+            "name": "local",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Local"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -10482,6 +10500,184 @@
           },
           "409": {
             "description": "Konflikt ze stanem zasobu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wd/v1/gpu/local/models": {
+      "get": {
+        "tags": [
+          "gpu-local"
+        ],
+        "summary": "Modele, które można uruchomić na GPU tego serwera",
+        "description": "Lista modeli.",
+        "operationId": "gpu_local_models",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_Items_HostedModelView__"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Brak lub niepoprawne uwierzytelnienie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wd/v1/gpu/local/gpus": {
+      "get": {
+        "tags": [
+          "gpu-local"
+        ],
+        "summary": "Karty GPU tego serwera z VRAM i stanem wolna/zajęta",
+        "description": "Brak lub awaria agenta to pole ``agent``, nie błąd HTTP.",
+        "operationId": "gpu_local_gpus",
+        "parameters": [
+          {
+            "name": "model",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "title": "Model"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_LocalGpuList_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Niepoprawne żądanie (walidacja ciała lub parametrów)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Brak lub niepoprawne uwierzytelnienie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Brak uprawnień administratora",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wd/v1/gpu/local/deployments": {
+      "post": {
+        "tags": [
+          "gpu-local"
+        ],
+        "summary": "Uruchamia model na GPU tego serwera",
+        "description": "Zleca start kontenera; po gotowości WD parsuje ``parse``.",
+        "operationId": "gpu_local_deploy",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocalDeployBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Envelope_Deployment_"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Niepoprawne żądanie (walidacja ciała lub parametrów)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Brak lub niepoprawne uwierzytelnienie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Brak uprawnień administratora",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Konflikt ze stanem zasobu",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WdErrorResponse"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Błąd usługi zewnętrznej (Microsoft Graph)",
             "content": {
               "application/json": {
                 "schema": {
@@ -15512,7 +15708,7 @@
           "cloud": {
             "type": "string",
             "title": "Cloud",
-            "description": "SECURE albo COMMUNITY"
+            "description": "SECURE, COMMUNITY albo LOCAL (GPU tego serwera)"
           },
           "data_center_id": {
             "anyOf": [
@@ -17050,6 +17246,18 @@
           "data"
         ],
         "title": "Envelope[KeyStatus]"
+      },
+      "Envelope_LocalGpuList_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/LocalGpuList"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "Envelope[LocalGpuList]"
       },
       "Envelope_Page_AuditEntry__": {
         "properties": {
@@ -19534,6 +19742,148 @@
         "title": "LastGpu",
         "description": "GPU z poprzedniego wdrożenia (domyślny wybór w oknie pytania)."
       },
+      "LocalDeployBody": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Model",
+            "description": "Nazwa modelu z listy modeli"
+          },
+          "gpu_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Gpu Id",
+            "description": "UUID karty"
+          },
+          "parse": {
+            "items": {
+              "$ref": "#/components/schemas/ParseRequest"
+            },
+            "type": "array",
+            "title": "Parse",
+            "description": "Dokumenty do sparsowania, gdy model będzie gotowy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "gpu_id"
+        ],
+        "title": "LocalDeployBody",
+        "description": "Wdrożenie modelu na karcie serwera."
+      },
+      "LocalGpuList": {
+        "properties": {
+          "agent": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "not_configured",
+              "unreachable"
+            ],
+            "title": "Agent",
+            "description": "Stan gpu-agent"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Model, dla którego liczono wolne karty"
+          },
+          "min_vram_gb": {
+            "type": "integer",
+            "title": "Min Vram Gb",
+            "description": "Minimalny wolny VRAM modelu"
+          },
+          "gpus": {
+            "items": {
+              "$ref": "#/components/schemas/LocalGpuView"
+            },
+            "type": "array",
+            "title": "Gpus",
+            "description": "Karty serwera"
+          }
+        },
+        "type": "object",
+        "required": [
+          "agent",
+          "model",
+          "min_vram_gb",
+          "gpus"
+        ],
+        "title": "LocalGpuList",
+        "description": "Karty serwera dla wybranego modelu i stan agenta."
+      },
+      "LocalGpuView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "UUID karty z nvidia-smi"
+          },
+          "index": {
+            "type": "integer",
+            "title": "Index",
+            "description": "Numer karty"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Nazwa karty"
+          },
+          "vram_gb": {
+            "type": "integer",
+            "title": "Vram Gb",
+            "description": "VRAM w GB"
+          },
+          "memory_total_mb": {
+            "type": "integer",
+            "title": "Memory Total Mb",
+            "description": "Cała pamięć (MiB)"
+          },
+          "memory_free_mb": {
+            "type": "integer",
+            "title": "Memory Free Mb",
+            "description": "Wolna pamięć (MiB)"
+          },
+          "memory_used_mb": {
+            "type": "integer",
+            "title": "Memory Used Mb",
+            "description": "Zajęta pamięć (MiB)"
+          },
+          "utilization_pct": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Utilization Pct",
+            "description": "Obciążenie w procentach"
+          },
+          "free": {
+            "type": "boolean",
+            "title": "Free",
+            "description": "Czy wolnej pamięci wystarczy dla wybranego modelu"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "index",
+          "name",
+          "vram_gb",
+          "memory_total_mb",
+          "memory_free_mb",
+          "memory_used_mb",
+          "utilization_pct",
+          "free"
+        ],
+        "title": "LocalGpuView",
+        "description": "Karta GPU serwera WD."
+      },
       "LoginChannel": {
         "properties": {
           "channel": {
@@ -20365,6 +20715,18 @@
             "title": "Title",
             "description": "Nazwa wyświetlana modelu"
           },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "runpod albo local (GPU tego serwera)"
+          },
           "state": {
             "anyOf": [
               {
@@ -20411,6 +20773,18 @@
             ],
             "title": "Min Vram Gb",
             "description": "Minimalny VRAM modelu"
+          },
+          "dataset_parser": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dataset Parser",
+            "description": "Parser z konfiguracji zbioru, gdy inny niż w dokumentach"
           }
         },
         "type": "object",
@@ -20584,6 +20958,17 @@
           "status": {
             "type": "string",
             "title": "Status"
+          },
+          "wd_gpu_provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wd Gpu Provider"
           }
         },
         "additionalProperties": false,

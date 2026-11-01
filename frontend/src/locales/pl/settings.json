@@ -3,7 +3,7 @@
   "settings.tabs.model": "Dostawcy modeli",
   "settings.tabs.profile": "Profil",
   "settings.tabs.api": "Klucze API",
-  "settings.tabs.runpod": "RunPod",
+  "settings.tabs.gpu": "GPU",
   "settings.common.save": "Zapisz",
   "settings.common.cancel": "Anuluj",
   "settings.common.close": "Zamknij",
@@ -146,5 +146,7 @@
   "settings.models.importSummary": "Dodano modeli: {{count}}",
   "settings.keys.col.name": "Nazwa",
   "settings.keys.noName": "—",
-  "settings.keys.nameCounter": "{{n}}/128"
+  "settings.keys.nameCounter": "{{n}}/128",
+  "settings.instances.gpuManaged": "Zarządzana automatycznie",
+  "settings.instances.gpuManagedHint": "Adres i klucz ustawia Wawelsky Dragon przy każdym uruchomieniu modelu. Modelem sterujesz w Ustawienia → GPU."
 }

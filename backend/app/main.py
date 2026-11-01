@@ -19,6 +19,7 @@ from app.api.ragflow.system import router as system_router
 from app.api.ragflow.users import router as users_router
 from app.api.wd.access import routers as wd_access_routers
 from app.api.wd.dataset_usage import router as wd_dataset_usage_router
+from app.api.wd.gpu_local import router as wd_gpu_local_router
 from app.api.wd.integrations import routers as wd_integration_routers
 from app.api.wd.kb_export import router as wd_kb_export_router
 from app.api.wd.kb_import import router as wd_kb_import_router
@@ -57,6 +58,7 @@ def include_routers(app: FastAPI, settings: Settings) -> None:
         wd_kb_import_router,
         wd_dataset_usage_router,
         wd_runpod_router,
+        wd_gpu_local_router,
     ):
         app.include_router(router)
     if settings.integrations_enabled:  # trasy WD integracji tylko z włączoną integracją (§1)

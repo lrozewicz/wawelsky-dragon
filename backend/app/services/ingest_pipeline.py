@@ -32,6 +32,7 @@ from app.llm.types import ModelRef
 from app.parsing.blocks import html_to_blocks
 from app.parsing.errors import empty_document
 from app.parsing.html import sanitize_html
+from app.parsing.registry import may_use_vision
 from app.parsing.types import ConvertedDocument
 from app.services import auto_metadata
 from app.services.concurrency import resolve_concurrency
@@ -347,7 +348,9 @@ async def run_parse(
         # zamiast awarii w kroku 10; model czytany z rejestru (PATCH działa w następnym zadaniu).
         embed_concurrency = resolve_concurrency(emb, container.settings.embed_concurrency)
         pc = doc.parser_config
-        layout_vision = pc.get("layout_recognize") not in _LAYOUT_PLAIN  # krok 5
+        layout_vision = (  # krok 5; arkusz czy DOCX nie włączają poda, bo nie użyją wizji
+            pc.get("layout_recognize") not in _LAYOUT_PLAIN and may_use_vision(doc.suffix)
+        )
         clear = bool(task.payload.get("clear_existing", False))  # krok 4
         if not clear and task.digest is not None and task.digest == prev and committed > 0:
             await _finish_reused(container, sm, rep, doc, ds, t0)

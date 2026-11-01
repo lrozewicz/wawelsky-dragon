@@ -32,6 +32,7 @@ from app.services.provider_common import (
     require_superuser,
     resolve_provider,
 )
+from app.services.runpod.hosted import gpu_provider_of
 
 if TYPE_CHECKING:
     from app.core.container import Container
@@ -43,6 +44,10 @@ INSTANCES_REQUIRED = "instances is required"
 DEFAULT_MANAGED = "Instance 'default' is managed by environment configuration"
 
 
+def _gpu_managed(name: str) -> str:
+    return f"Instance '{name}' is managed automatically (Settings → GPU)"
+
+
 @dataclass(frozen=True)
 class InstanceView:
     """Widok instancji dla trasy; ``id`` jest ``None`` tylko dla syntetycznej ``default``."""
@@ -52,6 +57,7 @@ class InstanceView:
     base_url: str
     has_api_key: bool
     managed: bool
+    gpu_provider: str | None = None  # `runpod`/`local`: instancję prowadzi WD (Ustawienia → GPU)
 
 
 @dataclass(frozen=True)
@@ -91,6 +97,7 @@ class ProviderInstanceService:
                 base_url=row.base_url,
                 has_api_key=row.api_key_enc is not None,
                 managed=False,
+                gpu_provider=gpu_provider_of(row.name),
             )
             for row in rows
         ]
@@ -104,6 +111,7 @@ class ProviderInstanceService:
             base_url=resolved.base_url,
             has_api_key=resolved.api_key is not None,
             managed=resolved.managed,
+            gpu_provider=gpu_provider_of(resolved.name),
         )
 
     async def resolve_instance(self, provider: str, instance: str) -> ResolvedInstance:
@@ -137,6 +145,8 @@ class ProviderInstanceService:
         column = resolve_provider(provider)
         name = self._required_name(body)
         base_url = self._required_base_url(body)
+        if gpu_provider_of(name) is not None:
+            raise Conflict(_gpu_managed(name))
         if is_default_name(name) or await self._exists(column, name):
             raise Conflict(f"Instance '{name}' already exists")
         key = body.get("api_key")
@@ -176,6 +186,8 @@ class ProviderInstanceService:
         resolved = await self.resolve_instance(provider, instance)
         if resolved.managed:
             raise Conflict(DEFAULT_MANAGED)
+        if gpu_provider_of(resolved.name) is not None or gpu_provider_of(name) is not None:
+            raise Conflict(_gpu_managed(resolved.name))
         if is_default_name(name) or await self._taken(column, name, cast(str, resolved.id)):
             raise Conflict(f"Instance '{name}' already exists")
         set_key, enc = self._update_key(body, cast(str, resolved.id))
@@ -303,6 +315,8 @@ class ProviderInstanceService:
         targets: _InstanceTargets = []
         for item in dedupe(cast("list[str]", raw)):
             resolved = await self.resolve_instance(provider, item)
+            if gpu_provider_of(resolved.name) is not None:
+                raise Conflict(_gpu_managed(resolved.name))
             targets.append((cast(str, resolved.id), resolved.name))
         return targets
 

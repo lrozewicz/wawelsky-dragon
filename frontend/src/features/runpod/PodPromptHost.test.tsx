@@ -168,4 +168,47 @@ describe('start parsowania a pod RunPod', () => {
     expect(calls).toHaveLength(1)
     expect(state.requests.some((r) => r.path.endsWith('/preflight'))).toBe(false)
   })
+
+  it('proponuje parser zbioru, przepina plik i ponawia parsowanie', async () => {
+    const state = makeRunpodState({
+      preflight: { ...OFF, dataset_parser: 'xiaomi-ocr-0-localhost' },
+    })
+    const patches: unknown[] = []
+    const calls: string[] = []
+    server.use(
+      ...runpodHandlers(state),
+      parseHandler(calls),
+      http.get(apiUrl('/api/v1/datasets/:id/documents'), () =>
+        HttpResponse.json({
+          code: 0,
+          message: 'success',
+          data: {
+            docs: [{ id: 'doc-1', name: 'a.pdf', parser_config: { raptor: { use_raptor: true } } }],
+            total: 1,
+          },
+        }),
+      ),
+      http.patch(apiUrl('/api/v1/datasets/:id/documents/:doc'), async ({ request }) => {
+        patches.push(await request.json())
+        state.preflight = { needs_pod: false }
+        return HttpResponse.json({ code: 0, message: 'success', data: { id: 'doc-1' } })
+      }),
+    )
+    const user = userEvent.setup()
+    const { parse } = await setup()
+    await parse().mutateAsync({ ids: ['doc-1'] })
+    await user.click(await screen.findByTestId('dataset-parser-use'))
+    await waitFor(() => {
+      expect(calls).toHaveLength(1)
+    })
+    expect(patches).toEqual([
+      {
+        parser_config: {
+          raptor: { use_raptor: true },
+          layout_recognize: 'xiaomi-ocr-0-localhost',
+        },
+      },
+    ])
+    expect(screen.queryByTestId('runpod-prompt')).toBeNull()
+  })
 })

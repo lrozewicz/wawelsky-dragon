@@ -27,7 +27,13 @@ _OPTIONAL_SECRET_VARS = {
     # bootstrap admina jest opcjonalny (`ensure_admin` pomija puste dane); forma `${...:-}` wymuszona
     # przez K8 „Poprawka 2026-10-04” p. 1; DEC-236
     "WD_ADMIN_PASSWORD",
+    # agent GPU jest opcjonalny (profil `gpu`); bez tokenu sam nie wstaje, a API widzi brak agenta
+    "WD_GPU_AGENT_TOKEN",
 }
+
+# H11: jedyny wyjątek od zakazu docker.sock. `gpu-agent` startuje modele na GPU serwera; wąskie API
+# za tokenem, lista dozwolonych modeli w kodzie, bez bazy i sekretów aplikacji, bez portu na hoście.
+_DOCKER_SOCK_EXCEPTIONS = {"gpu-agent"}
 
 # H11: usługi bez `user:` i bez `USER` w obrazie, dopuszczone jawnie.
 _NON_ROOT_EXCEPTIONS = {
@@ -157,7 +163,7 @@ def _user_violation(name: str, service: dict[str, object], base_dir: Path) -> st
 def _h11_violations(name: str, service: dict[str, object], base_dir: Path) -> list[str]:
     found: list[str] = []
     for mount in _mount_strings(service):
-        if "docker.sock" in mount:
+        if "docker.sock" in mount and name not in _DOCKER_SOCK_EXCEPTIONS:
             found.append(f"H11: usługa '{name}': montuje docker.sock ({mount})")
     if _as_bool(service.get("privileged")):
         found.append(f"H11: usługa '{name}': privileged: true")

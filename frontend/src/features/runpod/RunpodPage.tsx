@@ -1,6 +1,6 @@
 /**
- * Zakładka „RunPod” w Ustawieniach: klucz API, wybór GPU z filtrami, uruchomienie modelu
- * (karta per model hostowany) i lista wdrożeń z możliwością ręcznego wyłączenia poda. Zmiany robi tylko
+ * Tab „RunPod” w Ustawienia → GPU: klucz API, wybór modelu z listy i GPU z filtrami, uruchomienie
+ * oraz lista wdrożeń z możliwością ręcznego wyłączenia poda. Zmiany robi tylko
  * superużytkownik (koszty); pozostali widzą stan.
  */
 
@@ -13,6 +13,7 @@ import CardContent from '@mui/material/CardContent'
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
+import MenuItem from '@mui/material/MenuItem'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
@@ -92,17 +93,37 @@ function KeyCard(props: { isSuperuser: boolean }): JSX.Element {
   )
 }
 
-function ModelCard(props: { hosted: HostedModel }): JSX.Element {
-  const { hosted } = props
+function ModelCard(props: { models: HostedModel[] }): JSX.Element | null {
+  const { models } = props
   const { t } = useTranslation()
+  const [chosenName, setChosenName] = useState<string | null>(null)
+  const hosted = models.find((model) => model.name === chosenName) ?? models[0]
   const [selection, setSelection] = useState<GpuSelection | null>(null)
   const [deploying, setDeploying] = useState(false)
+  if (hosted === undefined) return null
 
   return (
     <Card data-testid="runpod-model-card" data-model={hosted.name}>
       <CardContent>
         <Stack spacing={2}>
-          <Typography variant="h6">{hosted.title}</Typography>
+          <TextField
+            select
+            size="small"
+            label={t('runpod.model.select')}
+            value={hosted.name}
+            onChange={(event) => {
+              setChosenName(event.target.value)
+              setSelection(null)
+            }}
+            sx={{ maxWidth: 420 }}
+            slotProps={{ htmlInput: { 'data-testid': 'runpod-model-select' } }}
+          >
+            {models.map((model) => (
+              <MenuItem key={model.name} value={model.name}>
+                {model.title}
+              </MenuItem>
+            ))}
+          </TextField>
           <Typography variant="body2" color="text.secondary">
             {t('runpod.model.description', {
               hf: hosted.hf_model,
@@ -145,18 +166,12 @@ function ModelCard(props: { hosted: HostedModel }): JSX.Element {
   )
 }
 
-/** Po jednej karcie na każdy model hostowany przez WD (lista pochodzi z backendu). */
+/** Karta wdrożenia z listą modeli hostowanych przez WD (lista pochodzi z backendu). */
 function ModelCards(props: { isSuperuser: boolean }): JSX.Element | null {
   const key = useQuery(keyQueryOptions())
   const models = useQuery(modelsQueryOptions())
   if (!props.isSuperuser || !key.data?.configured) return null
-  return (
-    <>
-      {(models.data ?? []).map((hosted: HostedModel) => (
-        <ModelCard key={hosted.name} hosted={hosted} />
-      ))}
-    </>
-  )
+  return <ModelCard models={models.data ?? []} />
 }
 
 export function RunpodPage(): JSX.Element {
@@ -165,7 +180,7 @@ export function RunpodPage(): JSX.Element {
     <Stack spacing={2} data-testid="runpod-page">
       <KeyCard isSuperuser={isSuperuser} />
       <ModelCards isSuperuser={isSuperuser} />
-      <DeploymentsCard isSuperuser={isSuperuser} />
+      <DeploymentsCard isSuperuser={isSuperuser} scope="runpod" />
     </Stack>
   )
 }
