@@ -29,11 +29,13 @@ ALLOWED = frozenset(
         "app/integrations/sharepoint/log_redact.py",  # httpx: redakcja nagłówków Graph
         "app/llm/errors.py",  # httpx2: mapowanie wyjątków SDK; bez własnego ruchu
         "app/llm/openai_gateway.py",  # httpx2: bramka LLM; base_url z konfiguracji admina
+        "app/gpu_agent/docker_api.py",  # socket: Docker API przez lokalne gniazdo uniksowe
         "app/mcp/client.py",  # httpx: klient API WD; api_base z WD_MCP_API_BASE (compose, K17 §1)
+        "app/services/gpu_local/client.py",  # httpx: gpu-agent; adres z env
         "app/services/oidc.py",  # httpx: OIDC; issuer z konfiguracji admina/env
         "app/services/provider_probe.py",  # httpx2: sonda dostawcy; base_url admina/env
         "app/services/runpod/client.py",  # httpx: API RunPod; host stały api.runpod.io
-        "app/services/runpod/lifecycle.py",  # httpx: GET /health poda, host *.proxy.runpod.net
+        "app/services/runpod/lifecycle.py",  # httpx: GET /health poda lub kontenera agenta
         "app/services/web_search/_http.py",  # httpx: transport dostawców; hosty wg API dostawcy/env
         "app/services/web_search/searxng.py",  # httpx: transport searxng; base_url config (K18 §5)
         "app/services/web_search/tavily.py",  # httpx: transport tavily; host API dostawcy (K18 §5)

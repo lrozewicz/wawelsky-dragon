@@ -38,16 +38,16 @@ describe('SettingsLayout', () => {
       'Dostawcy modeli',
       'Profil',
       'Klucze API',
-      'RunPod',
+      'GPU',
     ])
     expect(tabs[0]).toHaveAttribute('href', '/user-setting/model')
     expect(tabs[1]).toHaveAttribute('href', '/user-setting/profile')
     expect(tabs[2]).toHaveAttribute('href', '/user-setting/api')
-    expect(tabs[3]).toHaveAttribute('href', '/user-setting/runpod')
+    expect(tabs[3]).toHaveAttribute('href', '/user-setting/gpu')
     expect(screen.getByTestId('settings-tab-model')).toBeInTheDocument()
     expect(screen.getByTestId('settings-tab-profile')).toBeInTheDocument()
     expect(screen.getByTestId('settings-tab-api')).toBeInTheDocument()
-    expect(screen.getByTestId('settings-tab-runpod')).toBeInTheDocument()
+    expect(screen.getByTestId('settings-tab-gpu')).toBeInTheDocument()
   })
 
   it('zaznacza zakładkę wskazaną przez `active`', async () => {

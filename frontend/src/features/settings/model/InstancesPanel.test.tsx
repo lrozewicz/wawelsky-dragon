@@ -67,6 +67,33 @@ describe('InstancesPanel', () => {
     expect(screen.getByText('litellm-test')).toBeInTheDocument()
   })
 
+  it('instancja prowadzona przez WD ma etykietę z linkiem do GPU i nie ma akcji zapisu', async () => {
+    const managed = {
+      id: 'inst-gpu',
+      instance_name: 'local-xiaomi-ocr-0-localhost',
+      provider_id: 'p',
+      region: 'default',
+      status: 'enable',
+      wd_gpu_provider: 'local',
+    }
+    server.use(
+      http.get(apiUrl('/api/v1/providers/:name/instances'), () =>
+        HttpResponse.json({ code: 0, message: 'success', data: [managed] }),
+      ),
+    )
+    await renderPanel()
+
+    const chip = await screen.findByTestId('instance-gpu-managed-inst-gpu')
+    expect(chip).toHaveTextContent('Zarządzana automatycznie')
+    expect(chip).toHaveAttribute('href', '/user-setting/gpu/local')
+    expect(
+      screen.queryByRole('button', { name: /Edytuj instancję local-xiaomi/ }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /Usuń instancję local-xiaomi/ }),
+    ).not.toBeInTheDocument()
+  })
+
   it('zaznacza wybraną instancję i woła `onSelect` po kliknięciu', async () => {
     const user = userEvent.setup()
     server.use(...settingsHandlers(SEED))

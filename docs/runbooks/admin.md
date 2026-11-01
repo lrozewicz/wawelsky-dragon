@@ -892,7 +892,7 @@ Sprzątanie: gotowe paczki w `storage_root/exports/` i `.part` są usuwane po 24
 Zamiast usługi `ocr` z compose (§11) model OCR można uruchamiać na GPU wynajętym w RunPod — z panelu WD,
 tylko na czas parsowania. Nic nie trzeba instalować na serwerze WD; potrzebny jest klucz API RunPod.
 
-**Konfiguracja (superuser):** Ustawienia → **RunPod** → wklej klucz API → *Zapisz klucz* (WD sprawdza go w RunPod i trzyma
+**Konfiguracja (superuser):** Ustawienia → **GPU** → **RunPod** → wklej klucz API → *Zapisz klucz* (WD sprawdza go w RunPod i trzyma
 zaszyfrowanym `WD_CRYPTO_KEY`). Od tej chwili w rejestrze modeli jest `xiaomi-ocr-0-runpod` (typ `vision`) — wybierz go jako
 parser PDF w ustawieniach bazy wiedzy (`layout_recognize`).
 
@@ -928,13 +928,49 @@ to zwykle 3–15 min (zależy od centrum danych); po 20 min pod jest kasowany; n
 **Dodanie kolejnego modelu na RunPod:** jeden wpis w `HOSTED_MODELS` (`backend/app/services/runpod/hosted.py`) — nazwa w rejestrze,
 tytuł, model HF, obraz vLLM, typ, wymagania VRAM/dysku, `max_model_len`, `max_concurrency`, `startup_timeout_s`, opcjonalnie
 `recognition_profile` (`otsl`/`html` — jak WD promptuje model przy parsowaniu stron; zapisywany w `models.extra`) i `extra_args`
-(dodatkowe flagi `vllm serve`). Panel pokaże osobną kartę modelu, a cykl życia poda, rejestracja w WD i guard workera działają bez
+(dodatkowe flagi `vllm serve`). Model pojawi się na liście rozwijanej w panelu, a cykl życia poda, rejestracja w WD i guard workera działają bez
 zmian. Nie trzeba zmieniać migracji ani frontendu. Jeśli model wymaga innego sposobu rozmowy niż `otsl`/`html`, dodaj profil w
 `backend/app/parsing/vision_profile.py` i jego obsługę w `VlmRecognizer`.
 
 **Diagnostyka:** `failed` z `gpu_unavailable` = RunPod nie dał maszyny w 5 min albo kontener nie wystartował w 20 min (wybierz inne
 GPU / centrum danych); `model did not start in time` = model nie wstał w 25 min (sprawdź logi poda w konsoli RunPod). Lokalny model z §11 i ten z RunPod mają różne nazwy
 (`xiaomi-ocr-0` vs `xiaomi-ocr-0-runpod`) i mogą działać obok siebie.
+
+## 18. Modele na GPU tego serwera (Ustawienia → GPU → Ten serwer)
+
+Xiaomi-OCR-0 można uruchomić z panelu na karcie NVIDIA maszyny, na której działa WD. Usługa
+`gpu-agent` (profil compose `gpu`) pokazuje karty z VRAM i stanem wolna/zajęta oraz startuje
+kontener vLLM. Model `xiaomi-ocr-0-localhost` trafia do rejestru przy starcie workera, więc można go
+wybrać jako parser PDF jeszcze przed pierwszym uruchomieniem. „Ten serwer” to maszyna z WD, nie
+komputer użytkownika.
+
+**Włączenie** (wymaga `nvidia-container-toolkit`, runtime `nvidia` w `docker info`). W `.env`:
+
+```bash
+WD_GPU_AGENT_URL=http://gpu-agent:9390
+WD_GPU_AGENT_TOKEN=$(openssl rand -hex 32)    # wpisz wartość, min. 16 znaków
+WD_DOCKER_GID=$(getent group docker | cut -d: -f3)   # wpisz wartość
+```
+
+Potem `docker compose --profile gpu up -d`. Bez tych ustawień reszta stosu działa bez zmian, a tab
+pokazuje, że agenta nie ma.
+
+**Bezpieczeństwo:** `gpu-agent` montuje `docker.sock`, co w praktyce daje root na hoście. To jedyny
+wyjątek od H11 (`tools/check_compose.py`). Dlatego agent jest osobną usługą bez bazy i sekretów
+aplikacji, bez portu na hoście, a jego API za tokenem przyjmuje tylko model z `HOSTED_MODELS`, nazwę
+kontenera, GPU i klucz vLLM (obraz i argumenty pochodzą z kodu) i usuwa wyłącznie własne kontenery
+(etykieta `wd.gpu-agent.owner`). Włączaj profil tylko tam, gdzie chcesz sterować GPU z panelu.
+
+**Działanie:** karta jest wolna, gdy ma co najmniej `min_vram_gb` wolnego VRAM (Xiaomi-OCR-0: 8 GB).
+vLLM dostaje ułamek karty odpowiadający `recommended_vram_gb` (na 16 GB: 0,5, §11.2). Model z panelu
+działa do ręcznego wyłączenia, model włączony przy starcie parsowania wyłącza się po 5 min bez zadań.
+Instancji `local-*` i `runpod-*` z `HOSTED_MODELS` nie konfiguruje się ręcznie: adres i klucz ustawia WD
+przy każdym starcie, a API odrzuca ich edycję i usunięcie (Dostawcy modeli: „Zarządzana automatycznie”).
+Wagi trzyma wolumen `WD_GPU_HF_VOLUME`. Nowy model = wpis w `HOSTED_MODELS` z `provider=PROVIDER_LOCAL`.
+
+**Diagnostyka:** `container ended unexpectedly (…)` = kontener padł albo start się nie udał (np. brak
+pamięci GPU): `docker logs wd-gpu-<id>`, jeśli kontener jeszcze istnieje. Model `xiaomi-ocr-0` z §11
+działa niezależnie, pod inną nazwą; obie usługi naraz potrzebują VRAM na obie.
 
 ## Odsyłacze
 

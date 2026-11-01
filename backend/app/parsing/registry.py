@@ -116,6 +116,16 @@ EXTENSION_ALIASES: dict[str, str] = {
 }
 
 
+# Formaty, których konwerter tworzy PendingPage (strony do OCR/VLM); reszta ma tekst wprost.
+_VISION_FORMATS = frozenset({"pdf", "pptx", "png", "jpg", "webp", "tiff", "bmp"})
+
+
+def may_use_vision(suffix: str) -> bool:
+    """Czy plik o tym rozszerzeniu może potrzebować modelu wizji; nieznane rozszerzenie: tak."""
+    key = EXTENSION_ALIASES.get(suffix.lower().lstrip("."))
+    return key is None or key in _VISION_FORMATS
+
+
 def detect_format(  # noqa: PLR0911, PLR0912 — kolejność kroków narzucona kontraktem C9
     path: Path, declared_ext: str
 ) -> str:

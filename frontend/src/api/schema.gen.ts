@@ -2401,7 +2401,7 @@ export interface paths {
         post: operations["runpod_deploy"];
         /**
          * Czyści historię: usuwa z listy zakończone wdrożenia (terminated, failed)
-         * @description Aktywnych wdrożeń nie rusza; tylko superuser.
+         * @description Aktywnych nie rusza; ``local``: tylko GPU serwera albo tylko RunPod; tylko superuser.
          */
         delete: operations["runpod_clear_history"];
         options?: never;
@@ -2447,6 +2447,66 @@ export interface paths {
          * @description Dla poda w trakcie wdrażania dopisuje dokumenty; dla gotowego startuje parsowanie.
          */
         post: operations["runpod_queue_parse"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/gpu/local/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Modele, które można uruchomić na GPU tego serwera
+         * @description Lista modeli.
+         */
+        get: operations["gpu_local_models"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/gpu/local/gpus": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Karty GPU tego serwera z VRAM i stanem wolna/zajęta
+         * @description Brak lub awaria agenta to pole ``agent``, nie błąd HTTP.
+         */
+        get: operations["gpu_local_gpus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/wd/v1/gpu/local/deployments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Uruchamia model na GPU tego serwera
+         * @description Zleca start kontenera; po gotowości WD parsuje ``parse``.
+         */
+        post: operations["gpu_local_deploy"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4400,7 +4460,7 @@ export interface components {
             gpu: components["schemas"]["GpuRef"];
             /**
              * Cloud
-             * @description SECURE albo COMMUNITY
+             * @description SECURE, COMMUNITY albo LOCAL (GPU tego serwera)
              */
             cloud: string;
             /**
@@ -5080,6 +5140,10 @@ export interface components {
         /** Envelope[KeyStatus] */
         Envelope_KeyStatus_: {
             data: components["schemas"]["KeyStatus"];
+        };
+        /** Envelope[LocalGpuList] */
+        Envelope_LocalGpuList_: {
+            data: components["schemas"]["LocalGpuList"];
         };
         /** Envelope[Page[AuditEntry]] */
         Envelope_Page_AuditEntry__: {
@@ -6452,6 +6516,105 @@ export interface components {
             vram_gb: number;
         };
         /**
+         * LocalDeployBody
+         * @description Wdrożenie modelu na karcie serwera.
+         */
+        LocalDeployBody: {
+            /**
+             * Model
+             * @description Nazwa modelu z listy modeli
+             */
+            model: string;
+            /**
+             * Gpu Id
+             * @description UUID karty
+             */
+            gpu_id: string;
+            /**
+             * Parse
+             * @description Dokumenty do sparsowania, gdy model będzie gotowy
+             */
+            parse?: components["schemas"]["ParseRequest"][];
+        };
+        /**
+         * LocalGpuList
+         * @description Karty serwera dla wybranego modelu i stan agenta.
+         */
+        LocalGpuList: {
+            /**
+             * Agent
+             * @description Stan gpu-agent
+             * @enum {string}
+             */
+            agent: "ok" | "not_configured" | "unreachable";
+            /**
+             * Model
+             * @description Model, dla którego liczono wolne karty
+             */
+            model: string;
+            /**
+             * Min Vram Gb
+             * @description Minimalny wolny VRAM modelu
+             */
+            min_vram_gb: number;
+            /**
+             * Gpus
+             * @description Karty serwera
+             */
+            gpus: components["schemas"]["LocalGpuView"][];
+        };
+        /**
+         * LocalGpuView
+         * @description Karta GPU serwera WD.
+         */
+        LocalGpuView: {
+            /**
+             * Id
+             * @description UUID karty z nvidia-smi
+             */
+            id: string;
+            /**
+             * Index
+             * @description Numer karty
+             */
+            index: number;
+            /**
+             * Name
+             * @description Nazwa karty
+             */
+            name: string;
+            /**
+             * Vram Gb
+             * @description VRAM w GB
+             */
+            vram_gb: number;
+            /**
+             * Memory Total Mb
+             * @description Cała pamięć (MiB)
+             */
+            memory_total_mb: number;
+            /**
+             * Memory Free Mb
+             * @description Wolna pamięć (MiB)
+             */
+            memory_free_mb: number;
+            /**
+             * Memory Used Mb
+             * @description Zajęta pamięć (MiB)
+             */
+            memory_used_mb: number;
+            /**
+             * Utilization Pct
+             * @description Obciążenie w procentach
+             */
+            utilization_pct: number | null;
+            /**
+             * Free
+             * @description Czy wolnej pamięci wystarczy dla wybranego modelu
+             */
+            free: boolean;
+        };
+        /**
          * LoginChannel
          * @description Element listy kanałów logowania (07 §3.3).
          */
@@ -6890,6 +7053,11 @@ export interface components {
              */
             title?: string | null;
             /**
+             * Provider
+             * @description runpod albo local (GPU tego serwera)
+             */
+            provider?: string | null;
+            /**
              * State
              * @description off, provisioning, starting, loading, ready
              */
@@ -6906,6 +7074,11 @@ export interface components {
              * @description Minimalny VRAM modelu
              */
             min_vram_gb?: number | null;
+            /**
+             * Dataset Parser
+             * @description Parser z konfiguracji zbioru, gdy inny niż w dokumentach
+             */
+            dataset_parser?: string | null;
         };
         /**
          * PreflightBody
@@ -6990,6 +7163,8 @@ export interface components {
             region: string;
             /** Status */
             status: string;
+            /** Wd Gpu Provider */
+            wd_gpu_provider?: string | null;
         };
         /**
          * ProviderInstanceCreateRequest
@@ -16364,7 +16539,9 @@ export interface operations {
     };
     runpod_clear_history: {
         parameters: {
-            query?: never;
+            query?: {
+                local?: boolean | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -16563,6 +16740,153 @@ export interface operations {
             };
             /** @description Konflikt ze stanem zasobu */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    gpu_local_models: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Items_HostedModelView__"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    gpu_local_gpus: {
+        parameters: {
+            query: {
+                model: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_LocalGpuList_"];
+                };
+            };
+            /** @description Niepoprawne żądanie (walidacja ciała lub parametrów) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+        };
+    };
+    gpu_local_deploy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocalDeployBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Envelope_Deployment_"];
+                };
+            };
+            /** @description Niepoprawne żądanie (walidacja ciała lub parametrów) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak lub niepoprawne uwierzytelnienie */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Brak uprawnień administratora */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Konflikt ze stanem zasobu */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WdErrorResponse"];
+                };
+            };
+            /** @description Błąd usługi zewnętrznej (Microsoft Graph) */
+            502: {
                 headers: {
                     [name: string]: unknown;
                 };

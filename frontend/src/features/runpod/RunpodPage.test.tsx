@@ -185,7 +185,7 @@ describe('RunpodPage', () => {
     expect(screen.queryByTestId('runpod-clear-history')).not.toBeInTheDocument()
   })
 
-  it('pokazuje osobną kartę dla każdego modelu hostowanego', async () => {
+  it('pokazuje listę rozwijaną z modelami hostowanymi', async () => {
     const other = {
       name: 'other-vlm-runpod',
       title: 'Other VLM (RunPod)',
@@ -196,8 +196,11 @@ describe('RunpodPage', () => {
     server.use(...runpodHandlers(makeRunpodState({ models: [MODEL, other] })))
     await renderPage()
 
-    const cards = await screen.findAllByTestId('runpod-model-card')
-    expect(cards.map((c) => c.getAttribute('data-model'))).toEqual([MODEL.name, other.name])
-    expect(within(cards[1]!).getByText('Other VLM (RunPod)')).toBeInTheDocument()
+    const user = userEvent.setup()
+    const card = await screen.findByTestId('runpod-model-card')
+    expect(card).toHaveAttribute('data-model', MODEL.name)
+    await user.click(within(card).getByRole('combobox', { name: 'Model' }))
+    await user.click(await screen.findByRole('option', { name: 'Other VLM (RunPod)' }))
+    expect(screen.getByTestId('runpod-model-card')).toHaveAttribute('data-model', other.name)
   })
 })

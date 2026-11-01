@@ -17,6 +17,11 @@ export type GpuCatalog = components['schemas']['GpuCatalog']
 export type RunpodDeployment = components['schemas']['Deployment']
 export type RunpodPreflight = components['schemas']['Preflight']
 export type ParseTarget = components['schemas']['ParseRequest']
+export type LocalGpu = components['schemas']['LocalGpuView']
+export type LocalGpuList = components['schemas']['LocalGpuList']
+
+/** Wartość `cloud` wdrożeń na GPU serwera WD. */
+export const LOCAL_CLOUD = 'LOCAL'
 
 export type GpuFilters = {
   model: string
@@ -44,6 +49,8 @@ export const runpodKeys = {
   gpus: (filters: GpuFilters) => ['runpod', 'gpus', filters] as const,
   deployments: ['runpod', 'deployments'] as const,
   deployment: (id: string) => ['runpod', 'deployments', id] as const,
+  localModels: ['runpod', 'local', 'models'] as const,
+  localGpus: (model: string) => ['runpod', 'local', 'gpus', model] as const,
 }
 
 export function keyQueryOptions() {
@@ -176,7 +183,41 @@ export function useTerminate() {
 export function useClearHistory() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => wdCall<{ deleted: number }>(api.DELETE('/api/wd/v1/runpod/deployments')),
+    mutationFn: (local?: boolean) =>
+      wdCall<{ deleted: number }>(
+        api.DELETE('/api/wd/v1/runpod/deployments', { params: { query: { local } } }),
+      ),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: runpodKeys.deployments }),
+  })
+}
+
+export function localModelsQueryOptions() {
+  return queryOptions({
+    queryKey: runpodKeys.localModels,
+    queryFn: async () =>
+      (await wdCall<{ items: HostedModel[] }>(api.GET('/api/wd/v1/gpu/local/models'))).items,
+  })
+}
+
+/** Karty serwera; odświeżane, bo wolny VRAM zmienia się niezależnie od WD. */
+export function localGpusQueryOptions(model: string) {
+  return queryOptions({
+    queryKey: runpodKeys.localGpus(model),
+    queryFn: () =>
+      wdCall<LocalGpuList>(api.GET('/api/wd/v1/gpu/local/gpus', { params: { query: { model } } })),
+    refetchInterval: 5000,
+  })
+}
+
+export function useLocalDeploy() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: { model: string; gpuId: string; parse?: ParseTarget[] }) =>
+      wdCall<RunpodDeployment>(
+        api.POST('/api/wd/v1/gpu/local/deployments', {
+          body: { model: input.model, gpu_id: input.gpuId, parse: input.parse ?? [] },
+        }),
+      ),
     onSettled: () => queryClient.invalidateQueries({ queryKey: runpodKeys.deployments }),
   })
 }

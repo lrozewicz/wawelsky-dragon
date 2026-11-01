@@ -66,3 +66,5 @@ class ProviderInstance(ResponseModel):
     provider_id: str
     region: str
     status: str
+    # Rozszerzenie WD: `runpod`/`local`, gdy instancję prowadzi WD (Ustawienia → GPU), inaczej null.
+    wd_gpu_provider: str | None = None

@@ -26,6 +26,9 @@ x-backend-env: &backend-env
   WD_CORS_ORIGINS: ${WD_CORS_ORIGINS:-}
   WD_HUB_COMPAT_API_SECRET: ${WD_HUB_COMPAT_API_SECRET:-}
   WD_LOG_LEVEL: ${WD_LOG_LEVEL:-INFO}
+  # Modele na GPU tego serwera (profil `gpu`); puste = zakładka „Ten serwer” pokazuje brak agenta.
+  WD_GPU_AGENT_URL: ${WD_GPU_AGENT_URL:-}
+  WD_GPU_AGENT_TOKEN: ${WD_GPU_AGENT_TOKEN:-}
   TZ: ${TZ:-Europe/Warsaw}
 
 # Rotacja logów po stronie Dockera (11 §7)
@@ -281,6 +284,40 @@ services:
       - /tmp
     restart: unless-stopped
     deploy: { resources: { limits: { memory: "${WD_MCP_MEM_LIMIT:-256m}" } } }
+    logging: *logging
+
+  # Agent GPU (profil `gpu`): lista kart i start modeli z HOSTED_MODELS na GPU serwera, sterowany z
+  # Ustawienia → GPU → Ten serwer. Jawny wyjątek od H11: docker.sock to w praktyce root na hoście,
+  # dlatego osobna usługa bez bazy, bez sekretów aplikacji, z wąskim API za tokenem i bez portu na
+  # hoście (tools/check_compose.py). WD_DOCKER_GID = gid grupy `docker` na hoście.
+  gpu-agent:
+    image: wawelsky/backend:${WD_VERSION:-latest}
+    build:
+      context: ./backend
+      target: runtime
+    command: ["python", "-m", "app.gpu_agent"]
+    profiles: ["gpu"]
+    runtime: nvidia
+    user: "10001:10001"
+    group_add: ["${WD_DOCKER_GID:-999}"]
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      WD_GPU_AGENT_TOKEN: ${WD_GPU_AGENT_TOKEN:-}
+      WD_GPU_AGENT_NETWORK: ${WD_NET_NAME:-wd-net}
+      WD_GPU_HF_VOLUME: ${WD_GPU_HF_VOLUME:-wd-gpu-hf-cache}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:9390/health',timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
+    deploy: { resources: { limits: { memory: 256m } } }
     logging: *logging
 
 volumes:

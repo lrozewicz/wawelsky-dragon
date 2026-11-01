@@ -1,5 +1,5 @@
 /**
- * Sekcja „Wdrożenia” w Ustawieniach → RunPod: lista podów z datą, kosztem i trybem wygasania,
+ * Sekcja „Wdrożenia” w Ustawieniach → GPU (osobno RunPod i ten serwer): lista z datą, kosztem i trybem wygasania,
  * ręczne wyłączenie działającego poda oraz czyszczenie historii (zakończone wdrożenia).
  */
 
@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next'
 import { resolveLanguage } from '../../i18n'
 import { formatDateTime } from '../../lib/format'
 
-import { deploymentsQueryOptions, useClearHistory, useTerminate } from './api'
+import { LOCAL_CLOUD, deploymentsQueryOptions, useClearHistory, useTerminate } from './api'
 import type { RunpodDeployment } from './api'
 
 const STATUS_COLOR: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
@@ -34,14 +34,18 @@ const STATUS_COLOR: Record<string, 'default' | 'success' | 'warning' | 'error' |
   terminating: 'default',
 }
 
-export function DeploymentsCard(props: { isSuperuser: boolean }): JSX.Element {
-  const { isSuperuser } = props
+export function DeploymentsCard(props: {
+  isSuperuser: boolean
+  scope: 'runpod' | 'local'
+}): JSX.Element {
+  const { isSuperuser, scope } = props
+  const local = scope === 'local'
   const { t, i18n } = useTranslation()
   const language = resolveLanguage(i18n.language)
   const deployments = useQuery(deploymentsQueryOptions())
   const terminate = useTerminate()
   const clearHistory = useClearHistory()
-  const rows = deployments.data ?? []
+  const rows = (deployments.data ?? []).filter((row) => (row.cloud === LOCAL_CLOUD) === local)
   const hasEnded = rows.some((row: RunpodDeployment) => !row.active)
 
   return (
@@ -57,7 +61,7 @@ export function DeploymentsCard(props: { isSuperuser: boolean }): JSX.Element {
                     size="small"
                     aria-label={t('runpod.deployments.clearHistory')}
                     disabled={!hasEnded || clearHistory.isPending}
-                    onClick={() => clearHistory.mutate()}
+                    onClick={() => clearHistory.mutate(local)}
                     data-testid="runpod-clear-history"
                   >
                     <DeleteSweepIcon fontSize="small" />
@@ -76,7 +80,9 @@ export function DeploymentsCard(props: { isSuperuser: boolean }): JSX.Element {
                   <TableCell>{t('runpod.deployments.model')}</TableCell>
                   <TableCell>{t('runpod.deployments.gpu')}</TableCell>
                   <TableCell>{t('runpod.deployments.status')}</TableCell>
-                  <TableCell align="right">{t('runpod.deployments.cost')}</TableCell>
+                  {local ? null : (
+                    <TableCell align="right">{t('runpod.deployments.cost')}</TableCell>
+                  )}
                   <TableCell />
                 </TableRow>
               </TableHead>
@@ -119,9 +125,11 @@ export function DeploymentsCard(props: { isSuperuser: boolean }): JSX.Element {
                         </Typography>
                       ) : null}
                     </TableCell>
-                    <TableCell align="right">
-                      {t('runpod.units.usd', { value: row.cost_so_far.toFixed(2) })}
-                    </TableCell>
+                    {local ? null : (
+                      <TableCell align="right">
+                        {t('runpod.units.usd', { value: row.cost_so_far.toFixed(2) })}
+                      </TableCell>
+                    )}
                     <TableCell align="right">
                       {row.active && isSuperuser ? (
                         <Button

@@ -57,7 +57,7 @@ def healthy(monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
             return 200
         return None if state["code"] is None else int(state["code"])
 
-    monkeypatch.setattr(lifecycle, "_health_status", fake_health)
+    monkeypatch.setattr(lifecycle, "health_status", fake_health)
     return state
 
 
@@ -108,7 +108,7 @@ async def test_deploy_walks_through_states_and_registers_the_model(
     dataset = await seed_dataset(
         sm, parser_config={"layout_recognize": MODEL, "pages": [[1, 100]], "delimiter": "\n"}
     )
-    doc = make_document_row(dataset)
+    doc = make_document_row(dataset, name="skan.pdf")
     async with transaction(sm) as session:
         await documents_repo.insert(session, doc)
 
@@ -145,6 +145,58 @@ async def test_deploy_walks_through_states_and_registers_the_model(
     assert pre["needs_pod"] is False and pre["state"] == "ready"
 
 
+@pytest.mark.parametrize(("name", "needs_pod"), [("dane.xlsx", False), ("skan.pdf", True)])
+async def test_preflight_asks_for_the_pod_only_when_the_file_can_use_vision(
+    container: Container, admin: Principal, fake: FakeRunpod, name: str, needs_pod: bool
+) -> None:
+    service = await _with_key(container, admin)
+    sm = container.sessionmaker
+    assert sm is not None
+    dataset = await seed_dataset(sm, parser_config={"layout_recognize": MODEL})
+    doc = make_document_row(dataset, name=name)
+    async with transaction(sm) as session:
+        await documents_repo.insert(session, doc)
+    assert (await service.preflight(admin, dataset.id, [doc.id]))["needs_pod"] is needs_pod
+
+
+async def test_preflight_in_a_mixed_selection_follows_the_file_that_uses_vision(
+    container: Container, admin: Principal, fake: FakeRunpod
+) -> None:
+    service = await _with_key(container, admin)
+    sm = container.sessionmaker
+    assert sm is not None
+    dataset = await seed_dataset(sm, parser_config={"layout_recognize": MODEL})
+    docs = [make_document_row(dataset, name=n) for n in ("dane.xlsx", "skan.pdf")]
+    async with transaction(sm) as session:
+        for doc in docs:
+            await documents_repo.insert(session, doc)
+    pre = await service.preflight(admin, dataset.id, [d.id for d in docs])
+    assert pre["needs_pod"] is True and pre["model"] == MODEL
+
+
+async def test_preflight_points_at_the_dataset_parser_when_the_document_kept_an_old_one(
+    container: Container, admin: Principal, fake: FakeRunpod
+) -> None:
+    service = await _with_key(container, admin)
+    sm = container.sessionmaker
+    assert sm is not None
+    dataset = await seed_dataset(sm, parser_config={"layout_recognize": MODEL})
+    doc = make_document_row(dataset, name="skan.pdf")
+    async with transaction(sm) as session:
+        await documents_repo.insert(session, doc)
+    assert (await service.preflight(admin, dataset.id, [doc.id]))["dataset_parser"] is None
+    async with transaction(sm) as session:
+        await session.execute(
+            text(
+                "UPDATE datasets SET parser_config = JSON_SET(parser_config,"
+                " '$.layout_recognize', 'xiaomi-ocr-0-localhost') WHERE id = :i"
+            ),
+            {"i": dataset.id},
+        )
+    pre = await service.preflight(admin, dataset.id, [doc.id])
+    assert pre["model"] == MODEL and pre["dataset_parser"] == "xiaomi-ocr-0-localhost"
+
+
 async def test_pod_is_deleted_only_after_the_work_is_done(
     container: Container, admin: Principal, fake: FakeRunpod, healthy: dict[str, Any]
 ) -> None:
@@ -152,7 +204,7 @@ async def test_pod_is_deleted_only_after_the_work_is_done(
     sm = container.sessionmaker
     assert sm is not None
     dataset = await seed_dataset(sm, parser_config={"layout_recognize": MODEL, "delimiter": "\n"})
-    doc = make_document_row(dataset)
+    doc = make_document_row(dataset, name="skan.pdf")
     async with transaction(sm) as session:
         await documents_repo.insert(session, doc)
     view = await service.deploy(
@@ -251,7 +303,7 @@ async def test_preflight_ignores_other_parsers(container: Container, admin: Prin
     sm = container.sessionmaker
     assert sm is not None
     dataset = await seed_dataset(sm)
-    doc = make_document_row(dataset)
+    doc = make_document_row(dataset, name="skan.pdf")
     async with transaction(sm) as session:
         await documents_repo.insert(session, doc)
     assert await service.preflight(admin, dataset.id, [doc.id]) == {"needs_pod": False}

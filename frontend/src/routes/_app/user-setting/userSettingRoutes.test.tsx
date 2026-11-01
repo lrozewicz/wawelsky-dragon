@@ -72,6 +72,14 @@ describe('trasy sekcji Ustawień', () => {
     expect(router.routesByPath['/user-setting/model']).toBeDefined()
     expect(router.routesByPath['/user-setting/profile']).toBeDefined()
     expect(router.routesByPath['/user-setting/api']).toBeDefined()
+    expect(router.routesByPath['/user-setting/gpu/runpod']).toBeDefined()
+    expect(router.routesByPath['/user-setting/gpu/local']).toBeDefined()
+  })
+
+  it('dawny adres RunPod przekierowuje do Ustawienia → GPU', async () => {
+    const { router } = await renderUserSetting('/user-setting/runpod')
+
+    expect(router.state.location.pathname).toBe('/user-setting/gpu/runpod')
   })
 
   it('z /user-setting przekierowuje na /user-setting/model', async () => {

@@ -50,6 +50,7 @@ def _instance_entry(view: InstanceView, column: str) -> dict[str, object]:
         "provider_id": provider_id(column),
         "region": INSTANCE_REGION,
         "status": INSTANCE_STATUS,
+        "wd_gpu_provider": view.gpu_provider,
     }
 
 

@@ -8,7 +8,7 @@ parsowania, które go używają (po krótkiej zwłoce), po błędzie albo po prz
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 import httpx
 
@@ -17,7 +17,7 @@ from app.db.repositories import runpod_pods as pods_repo
 from app.db.repositories.runpod_pods import PodRow
 from app.db.uow import transaction
 from app.services.runpod.client import RunpodAuthError, RunpodClient, RunpodError
-from app.services.runpod.hosted import HostedModel, get_model, proxy_url
+from app.services.runpod.hosted import LOCAL_CLOUD, HostedModel, get_model, proxy_url
 from app.services.runpod.keystore import client_for
 from app.services.runpod.registry import ensure_registered
 
@@ -45,6 +45,12 @@ _RUNPOD_TO_STATUS = {"PROVISIONING": "provisioning", "STARTING": "starting", "RU
 _GONE = {"EXITED", "ERROR", "TERMINATED"}
 
 
+class PodDeleter(Protocol):
+    """Kasowanie poda albo kontenera; błąd zgłaszany jako ``RunpodError``."""
+
+    async def delete_pod(self, pod_id: str) -> None: ...
+
+
 def pod_token(container: Container, row: PodRow) -> str | None:
     """Klucz vLLM poda (odszyfrowany)."""
     if row.api_token_enc is None:
@@ -53,14 +59,14 @@ def pod_token(container: Container, row: PodRow) -> str | None:
     return decrypt(key, row.api_token_enc, f"runpod-pod:{row.id}".encode()).decode()
 
 
-async def _update(container: Container, row: PodRow, **fields: Any) -> None:
+async def update_row(container: Container, row: PodRow, **fields: Any) -> None:
     assert container.sessionmaker is not None  # noqa: S101
     async with transaction(container.sessionmaker) as session:
         await pods_repo.update_fields(session, row.id, now_ms=container.clock.now_ms(), **fields)
 
 
-async def _terminate(
-    container: Container, client: RunpodClient, row: PodRow, *, status: str, error: str | None
+async def terminate_row(
+    container: Container, client: PodDeleter, row: PodRow, *, status: str, error: str | None
 ) -> None:
     """Kasuje poda w RunPod (koniec kosztów) i zapisuje stan końcowy."""
     if row.pod_id:
@@ -68,12 +74,12 @@ async def _terminate(
             await client.delete_pod(row.pod_id)
         except RunpodError as exc:
             logger.warning("runpod delete failed", extra={"pod": row.pod_id, "error": exc.message})
-            await _update(container, row, status="terminating", error=error)
+            await update_row(container, row, status="terminating", error=error)
             return
-    await _update(container, row, status=status, error=error, end_time=container.clock.now_ms())
+    await update_row(container, row, status=status, error=error, end_time=container.clock.now_ms())
 
 
-async def _health_status(base_url: str) -> int | None:
+async def health_status(base_url: str) -> int | None:
     """Kod HTTP ``GET /health`` vLLM przez proxy RunPod (bez klucza); ``None`` = błąd sieci.
 
     200 = silnik gotowy. 404 z proxy = port poda nie jest jeszcze zarejestrowany (kontener nie
@@ -95,7 +101,7 @@ def _container_started(pod: dict[str, Any], health: int | None) -> bool:
     return bool(pod.get("runtime")) or health != HTTP_NOT_FOUND
 
 
-async def _become_ready(container: Container, row: PodRow, model: HostedModel) -> None:
+async def become_ready(container: Container, row: PodRow, model: HostedModel) -> None:
     """Model odpowiada: rejestr WD dostaje adres i klucz, czekające dokumenty idą do parsowania."""
     base_url = row.base_url or ""
     await ensure_registered(
@@ -106,7 +112,9 @@ async def _become_ready(container: Container, row: PodRow, model: HostedModel) -
         created_by=row.created_by,
     )
     now = container.clock.now_ms()
-    await _update(container, row, status="ready", ready_time=now, busy_time=now, pending_parse=[])
+    await update_row(
+        container, row, status="ready", ready_time=now, busy_time=now, pending_parse=[]
+    )
     await _start_pending_parse(container, row)
 
 
@@ -136,30 +144,32 @@ async def advance(  # noqa: PLR0911 — automat stanów: każdy stan końcowy to
     now = container.clock.now_ms()
     age_s = (now - row.create_time) / 1000
     if row.status == "terminating":
-        await _terminate(container, client, row, status="terminated", error=row.error)
+        await terminate_row(container, client, row, status="terminated", error=row.error)
         return
     if (
         row.status == "requested"
     ):  # deploy jeszcze woła RunPod; po 2 min uznajemy zlecenie za zgubione
         if age_s > REQUEST_TIMEOUT_S:
-            await _update(container, row, status="failed", error="deployment request was lost")
+            await update_row(container, row, status="failed", error="deployment request was lost")
         return
     if model is None or row.pod_id is None:
         # Model zniknął z kodu, a pod w RunPod nadal kosztuje — kasujemy go (bez poda: tylko stan).
-        await _terminate(container, client, row, status="failed", error="unknown model or pod")
+        await terminate_row(container, client, row, status="failed", error="unknown model or pod")
         return
     if age_s > MAX_LIFETIME_S:
-        await _terminate(container, client, row, status="terminated", error="max lifetime reached")
+        await terminate_row(
+            container, client, row, status="terminated", error="max lifetime reached"
+        )
         return
     pod = await client.get_pod(row.pod_id)
     runpod_status = str(pod.get("status", "")) if pod else "TERMINATED"
     if runpod_status in _GONE:
         reason = f"pod ended unexpectedly ({runpod_status})"
-        await _terminate(container, client, row, status="failed", error=reason)
+        await terminate_row(container, client, row, status="failed", error=reason)
         return
     assert pod is not None  # noqa: S101 — TERMINATED obsłużone wyżej
     if row.status == "ready":
-        await _while_ready(container, client, row, model, now)
+        await while_ready(container, client, row, model, now)
         return
     new_status = _RUNPOD_TO_STATUS.get(runpod_status, row.status)
     cost = float(pod.get("cost", 0) or 0)
@@ -170,19 +180,19 @@ async def advance(  # noqa: PLR0911 — automat stanów: każdy stan końcowy to
         fields["data_center_id"] = pod["dataCenterId"]
     base_url = row.base_url or proxy_url(row.pod_id)
     fields["base_url"] = base_url
-    health = await _health_status(base_url) if new_status in {"starting", "loading"} else None
+    health = await health_status(base_url) if new_status in {"starting", "loading"} else None
     if new_status in {"starting", "loading"}:
         # RunPod potrafi zgłaszać RUNNING przed startem kontenera, a STARTING mimo działającego
         # kontenera — o etapie decyduje to, czy kontener faktycznie odpowiada.
         new_status = "loading" if _container_started(pod, health) else "starting"
     if (error := _timeout_error(new_status, age_s, model)) is not None:
-        await _terminate(container, client, row, status="failed", error=error)
+        await terminate_row(container, client, row, status="failed", error=error)
         return
     if new_status == "loading" and health == HTTP_OK:
-        await _update(container, row, **fields)
-        await _become_ready(container, _with(row, base_url=base_url), model)
+        await update_row(container, row, **fields)
+        await become_ready(container, _with(row, base_url=base_url), model)
         return
-    await _update(container, row, status=new_status, **fields)
+    await update_row(container, row, status=new_status, **fields)
 
 
 def _timeout_error(status: str, age_s: float, model: HostedModel) -> str | None:
@@ -206,8 +216,8 @@ def _with(row: PodRow, **changes: Any) -> PodRow:
     return replace(row, **changes)
 
 
-async def _while_ready(
-    container: Container, client: RunpodClient, row: PodRow, model: HostedModel, now: int
+async def while_ready(
+    container: Container, client: PodDeleter, row: PodRow, model: HostedModel, now: int
 ) -> None:
     """Pod gotowy: dopóki są zadania używające modelu, żyje; po zwłoce bezczynności — kasowanie.
 
@@ -220,18 +230,18 @@ async def _while_ready(
     async with transaction(container.sessionmaker) as session:
         pending = await pods_repo.count_pending_parse_tasks(session, model.name)
     if pending > 0:
-        await _update(container, row, busy_time=now)
+        await update_row(container, row, busy_time=now)
         return
     idle_s = (now - (row.busy_time or row.ready_time or row.create_time)) / 1000
     if idle_s >= IDLE_GRACE_S:
-        await _terminate(container, client, row, status="terminated", error=None)
+        await terminate_row(container, client, row, status="terminated", error=None)
 
 
 async def tick(container: Container) -> int:
-    """Przebieg dla wszystkich aktywnych wdrożeń (zwraca ich liczbę); błąd jednego nie blokuje."""
+    """Przebieg dla aktywnych wdrożeń RunPod (zwraca ich liczbę); błąd jednego nie blokuje."""
     assert container.sessionmaker is not None  # noqa: S101
     async with transaction(container.sessionmaker) as session:
-        rows = await pods_repo.list_active(session)
+        rows = [r for r in await pods_repo.list_active(session) if r.cloud != LOCAL_CLOUD]
     if not rows:
         return 0
     try:

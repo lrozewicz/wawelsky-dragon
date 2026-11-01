@@ -1,5 +1,5 @@
 /**
- * Postęp wdrożenia modelu na RunPod: etap (GPU → obraz → model → gotowe), koszt i błąd.
+ * Postęp wdrożenia modelu (RunPod albo ten serwer): etap (GPU → obraz → model → gotowe), koszt i błąd.
  * Dane z `useDeployment` (odpytywanie co kilka sekund, dopóki pod nie osiągnie stanu końcowego).
  */
 
@@ -10,6 +10,7 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
 
+import { LOCAL_CLOUD } from './api'
 import type { RunpodDeployment } from './api'
 
 /** Procent paska dla stanu poda (stany końcowe dają 100 albo 0). */
@@ -36,6 +37,7 @@ export function DeploymentProgress(props: DeploymentProgressProps): JSX.Element 
   const { t } = useTranslation()
   const failed = deployment.status === 'failed'
   const known = deployment.status in PROGRESS || failed
+  const local = deployment.cloud === LOCAL_CLOUD
 
   return (
     <Stack spacing={1.5} data-testid="runpod-progress">
@@ -52,18 +54,26 @@ export function DeploymentProgress(props: DeploymentProgressProps): JSX.Element 
         aria-label={t('runpod.progress.label')}
       />
       <Typography data-testid="runpod-progress-status">
-        {known ? t(`runpod.status.${deployment.status}`) : deployment.status}
+        {known
+          ? t(
+              local && deployment.status === 'starting'
+                ? 'runpod.local.starting'
+                : `runpod.status.${deployment.status}`,
+            )
+          : deployment.status}
       </Typography>
       {deployment.status === 'ready' && deployment.pending_documents > 0 ? (
         <Alert severity="info">{t('runpod.progress.parseStarted')}</Alert>
       ) : null}
       {failed && deployment.error ? <Alert severity="error">{deployment.error}</Alert> : null}
-      <Typography variant="body2" color="text.secondary">
-        {t('runpod.progress.cost', {
-          price: deployment.price_per_hr.toFixed(2),
-          cost: deployment.cost_so_far.toFixed(3),
-        })}
-      </Typography>
+      {local ? null : (
+        <Typography variant="body2" color="text.secondary">
+          {t('runpod.progress.cost', {
+            price: deployment.price_per_hr.toFixed(2),
+            cost: deployment.cost_so_far.toFixed(3),
+          })}
+        </Typography>
+      )}
     </Stack>
   )
 }

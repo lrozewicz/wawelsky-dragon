@@ -14,8 +14,10 @@ LIVE_MARKER = "# --- tylko tools/dev/live.sh ---"
 ENV_LINE_RE = re.compile(r"^(WD_[A-Z0-9_]+)=")
 VAR_LINE_RE = re.compile(r"^([A-Z0-9_]+)=")
 ASSIGNMENT_RE = re.compile(r"^[A-Z0-9_]+=")
-COMPOSE_VAR_COUNT = 14
+COMPOSE_VAR_COUNT = 16
 COMPOSE_VARS: tuple[str, ...] = (
+    "WD_DOCKER_GID",
+    "WD_GPU_HF_VOLUME",
     "WD_DB_ROOT_PASSWORD",
     "TZ",
     "PORT",
@@ -75,7 +77,7 @@ def test_main_section_covers_settings_fields() -> None:
     assert _env_names(main) == expected
 
 
-def test_compose_section_has_exactly_the_fourteen_vars() -> None:
+def test_compose_section_has_exactly_the_listed_vars() -> None:
     _, compose, _ = _sections()
     names = _var_names(compose)
     assert names == set(COMPOSE_VARS)

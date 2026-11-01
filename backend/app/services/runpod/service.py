@@ -14,7 +14,9 @@ from app.db.repositories import runpod_pods as pods_repo
 from app.db.repositories.runpod_pods import ACTIVE_STATUSES, PodRow
 from app.db.uow import transaction
 from app.domain.policy import Action, Principal
+from app.parsing.registry import may_use_vision
 from app.services.datasets import DatasetService
+from app.services.gpu_local.client import local_client
 from app.services.provider_common import require_superuser
 from app.services.runpod import catalog as gpu_catalog
 from app.services.runpod import keystore
@@ -25,8 +27,14 @@ from app.services.runpod.client import (
     RunpodError,
 )
 from app.services.runpod.deployer import GpuUnavailable, PodDeployer, gpu_view, unavailable
-from app.services.runpod.hosted import HOSTED_MODELS, HostedModel, get_model
-from app.services.runpod.lifecycle import IDLE_GRACE_S, PARSE_ORIGIN, start_parse
+from app.services.runpod.hosted import (
+    LOCAL_CLOUD,
+    PROVIDER_RUNPOD,
+    HostedModel,
+    get_model,
+    models_for,
+)
+from app.services.runpod.lifecycle import IDLE_GRACE_S, PARSE_ORIGIN, PodDeleter, start_parse
 from app.services.runpod.registry import ensure_registered
 
 if TYPE_CHECKING:
@@ -66,7 +74,7 @@ class RunpodService:
         await keystore.save_key(self._c, api_key)
         # Model od razu trafia do rejestru, żeby dało się go wybrać jako parser jeszcze przed
         # pierwszym wdrożeniem (pod włączy dopiero pytanie przy starcie parsowania).
-        for hosted in HOSTED_MODELS.values():
+        for hosted in models_for(PROVIDER_RUNPOD):
             await ensure_registered(
                 self._c, hosted, base_url=None, api_token=None, created_by=principal.user_id
             )
@@ -75,7 +83,7 @@ class RunpodService:
     async def remove_key(self, principal: Principal) -> None:
         """Usuwa klucz; przy działających podach odmowa (nie dałoby się ich skasować)."""
         require_superuser(principal)
-        if await self._active():
+        if any(row.cloud != LOCAL_CLOUD for row in await self._active()):
             raise Conflict("Terminate running RunPod pods before removing the API key")
         await keystore.delete_key(self._c)
 
@@ -91,7 +99,7 @@ class RunpodService:
                 "min_vram_gb": m.min_vram_gb,
                 "recommended_vram_gb": m.recommended_vram_gb,
             }
-            for m in HOSTED_MODELS.values()
+            for m in models_for(PROVIDER_RUNPOD)
         ]
 
     async def catalog(  # noqa: PLR0913 — filtry panelu
@@ -147,11 +155,15 @@ class RunpodService:
         self, principal: Principal, dataset_id: str, document_ids: list[str]
     ) -> dict[str, Any]:
         """Czy parsowanie tych dokumentów wymaga poda RunPod, który jest teraz wyłączony."""
-        await DatasetService(self._c).load(principal, dataset_id, Action.UPDATE)
+        dataset = await DatasetService(self._c).load(principal, dataset_id, Action.UPDATE)
         assert self._c.sessionmaker is not None  # noqa: S101
         async with transaction(self._c.sessionmaker) as session:
             docs = await documents_repo.get_many(session, document_ids)
-        names = {str(d.parser_config.get("layout_recognize", "")) for d in docs}
+        names = {
+            str(d.parser_config.get("layout_recognize", ""))
+            for d in docs
+            if may_use_vision(d.suffix)
+        }
         model = next((get_model(n) for n in sorted(names) if get_model(n)), None)
         if model is None:
             return {"needs_pod": False}
@@ -160,10 +172,14 @@ class RunpodService:
             recent = await pods_repo.list_recent(session, 20)
         ready = next((r for r in active if r.status == "ready"), None)
         last = next((r for r in recent if r.model_name == model.name), None)
+        # Dokument ma własną kopię parsera; po zmianie w zbiorze bywa inna (okno to proponuje).
+        dataset_parser = str(dataset.parser_config.get("layout_recognize") or "")
         return {
             "needs_pod": ready is None,
+            "dataset_parser": dataset_parser if dataset_parser not in {"", model.name} else None,
             "model": model.name,
             "title": model.title,
+            "provider": model.provider,
             "state": "ready" if ready else (active[0].status if active else "off"),
             "deployment_id": (ready or (active[0] if active else None)) and (ready or active[0]).id,
             "last_gpu": (
@@ -227,12 +243,12 @@ class RunpodService:
             rows = await pods_repo.list_recent(session, limit)
         return [self._view(r) for r in rows]
 
-    async def clear_history(self, principal: Principal) -> int:
+    async def clear_history(self, principal: Principal, *, local: bool | None = None) -> int:
         """Kasuje z listy wdrożenia zakończone (`terminated`, `failed`); zwraca ich liczbę."""
         require_superuser(principal)
         assert self._c.sessionmaker is not None  # noqa: S101
         async with transaction(self._c.sessionmaker) as session:
-            return await pods_repo.delete_ended(session)
+            return await pods_repo.delete_ended(session, local=local)
 
     async def queue_parse(
         self, principal: Principal, deployment_id: str, dataset_id: str, document_ids: list[str]
@@ -261,7 +277,7 @@ class RunpodService:
         return await self.get(deployment_id)
 
     async def terminate(self, principal: Principal, deployment_id: str) -> dict[str, Any]:
-        """Ręczne kasowanie poda (natychmiast; pozostałe zadania parsowania zakończą się błędem)."""
+        """Ręczne kasowanie poda albo kontenera (natychmiast; reszta zadań kończy się błędem)."""
         require_superuser(principal)
         assert self._c.sessionmaker is not None  # noqa: S101
         async with transaction(self._c.sessionmaker) as session:
@@ -271,7 +287,11 @@ class RunpodService:
         if row.status in _ENDED:
             return self._view(row)
         if row.pod_id:
-            client = await keystore.client_for(self._c, http=self._http)
+            client: PodDeleter = (
+                local_client(self._c)
+                if row.cloud == LOCAL_CLOUD
+                else await keystore.client_for(self._c, http=self._http)
+            )
             try:
                 await client.delete_pod(row.pod_id)
             except RunpodError as exc:
@@ -290,7 +310,7 @@ class RunpodService:
 
     def _hosted(self, name: str) -> HostedModel:
         hosted = get_model(name)
-        if hosted is None:
+        if hosted is None or hosted.provider != PROVIDER_RUNPOD:
             raise ValidationFailed(f"model cannot be hosted on RunPod: {name}")
         return hosted
 

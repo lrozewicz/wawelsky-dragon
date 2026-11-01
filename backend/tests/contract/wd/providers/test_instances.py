@@ -730,3 +730,30 @@ async def test_member_can_read(member: httpx.AsyncClient) -> None:
 
     assert response.status_code == OK
     assert response.json()["code"] == 0
+
+
+# --- instancje prowadzone przez WD (Ustawienia → GPU) --------------------------------
+
+
+@pytest.mark.parametrize("name", ["local-xiaomi-ocr-0-localhost", "runpod-xiaomi-ocr-0-runpod"])
+async def test_gpu_managed_instance_is_flagged_and_cannot_be_changed(
+    admin: httpx.AsyncClient, sm: async_sessionmaker[AsyncSession], name: str
+) -> None:
+    """Lista oznacza instancję; create, update (też zmiana nazwy) i delete → 102, bez zmian."""
+    assert (await admin.post(BASE, json=_create_body(name))).json()["code"] == DATA_ERROR
+    await _insert_instance(sm, instance_id_="a" * 32, name=name, now_ms=NOW)
+    await _create(admin, "gw1")
+
+    listed = {e["instance_name"]: e for e in (await admin.get(BASE)).json()["data"]}
+    assert listed[name]["wd_gpu_provider"] == name.split("-", maxsplit=1)[0]
+    assert listed["gw1"]["wd_gpu_provider"] is None
+
+    body = _create_body(name, "http://evil.local/v1")
+    assert (await admin.put(f"{BASE}/{name}", json=body)).json()["code"] == DATA_ERROR
+    renamed = _create_body(name)
+    assert (await admin.put(f"{BASE}/gw1", json=renamed)).json()["code"] == DATA_ERROR
+    deleted = await admin.request("DELETE", BASE, json={"instances": [name]})
+    assert deleted.json()["code"] == DATA_ERROR
+
+    detail = (await admin.get(f"{BASE}/{name}")).json()["data"]
+    assert detail["base_url"] != "http://evil.local/v1"
