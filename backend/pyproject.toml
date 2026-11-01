@@ -5,10 +5,10 @@ description = "Backend Wawelsky Dragon — lekki system RAG zgodny z API RAGFlow
 license = { text = "Apache-2.0" }
 requires-python = "==3.13.*"
 dependencies = [
-    "fastapi==0.161.0",
-    "starlette==1.9.0",
+    "fastapi==0.162.0",
+    "starlette==1.10.0",
     "pydantic==2.14.1",
-    "pydantic-settings==2.16.1",
+    "pydantic-settings==2.16.2",
     "uvicorn==0.54.0",
     "sqlalchemy[asyncio]==2.1.6",
     "asyncmy==0.2.17",
@@ -16,7 +16,7 @@ dependencies = [
     "alembic==1.20.1",
     "httpx==0.28.1",
     "xxhash==4.0.2",
-    "openai==3.37.0",
+    "openai==3.41.0",
     "httpx2==2.16.0",
     "tiktoken==0.14.0",
     "cryptography==50.0.2",
@@ -47,10 +47,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "ruff==0.17.2",
-    "mypy==2.4.0",
-    "pytest==9.1.1",
-    "pytest-asyncio==1.4.0",
+    "ruff==0.17.3",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "pytest-asyncio==1.4.1",
     "pytest-cov==7.1.0",
     "pytest-xdist==3.8.0",
     # Zawieszony test nie blokuje wyroczni (E5-H10 T1): limit 300 s, metoda wg DEC-329.
@@ -59,12 +59,12 @@ dev = [
     # Port testów upstream RAGFlow (E2-3a1): `hypothesis` (dekoratory `@given`),
     # `requests-toolbelt` (`MultipartEncoder` uploadu dokumentów), `reportlab` (PDF-y w
     # `utils/file_utils.py`). Instalowane też w obrazach dev, ale nie w runtime.
-    "hypothesis==6.170.7",
+    "hypothesis==6.170.13",
     "requests-toolbelt==1.0.0",
     "reportlab==5.1.0",
     # Port testów SDK (E2-3b): klient `ragflow_sdk` w wersji upstream v0.27.2.
     # Tylko do testów kontraktowych — nie trafia do obrazów runtime.
-    "ragflow-sdk==0.27.2",
+    "ragflow-sdk==0.27.3",
     "pip-audit==2.10.1",
 ]
 
