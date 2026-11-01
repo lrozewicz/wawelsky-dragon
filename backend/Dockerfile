@@ -5,7 +5,7 @@
 # test-ocr (dev + tesseract/wvHtml/catppt + tests — tylko krok binaries w verify-full.sh, poza image-size),
 # test (dev + tests: lint, typy i testy jednostkowe — kontrakt wspólnego CI, github.com/lrozewicz/.github).
 
-FROM python:3.13-slim AS base
+FROM python:3.15-slim AS base
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.18 /uv /usr/local/bin/uv
 
