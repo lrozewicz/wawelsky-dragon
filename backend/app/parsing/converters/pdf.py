@@ -15,6 +15,7 @@ from pathlib import Path
 import pdfplumber
 import pypdfium2
 import pypdfium2.raw as pdfium_raw
+from PIL import Image
 
 from app.parsing.converters.common import finish, png_bytes
 from app.parsing.converters.pdf_layout import (
@@ -171,6 +172,15 @@ def pdf_plan(path: Path, opts: ConvertOptions) -> PdfPlan:
         pdf.close()
 
 
+BLANK_MIN_LEVEL = 245  # najciemniejszy piksel jaśniejszy niż to = pusta strona
+
+
+def _blank(image: Image.Image) -> bool:
+    """Strona bez żadnego śladu treści (jednolicie biała lub prawie biała)."""
+    darkest = image.convert("L").getextrema()[0]
+    return isinstance(darkest, (int, float)) and darkest >= BLANK_MIN_LEVEL
+
+
 def _render_pending(
     path: Path, routed: Sequence[_RoutedPage], opts: ConvertOptions
 ) -> tuple[PendingPage, ...]:
@@ -190,6 +200,11 @@ def _render_pending(
                 image = pdfium_page.render(scale=dpi / 72).to_pil()
             finally:
                 pdfium_page.close()
+            if _blank(image):
+                # Pusta strona nie idzie do modelu: gpt-4.1-mini potrafi „odczytać” z niej
+                # wymyślony tekst, a cache wizji podaje go potem każdej pustej stronie
+                # tego rozmiaru.
+                continue
             # Warstwa trafia do korekty tylko, gdy przeszła bramkę routera (DEC-248 P1);
             # dla strategii vision _pending_reason zwraca "strategy=vision", więc
             # bramkę liczymy wprost przez route_reason.

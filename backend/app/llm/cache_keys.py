@@ -54,6 +54,7 @@ def vision_cache_key(  # noqa: PLR0913 — sygnatura z kontraktu E5-H8e §C3
     payload = json.dumps(
         {
             "kind": "vision",
+            "layout": "image-first",  # wpisy z promptem przed obrazem są niepełne (OCR)
             "model": model,
             "base_url": base_url,
             "image_sha256": image_sha256,

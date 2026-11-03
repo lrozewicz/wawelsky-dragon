@@ -61,14 +61,18 @@ def _stream_event(kind: str, text: str) -> StreamEvent:
 
 
 def _vision_messages(prompt: str, image_png: bytes) -> list[ChatMessage]:
-    """Wiadomość czatu z obrazem jako ``data:`` URL (C8)."""
+    """Wiadomość czatu z obrazem jako ``data:`` URL (C8).
+
+    Obraz przed promptem: Xiaomi-OCR-0 z promptem na początku pomija górę strony (rocznik GUS,
+    15 stron: 17-25% brakujących liczb wobec 4,7%).
+    """
     encoded = base64.b64encode(image_png).decode("ascii")
     return [
         {
             "role": "user",
             "content": [
-                {"type": "text", "text": prompt},
                 {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}},
+                {"type": "text", "text": prompt},
             ],
         }
     ]
@@ -228,7 +232,9 @@ class OpenAIGateway:
 
     async def _embed_one(self, model: ModelRef, text: str) -> list[float]:
         """Pojedynczy wektor — embed jednego tekstu (C8)."""
-        return (await self.embed(model, [text]))[0]
+        # Modele asymetryczne (np. PolDense): prefiks tylko dla zapytań, z ``models.extra``.
+        prefix = str(model.extra.get("query_prefix") or "")
+        return (await self.embed(model, [prefix + text]))[0]
 
     async def rerank(self, model: ModelRef, query: str, documents: Sequence[str]) -> list[float]:
         if not documents:

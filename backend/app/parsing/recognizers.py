@@ -22,6 +22,7 @@ from app.parsing.cancel_watch import run_with_cancel_watch
 from app.parsing.diacritics_stage import DiacriticsCorrector
 from app.parsing.errors import binary_missing, empty_document
 from app.parsing.html import paragraphs_html, sanitize_html, section_html, text_chars
+from app.parsing.ocr_coverage import COVERAGE_NUMBERS_MIN, coverage, number_atoms
 from app.parsing.otsl import otsl_to_html
 from app.parsing.types import ConvertedDocument, PendingPage
 from app.parsing.vision_profile import vision_profile
@@ -47,6 +48,8 @@ OTSL_PROMPT: str = (
 
 # Renderer Markdown→HTML OTSL; HTML bloków <table> przechodzi (commonmark: html=True).
 _OTSL_MD = MarkdownIt("commonmark").enable("table")
+# "2) tekst" jako lista traci numer (w HTML zostaje <li>), a to treść: ustępy, odwołania, punkty.
+_ORDERED_MARKER = re.compile(r"^( {0,3}\d{1,9})([.)])(?=\s)", re.MULTILINE)
 
 
 # Porażka próby: RuntimeError obejmuje pytesseract.TesseractError, OSError — NotFoundError.
@@ -148,7 +151,15 @@ class VlmRecognizer:
         )
         markdown, warns = otsl_to_html(extract_body(raw))
         self.warnings.extend(f"page {page}: {w}" for w in warns)
-        return str(_OTSL_MD.render(markdown))
+        return str(_OTSL_MD.render(_ORDERED_MARKER.sub(r"\1\\\2", markdown)))
+
+
+def coverage_warning(fragment: str, layer: str, page: int) -> list[str]:
+    """Ostrzeżenie, gdy OCR zgubił treść obecną w warstwie tekstowej tej strony PDF."""
+    numbers = coverage(number_atoms(fragment), number_atoms(layer))
+    if numbers is not None and numbers < COVERAGE_NUMBERS_MIN:
+        return [f"page {page}: OCR kept {numbers:.0%} of numbers from the text layer"]
+    return []
 
 
 async def _attempt(
@@ -194,6 +205,10 @@ async def _recognize_page(
                             fragment, layer_text=pending.text_layer, page=pending.page
                         )
                         warnings.extend(correction)
+                    if rec is vision and pending.text_layer:
+                        warnings.extend(
+                            coverage_warning(fragment, pending.text_layer, pending.page)
+                        )
                     return pending, fragment, rec, warnings
             warnings.append(f"page {pending.page}: {rec.name} failed ({failure})")
     return pending, None, None, warnings

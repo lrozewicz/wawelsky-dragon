@@ -23,13 +23,16 @@ def _bc_html(path: tuple[str, ...]) -> str:
 
 
 def row_text(header: Sequence[str], row: Sequence[str]) -> str:
-    """Pary "nazwa: wartość" dla kolumn z niepustą wartością, złączone "; " (C7)."""
+    """Pary "nazwa: wartość", a bez nazwy kolumny sama wartość; złączone "; " (C7).
+
+    Zastępcze ``column_N`` nic nie znaczy, a pogarsza embedding i myli modele przy odczycie.
+    """
     pairs: list[str] = []
     for i, value in enumerate(row):
         if not value.strip():
             continue
-        name = header[i] if i < len(header) and header[i].strip() else f"column_{i + 1}"
-        pairs.append(f"{name}: {value}")
+        named = i < len(header) and header[i].strip()
+        pairs.append(f"{header[i]}: {value}" if named else value)
     return "; ".join(pairs)
 
 
