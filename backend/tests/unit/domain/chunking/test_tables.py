@@ -87,8 +87,8 @@ def test_row_text_skips_empty_values():
     assert row_text(("A", "B"), ("", "x")) == "B: x"
 
 
-def test_row_text_fallback_column_names():
-    assert row_text((), ("a", "b")) == "column_1: a; column_2: b"
+def test_row_text_unnamed_columns_have_bare_values():
+    assert row_text((), ("a", "b")) == "a; b"
 
 
 def test_table_text_pairs_mode():

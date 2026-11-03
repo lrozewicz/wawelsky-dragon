@@ -21,6 +21,9 @@ from tests.unit.parsing.factories import PdfPage, PdfText, body_text, make_pdf
 FIXTURES = Path(__file__).resolve().parents[2] / "fixtures" / "parsing"
 
 
+SCAN = (0.0, 0.0, 595.0, 842.0)  # obraz na całą stronę: skan bez warstwy tekstu
+
+
 def _write(tmp_path: Path, pages: Sequence[PdfPage], *, title: str | None = None) -> Path:
     path = tmp_path / "doc.pdf"
     path.write_bytes(make_pdf(pages, title=title))
@@ -118,7 +121,8 @@ def test_strategy_vision_all_pages_pending(tmp_path: Path) -> None:
 
 
 def test_strategy_fast_empty_page_pending_ocr(tmp_path: Path) -> None:
-    path = _write(tmp_path, [PdfPage()])
+    # „Pusta” = bez warstwy tekstu; szary obraz, bo całkiem białe strony nie idą do OCR.
+    path = _write(tmp_path, [PdfPage(image=SCAN)])
     doc = convert_pdf(path, ConvertOptions(pdf_strategy="fast", ocr_available=True))
     (pending,) = doc.pending_pages
     assert (pending.mode, pending.reason) == ("ocr", "empty page")
@@ -219,7 +223,7 @@ def test_pending_page_carries_text_layer_for_good_page(tmp_path: Path) -> None:
 
 
 def test_pending_page_text_layer_empty_for_scan(tmp_path: Path) -> None:
-    path = _write(tmp_path, [PdfPage()])
+    path = _write(tmp_path, [PdfPage(image=SCAN)])
     doc = convert_pdf(path, ConvertOptions(ocr_available=True))
     (pending,) = doc.pending_pages
     assert pending.text_layer == ""

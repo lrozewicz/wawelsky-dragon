@@ -4,6 +4,7 @@ import asyncio
 import json
 import math
 from collections.abc import Callable
+from dataclasses import replace
 from typing import Any
 
 import httpx2
@@ -301,6 +302,27 @@ async def test_embed_query_returns_first_vector() -> None:
     await gateway.aclose()
 
 
+async def test_embed_query_adds_query_prefix_from_model_extra() -> None:
+    captured: dict[str, Any] = {}
+
+    def handler(request: httpx2.Request) -> httpx2.Response:
+        captured.update(json.loads(request.content))
+        return httpx2.Response(
+            200,
+            json={
+                "object": "list",
+                "data": [{"object": "embedding", "index": 0, "embedding": [0.1]}],
+                "model": "m",
+            },
+        )
+
+    gateway = make_gateway(handler)
+    model = replace(chat_model(), extra={"query_prefix": "[query]: "})
+    await gateway.embed_query(model, "tekst")
+    assert captured["input"] == ["[query]: tekst"]
+    await gateway.aclose()
+
+
 async def test_rerank_maps_scores_auth_and_url() -> None:
     captured: dict[str, Any] = {}
 
@@ -370,7 +392,7 @@ async def test_vision_sends_data_url() -> None:
     text = await gateway.vision(chat_model(), "opisz", b"\x89PNG")
     assert text == "opis"
     content = captured["body"]["messages"][0]["content"]
-    assert content[1]["image_url"]["url"] == "data:image/png;base64,iVBORw=="
+    assert content[0]["image_url"]["url"] == "data:image/png;base64,iVBORw=="
     await gateway.aclose()
 
 

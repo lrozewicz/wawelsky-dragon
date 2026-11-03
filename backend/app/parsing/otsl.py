@@ -57,6 +57,8 @@ def otsl_to_html(text: str) -> tuple[str, list[str]]:
         out.append(text[pos:start])
         out.append(_render_table(rows))
         pos = end
+        if text[end:].strip() and not text[end:].startswith("\n\n"):
+            out.append("\n\n")  # blok HTML Markdowna kończy dopiero pusta linia
         if tail_truncated or parse_truncated:
             warnings.append(_TRUNCATED_WARNING)
     out.append(text[pos:])
@@ -68,7 +70,9 @@ def _group_matches(text: str, matches: list[re.Match[str]]) -> list[list[re.Matc
     groups: list[list[re.Match[str]]] = []
     current: list[re.Match[str]] = []
     for match in matches:
-        if current and "\n\n" in text[current[-1].end() : match.start()]:
+        between = text[current[-1].end() : match.start()] if current else ""
+        ended_row = bool(current) and current[-1].group(1) == "nl" and between.strip()
+        if current and ("\n\n" in between or ended_row):
             groups.append(current)
             current = []
         current.append(match)
@@ -81,6 +85,8 @@ def _segment_span(text: str, group: list[re.Match[str]]) -> tuple[int, int, bool
     """Zwraca ``(start, end, truncated)`` segmentu; ``truncated`` = niepusty ogon po tokenach."""
     start = group[0].start()
     last_end = group[-1].end()
+    if group[-1].group(1) == "nl":  # tekst po zamkniętym wierszu to już nie tabela (tytuł, uwaga)
+        return start, last_end, False
     boundary = text.find("\n\n", last_end)
     if boundary < 0:
         boundary = len(text)
