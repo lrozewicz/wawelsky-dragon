@@ -38,7 +38,7 @@ describe('buildHitsBody', () => {
       page: 2,
       page_size: 10,
       similarity_threshold: 0.2,
-      vector_similarity_weight: 0.3,
+      vector_similarity_weight: 1,
       highlight: true,
       top_k: 1024,
       knn_top_k: 1024,

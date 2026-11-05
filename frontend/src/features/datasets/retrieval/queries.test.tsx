@@ -69,7 +69,7 @@ describe('buildRetrievalBody', () => {
       page: 1,
       page_size: 10,
       similarity_threshold: 0.2,
-      vector_similarity_weight: 0.3,
+      vector_similarity_weight: 1,
       highlight: true,
       keyword: false,
     })

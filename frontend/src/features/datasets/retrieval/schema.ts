@@ -8,6 +8,7 @@ import { z } from 'zod'
 
 import { EMPTY_META_FILTER } from '../../metadata/types'
 import type { MetaFilter } from '../../metadata/types'
+import { DEFAULT_VECTOR_WEIGHT } from '../../../lib/retrievalDefaults'
 
 export type RetrievalSettings = {
   /** Próg podobieństwa 0–1. */
@@ -44,7 +45,7 @@ export const RETRIEVAL_LANGUAGES = [
 
 export const DEFAULT_SETTINGS: RetrievalSettings = {
   similarityThreshold: 0.2,
-  vectorWeight: 0.3,
+  vectorWeight: DEFAULT_VECTOR_WEIGHT,
   topN: 10,
   rerankId: '',
   crossLanguages: [],
