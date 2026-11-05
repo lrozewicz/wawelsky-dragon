@@ -13,6 +13,7 @@ import type { components } from '../../../api/schema.gen'
 import type { RawSearchConfig } from '../queries'
 
 import type { RetrievalResult } from '../../datasets/retrieval/queries'
+import { DEFAULT_VECTOR_WEIGHT } from '../../../lib/retrievalDefaults'
 
 export type { RetrievalResult }
 
@@ -63,7 +64,7 @@ export function buildHitsBody(p: SearchHitsParams): components['schemas']['Retri
     page: p.page,
     page_size: p.pageSize,
     similarity_threshold: numberOr(p.config.similarity_threshold, 0.2),
-    vector_similarity_weight: numberOr(p.config.vector_similarity_weight, 0.3),
+    vector_similarity_weight: numberOr(p.config.vector_similarity_weight, DEFAULT_VECTOR_WEIGHT),
     highlight: true,
     top_k: 1024,
     knn_top_k: 1024,

@@ -13,6 +13,7 @@ import { filterFromWire, filterToWire } from '../../metadata/convert'
 import { NO_VALUE_OPS } from '../../metadata/types'
 import type { MetaFilter } from '../../metadata/types'
 import type { Chat } from '../queries'
+import { DEFAULT_VECTOR_WEIGHT } from '../../../lib/retrievalDefaults'
 
 export const PRESET_PARAMETERS = ['improvise', 'precise', 'balance', 'custom'] as const
 export type PresetParameter = (typeof PRESET_PARAMETERS)[number]
@@ -122,7 +123,7 @@ export function chatToFormValues(chat: Chat): ChatSettingsValues {
       refine_multiturn: flag(rawPrompt.refine_multiturn, false),
     },
     similarity_threshold: numberOr(chat.similarity_threshold, 0.2),
-    vector_similarity_weight: numberOr(chat.vector_similarity_weight, 0.3),
+    vector_similarity_weight: numberOr(chat.vector_similarity_weight, DEFAULT_VECTOR_WEIGHT),
     top_n: numberOr(chat.top_n, 8),
     rerank_id: chat.rerank_id,
     llm_id: chat.llm_id,

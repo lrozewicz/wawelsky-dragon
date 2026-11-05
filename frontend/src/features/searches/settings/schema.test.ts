@@ -47,7 +47,7 @@ describe('toFormValues', () => {
       preset: 'precise',
       relatedSearch: false,
       similarityThreshold: 0.2,
-      vectorSimilarityWeight: 0.3,
+      vectorSimilarityWeight: 1,
       useRerank: false,
       rerankId: '',
     })

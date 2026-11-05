@@ -59,6 +59,7 @@ logger = logging.getLogger(__name__)
 # Kolumna datasets.permission jest ENUM('me','team') — tak czyta ją repozytorium (M7).
 _Permission = Literal["me", "team"]
 _ERROR_MARKER = "**ERROR**"
+_VECTOR_ONLY_WEIGHT = 1.0  # waga, od której ranking zależy wyłącznie od wektorów
 
 
 @dataclass(frozen=True)
@@ -239,7 +240,14 @@ async def _collect(  # noqa: PLR0913 — kształt kroków 7-8 z kontraktu M6
             vec = await repo.vector_candidates(
                 session, ds0.embedding_dim, qv, scope, min(q.top_k, limit)
             )
-        ft = await repo.fulltext_candidates(session, qt.ft_raw, qt.ft_stem, scope, limit)
+        # Przy wadze wektorów 1.0 fuzja ignoruje term_similarity ((1 - w) * term), więc
+        # kandydaci FULLTEXT nie zmienią rankingu, a zapytanie MATCH po całej tabeli chunków
+        # kosztuje sekundy (8,6 s przy 705 tys. chunków) i pamięć MariaDB. Pomijamy je.
+        ft = (
+            []
+            if qv is not None and q.vector_similarity_weight >= _VECTOR_ONLY_WEIGHT
+            else await repo.fulltext_candidates(session, qt.ft_raw, qt.ft_stem, scope, limit)
+        )
         ids = _union(vec, ft)
         have = {chunk_id for chunk_id, _ in vec}
         missing = [chunk_id for chunk_id in ids if chunk_id not in have]

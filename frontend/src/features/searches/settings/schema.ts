@@ -14,6 +14,7 @@ import { filterFromWire, filterToWire } from '../../metadata/convert'
 import type { MetaFilter } from '../../metadata/types'
 
 import type { RawSearchConfig, SearchApp } from '../queries'
+import { DEFAULT_VECTOR_WEIGHT } from '../../../lib/retrievalDefaults'
 
 export type SummaryPreset = 'precise' | 'balance' | 'improvise'
 
@@ -99,7 +100,7 @@ export function toFormValues(app: SearchApp): SearchSettingsValues {
     description: text(app.description),
     kbIds: stringList(config.kb_ids),
     similarityThreshold: numberOr(config.similarity_threshold, 0.2),
-    vectorSimilarityWeight: numberOr(config.vector_similarity_weight, 0.3),
+    vectorSimilarityWeight: numberOr(config.vector_similarity_weight, DEFAULT_VECTOR_WEIGHT),
     // Model rerank jest wybrany wtedy, gdy `rerank_id` jest niepuste.
     useRerank: rerankId !== '',
     rerankId,
