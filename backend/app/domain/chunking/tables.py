@@ -54,7 +54,7 @@ def table_caption(before: Sequence[Block]) -> str:
     ``_CAPTION_TAIL`` linii (tłumaczenie tytułu, podtytuł).
     """
     for block in reversed(before[-_CAPTION_LOOKBACK:]):
-        if block.kind == "table":
+        if block.kind in ("table", "heading"):  # tytuł sprzed nagłówka należy do innej sekcji
             return ""
         if block.kind != "paragraph":
             continue

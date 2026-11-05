@@ -509,3 +509,18 @@ def test_note_rows_are_not_sections():
         f"OBJAŚNIENIA:: {note}",
         "OBJAŚNIENIA:: Zagranica; Dotyczy pracujących spoza Polski.",
     ]
+
+
+def test_caption_not_taken_across_heading():
+    heading = Block(
+        kind="heading",
+        text="Szczegóły",
+        html="<h2>Szczegóły</h2>",
+        level=2,
+        heading_path=("Szczegóły",),
+        positions=(),
+        section=None,
+        table=None,
+    )
+    before = [_para("Tabela 5. Wyniki"), heading]
+    assert table_lead(heading, before) == ""
