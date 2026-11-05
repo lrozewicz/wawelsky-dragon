@@ -136,6 +136,7 @@ describe('useCreateChat', () => {
         empty_response: 'Nie znaleziono pasujących treści w bazie wiedzy.',
       },
       vector_similarity_weight: 1,
+      top_n: 10,
     })
     expect(created).toMatchObject({ id: 'chat-2', name: 'Nowy' })
     expect(client.getQueryState(chatKeys.list())?.isInvalidated).toBe(true)
@@ -199,6 +200,7 @@ describe('useCreateChat', () => {
       description: 'd',
       prompt_config: { prologue: 'p', empty_response: 'e' },
       vector_similarity_weight: 1,
+      top_n: 10,
     })
   })
 
