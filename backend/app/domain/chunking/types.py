@@ -16,6 +16,7 @@ class TableData:
     rows: tuple[tuple[str, ...], ...]
     header_html: str
     rows_html: tuple[str, ...]
+    title: str = ""  # wiersze tytułu/opisu nad nagłówkiem wewnątrz tabeli (CSV, arkusz)
 
 
 @dataclass(frozen=True)

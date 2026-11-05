@@ -103,11 +103,16 @@ def _piece_htmls(block: Block, pieces: list[str], single: bool) -> list[str]:
 def _table_context(blocks: Sequence[Block]) -> tuple[dict[int, str], frozenset[str]]:
     """Tytuł/zdanie wprowadzające każdej tabeli i etykiety sekcji ze wszystkich tabel dokumentu."""
     heads = section_heads([b.table for b in blocks if b.kind == "table" and b.table is not None])
-    leads = {
-        i: table_lead(blocks[i - 1], blocks[:i])
-        for i, b in enumerate(blocks)
-        if b.kind == "table" and i
-    }
+    leads: dict[int, str] = {}
+    for i, b in enumerate(blocks):
+        if b.kind != "table":
+            continue
+        lead = table_lead(blocks[i - 1], blocks[:i]) if i else ""
+        title = b.table.title if b.table is not None else ""
+        if title and title not in lead:  # tytuł z wierszy nad nagłówkiem (CSV: adres, nazwa)
+            lead = f"{title}\n{lead}" if lead else title
+        if lead:
+            leads[i] = lead
     return leads, heads
 
 
