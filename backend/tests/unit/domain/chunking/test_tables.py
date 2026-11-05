@@ -5,7 +5,14 @@ from html import escape
 
 from app.domain.chunking.general import chunk_general
 from app.domain.chunking.presets import preset_for
-from app.domain.chunking.tables import chunk_table, row_text, table_text
+from app.domain.chunking.tables import (
+    chunk_table,
+    row_text,
+    section_heads,
+    table_lead,
+    table_lines,
+    table_text,
+)
 from app.domain.chunking.types import Block, ChunkConfig, TableData
 from app.llm.tokens import count_tokens
 from app.parsing.blocks import html_to_blocks
@@ -220,3 +227,285 @@ def test_chunk_t17_pairs():
     assert "2022 / w tym kobiety of which women / w % in %: 11,3" in d.text
     assert "2020 / ogólem total / w % in %: 10,8" not in d.text
     assert 'colspan="2"' in d.html
+
+
+# ---------------------------------------------------------------- zdanie wprowadzające (jednostka)
+
+
+def _para_block(text: str) -> Block:
+    return Block(
+        kind="paragraph",
+        text=text,
+        html=f"<p>{escape(text)}</p>",
+        level=None,
+        heading_path=(),
+        positions=(),
+        section=None,
+        table=None,
+    )
+
+
+def test_table_lead_unit_sentence_and_colon():
+    unit = "The following table shows net sales by segment (dollars in millions):"
+    assert table_lead(_para_block(unit)) == unit
+    assert table_lead(_para_block("Przychody ogółem w mln zł")) == "Przychody ogółem w mln zł"
+    assert table_lead(_para_block("Zwykłe zdanie bez jednostki.")) == ""
+    assert table_lead(None) == ""
+
+
+def test_table_lead_last_sentence_of_long_paragraph():
+    body = "Długi opis wyników. " * 30 + "Tabela pokazuje sprzedaż (w tys. zł):"
+    assert table_lead(_para_block(body)) == "Tabela pokazuje sprzedaż (w tys. zł):"
+
+
+def test_lead_in_every_table_chunk_after_split():
+    """Tabela dzielona po wierszach: każdy chunk niesie jednostkę z akapitu nad tabelą."""
+    lead = "Sprzedaż według regionów (w mln zł):"
+    rows = "".join(
+        f"<tr><td>Region {i}</td><td>{i * 1000}</td></tr>" for i in range(WIDE_ROW_COUNT)
+    )
+    head = "<thead><tr><th>Region</th><th>Kwota</th></tr></thead>"
+    html = f"<p>{lead}</p><table>{head}<tbody>{rows}</tbody></table>"
+    drafts = chunk_general(html_to_blocks(html), preset_for("naive"), _cfg_limit(LIMIT_128))
+    tables = [d for d in drafts if d.chunk_type == "table"]
+    assert len(tables) >= MIN_CHUNKS_WIDE
+    assert all(d.text.startswith(lead + "\n") for d in tables)
+    assert all('<p class="table-lead">' in d.html for d in tables)
+
+
+def test_no_lead_without_unit_or_colon():
+    html = f"<p>{_TEXT_A}</p><table><tr><td>a</td></tr><tr><td>1</td></tr></table>"
+    drafts = chunk_general(html_to_blocks(html), preset_for("naive"), _cfg_limit(LIMIT_128))
+    table = next(d for d in drafts if d.chunk_type == "table")
+    assert "table-lead" not in table.html
+
+
+def _cfg_limit(limit: int) -> ChunkConfig:
+    return ChunkConfig(count_tokens=count_tokens, chunk_token_num=limit)
+
+
+# --- Tabele roczników GUS: tytuł, tabele „podwójne”, wiersze-tłumaczenia ---
+
+
+def _table(header: tuple[str, ...], rows: tuple[tuple[str, ...], ...]) -> TableData:
+    return TableData(
+        header=header,
+        rows=rows,
+        header_html="<thead></thead>",
+        rows_html=tuple("<tr></tr>" for _ in rows),
+    )
+
+
+def test_table_lead_finds_caption_in_paragraphs_before_table():
+    before = [
+        _para("Schools for children and youth"),
+        _para("TABL. 13 (227). SZKOŁY PODSTAWOWE DLA DZIECI I MŁODZIEŻY"),
+        _para("PRIMARY SCHOOLS FOR CHILDREN AND YOUTH"),
+    ]
+    caption = "TABL. 13 (227). SZKOŁY PODSTAWOWE DLA DZIECI I MŁODZIEŻY"
+    assert table_lead(before[-1], before) == caption
+
+
+def test_table_lead_caption_at_end_of_footnote_block():
+    block = _para(
+        "a Dane dotyczą poprzedniego roku szkolnego.\nŹródło: dane MEN.\n"
+        "TABL. 14 (228). BRANŻOWE SZKOŁY I STOPNIA\nSTAGE I SECTORAL VOCATIONAL SCHOOLS"
+    )
+    assert table_lead(block, [block]) == "TABL. 14 (228). BRANŻOWE SZKOŁY I STOPNIA"
+
+
+def test_table_lead_ignores_caption_far_above():
+    block = _para("Tabela 2. Wyniki\n" + "\n".join(f"Linia {i} tekstu." for i in range(5)))
+    assert table_lead(block, [block]) == ""
+
+
+def test_table_lead_caption_and_unit_joined():
+    before = [_para("Tabela 4. Przychody"), _para("Dane w mln zł:")]
+    assert table_lead(before[-1], before) == "Tabela 4. Przychody\nDane w mln zł:"
+
+
+def test_caption_not_taken_across_previous_table():
+    t = _table(("A", "B"), (("x", "1"),))
+    before = [_para("Tabela 1. Stara"), _table_block(t)]
+    assert table_lead(None, before) == ""
+
+
+def test_double_width_table_split_into_records():
+    header = ("MIASTA", "2020", "2021 / ogółem", "MIASTA (cd.)", "2020", "2021 / ogółem")
+    rows = (("Poznań", "547777", "545073", "Luboń", "33042", "32922"),)
+    assert table_text(_table(header, rows), html4excel=False) == (
+        "MIASTA: Poznań; 2020: 547777; 2021 / ogółem: 545073\n"
+        "MIASTA: Luboń; 2020: 33042; 2021 / ogółem: 32922"
+    )
+
+
+def test_double_width_table_skips_empty_half():
+    header = ("Kraj", "Wartość", "Kraj", "Wartość")
+    rows = (("Austria", "46,2", "", ""),)
+    assert table_text(_table(header, rows), html4excel=False) == "Kraj: Austria; Wartość: 46,2"
+
+
+def test_bilingual_translation_rows_dropped():
+    header = ("WYSZCZEGÓLNIENIE", "2023/24")
+    rows = (
+        ("Uczniowie w tys.", "3007,4"),
+        ("Pupils in thousands", ""),
+        ("w tym kobiety", "1451,6"),
+        ("of which females", ""),
+    )
+    assert table_text(_table(header, rows), html4excel=False) == (
+        "WYSZCZEGÓLNIENIE: Uczniowie w tys.; 2023/24: 3007,4\n"
+        "WYSZCZEGÓLNIENIE: w tym kobiety; 2023/24: 1451,6"
+    )
+
+
+def test_section_rows_prefix_following_records():
+    header = ("Pozycja", "Wartość")
+    rows = (
+        ("Szkoly podstawowe", ""),
+        ("Uczniowie", "10"),
+        ("Nauczyciele", "2"),
+        ("Oddzialy", "3"),
+        ("Licea", ""),
+        ("Uczniowie", "5"),
+    )
+    assert table_text(_table(header, rows), html4excel=False) == (
+        "Pozycja: Szkoly podstawowe / Uczniowie; Wartość: 10\n"
+        "Pozycja: Szkoly podstawowe / Nauczyciele; Wartość: 2\n"
+        "Pozycja: Szkoly podstawowe / Oddzialy; Wartość: 3\n"
+        "Pozycja: Licea / Uczniowie; Wartość: 5"
+    )
+
+
+def test_bilingual_section_label_and_lp_column():
+    header = ("Lp.", "Województwa", "1990")
+    rows = (
+        ("", "MIASTA", ""),
+        ("", "URBAN AREAS", ""),
+        ("1", "Warmińsko-mazurskie", "66,1"),
+        ("", "WIEŚ", ""),
+        ("", "RURAL AREAS", ""),
+        ("2", "Warmińsko-mazurskie", "64,5"),
+    )
+    assert table_text(_table(header, rows), html4excel=False) == (
+        "Lp.: 1; Województwa: MIASTA URBAN AREAS / Warmińsko-mazurskie; 1990: 66,1\n"
+        "Lp.: 2; Województwa: WIEŚ RURAL AREAS / Warmińsko-mazurskie; 1990: 64,5"
+    )
+
+
+def test_section_split_across_chunks_keeps_label():
+    header = ("Region", "Wartość")
+    rows = (("WIEŚ", ""), *((f"Region{i}", str(i)) for i in range(WIDE_ROW_COUNT)))
+    t = TableData(
+        header=header,
+        rows=rows,
+        header_html="<thead></thead>",
+        rows_html=tuple("<tr></tr>" for _ in rows),
+    )
+    drafts = chunk_table(_table_block(t), _cfg(chunk_token_num=LIMIT_128))
+    assert len(drafts) >= MIN_CHUNKS_WIDE
+    assert all("WIEŚ / Region" in d.text for d in drafts)
+
+
+def test_trailing_label_rows_kept_as_text():
+    header = ("Pozycja", "Wartość")
+    rows = (("Uczniowie", "10"), ("Uwaga: dane wstępne", ""))
+    assert table_text(_table(header, rows), html4excel=False) == (
+        "Pozycja: Uczniowie; Wartość: 10\nPozycja: Uwaga: dane wstępne"
+    )
+
+
+def test_label_row_with_polish_chars_kept_even_if_alternating():
+    header = ("Pozycja", "Wartość")
+    rows = (("Uczniowie", "10"), ("Szkoły specjalne", ""), ("Nauczyciele", "2"), ("w tym:", ""))
+    text = table_text(_table(header, rows), html4excel=False)
+    assert "Szkoły specjalne / Nauczyciele" in text
+    assert "w tym:" in text
+
+
+def test_english_table_alternating_labels_not_dropped():
+    header = ("Item", "2024")
+    rows = (("Products", "100"), ("Services", ""), ("Revenue", "5"), ("Other items", ""))
+    text = table_text(_table(header, rows), html4excel=False)
+    assert "Services / Revenue" in text
+    assert "Other items" in text
+
+
+def test_repeated_label_blocks_get_aggregate_row_as_header():
+    regions = ("Dolnośląskie", "Lubelskie", "Mazowieckie")
+    rows = (
+        ("POLSKA POLAND", "66,2"),
+        *((r, "1") for r in regions),
+        ("Miasta Urban areas", "66,4"),
+        *((r, "2") for r in regions),
+        ("Wieś Rural areas", "66,0"),
+        *((r, "3") for r in regions),
+    )
+    lines = table_text(_table(("Województwa", "1990"), rows), html4excel=False).splitlines()
+    assert lines[0] == "Województwa: POLSKA POLAND; 1990: 66,2"
+    assert lines[1] == "Województwa: POLSKA POLAND / Dolnośląskie; 1990: 1"
+    assert lines[5] == "Województwa: Miasta Urban areas / Dolnośląskie; 1990: 2"
+    assert lines[9] == "Województwa: Wieś Rural areas / Dolnośląskie; 1990: 3"
+    assert lines[11] == "Województwa: Wieś Rural areas / Mazowieckie; 1990: 3"
+
+
+def test_short_repeats_do_not_make_blocks():
+    rows = (
+        ("Uczniowie", "10"),
+        ("w tym kobiety", "5"),
+        ("Absolwenci", "3"),
+        ("w tym kobiety", "1"),
+    )
+    text = table_text(_table(("Pozycja", "2024"), rows), html4excel=False)
+    assert " / " not in text
+
+
+def test_data_row_matching_section_label_opens_new_section():
+    header = ("Gminy", "2021", "Gminy", "2021")
+    rows = (
+        ("Mazowieckie (dok.)", "", "Podkarpackie (cd.)", ""),
+        ("Wyszków", "10", "Jasło", "20"),
+        ("Podkarpackie", "500", "Krosno", "30"),
+        ("Dębica", "40", "", ""),
+    )
+    lines = table_text(_table(header, rows), html4excel=False).splitlines()
+    assert lines == [
+        "Gminy: Mazowieckie (dok.) / Wyszków; 2021: 10",
+        "Gminy: Podkarpackie (cd.) / Jasło; 2021: 20",
+        "Gminy: Podkarpackie; 2021: 500",
+        "Gminy: Podkarpackie (cd.) / Krosno; 2021: 30",
+        "Gminy: Podkarpackie / Dębica; 2021: 40",
+    ]
+
+
+def test_section_not_duplicated_when_label_repeats_it():
+    header = ("Płeć", "2021")
+    rows = (("Kobiety", ""), ("Kobiety ogółem", "5"), ("w wieku 0-14", "1"))
+    lines = table_text(_table(header, rows), html4excel=False).splitlines()
+    assert lines == ["Płeć: Kobiety ogółem; 2021: 5", "Płeć: Kobiety / w wieku 0-14; 2021: 1"]
+
+
+def test_section_heads_from_other_tables_close_section():
+    header = ("Miasta", "2021")
+    page1 = _table(
+        header, (("Opolskie (dok.)", ""), ("Nysa", "1"), ("Podkarpackie", "9"), ("Rzeszów", "2"))
+    )
+    page2 = _table(header, (("Podkarpackie (cd.)", ""), ("Krosno", "3")))
+    lines = table_lines(page1, section_heads([page1, page2]))
+    assert lines == [
+        [],
+        ["Miasta: Opolskie (dok.) / Nysa; 2021: 1"],
+        ["Miasta: Podkarpackie; 2021: 9"],
+        ["Miasta: Podkarpackie / Rzeszów; 2021: 2"],
+    ]
+
+
+def test_note_rows_are_not_sections():
+    header = ("OBJAŚNIENIA:", "")
+    note = "Dane dla sekcji S obejmują również pracujących w sekcjach T oraz U."
+    rows = ((note, ""), ("Zagranica", "Dotyczy pracujących spoza Polski."))
+    lines = table_text(_table(header, rows), html4excel=False).splitlines()
+    assert lines == [
+        f"OBJAŚNIENIA:: {note}",
+        "OBJAŚNIENIA:: Zagranica; Dotyczy pracujących spoza Polski.",
+    ]

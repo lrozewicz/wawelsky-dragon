@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from app.domain.chunking.delimiter import parse_delimiter_field, split_paragraphs
 from app.domain.chunking.limits import split_to_limit
-from app.domain.chunking.tables import chunk_table
+from app.domain.chunking.tables import chunk_table, section_heads, table_lead
 from app.domain.chunking.types import (
     Block,
     BlockKind,
@@ -100,6 +100,17 @@ def _piece_htmls(block: Block, pieces: list[str], single: bool) -> list[str]:
     return [_piece_html(piece, block.kind) for piece in pieces]
 
 
+def _table_context(blocks: Sequence[Block]) -> tuple[dict[int, str], frozenset[str]]:
+    """Tytuł/zdanie wprowadzające każdej tabeli i etykiety sekcji ze wszystkich tabel dokumentu."""
+    heads = section_heads([b.table for b in blocks if b.kind == "table" and b.table is not None])
+    leads = {
+        i: table_lead(blocks[i - 1], blocks[:i])
+        for i, b in enumerate(blocks)
+        if b.kind == "table" and i
+    }
+    return leads, heads
+
+
 def chunk_general(
     blocks: Sequence[Block], preset: ChunkPreset, cfg: ChunkConfig
 ) -> list[ChunkDraft]:
@@ -152,7 +163,8 @@ def chunk_general(
             for piece, piece_html in zip(pieces, htmls, strict=True):
                 add_piece(piece, piece_html, block.kind, block.positions, path)
 
-    for block in blocks:
+    leads, heads = _table_context(blocks)
+    for index, block in enumerate(blocks):
         if block.kind == "heading":
             if block.level in preset.split_on_headings:
                 close()  # granica; nagłówek nie jest treścią
@@ -160,7 +172,7 @@ def chunk_general(
                 add_piece(block.text, block.html, "paragraph", block.positions, block.heading_path)
         elif block.kind == "table":
             close()
-            drafts.extend(chunk_table(block, cfg))
+            drafts.extend(chunk_table(block, cfg, lead=leads.get(index, ""), heads=heads))
         else:
             if block.kind == "paragraph" and any(b.match(block.text) for b in boundaries):
                 close()
