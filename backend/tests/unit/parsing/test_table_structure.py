@@ -224,3 +224,18 @@ def test_consecutive_years_are_not_an_ordinal_column() -> None:
     shape = analyze(grid)
     assert shape is not None
     assert shape.rows[3][:2] == ("Zasiłek stały", "2018")
+
+
+def test_numbers_in_label_column_are_not_names() -> None:
+    """Wiek „0” albo wartość w kolumnie opisu nie staje się etykietą ani rodzicem."""
+    grid = [
+        ["STACJA", "OKRES", "Średnia", "Minimum"],
+        ["Opole", "2020", "9,6", "-20,1"],
+        ["-27,1", "2021", "9,5", "-27,1"],
+        ["Wrocław", "2020", "10,1", "-18,0"],
+        ["Wrocław", "2021", "9,9", "-19,5"],
+    ]
+    shape = analyze(grid)
+    assert shape is not None
+    assert shape.rows[1][0] == "-27,1"  # bez „Opole / -27,1”
+    assert shape.rows[0][0] == "Opole"

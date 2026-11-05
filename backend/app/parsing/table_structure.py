@@ -342,7 +342,7 @@ def _period_groups(rows: list[list[str]], stub: Sequence[int]) -> None:
         names: list[str] = []
         for i in group:
             name = _text(rows[i][label_col])
-            if name and name not in names:
+            if _ALPHA.search(name) and name not in names:  # liczba w opisie to nie nazwa
                 names.append(name)
         if len(names) > 1:
             for i in group:
@@ -399,7 +399,7 @@ def _nest(rows: list[list[str]], col: int, levels: Sequence[int]) -> bool:
       do ostatniej niepowtarzanej etykiety tego poziomu („W wieku produkcyjnym / Miasta / kobiety”).
     Wiersz-sekcja (opis bez danych) zaczyna wszystko od nowa. Zwraca, czy coś zmienił.
     """
-    data = [i for i, r in enumerate(rows) if any(_datum(c) for c in r) and _text(r[col])]
+    data = [i for i, r in enumerate(rows) if any(_datum(c) for c in r) and _ALPHA.search(r[col])]
     # liczą się osobne wystąpienia: ta sama etykieta w kolejnych wierszach (rozpisana na lata)
     # to jeden opis, nie powtórzenie
     repeated = Counter(
@@ -421,7 +421,7 @@ def _nest(rows: list[list[str]], col: int, levels: Sequence[int]) -> bool:
             previous_data = False
             continue
         previous_data = True
-        if not label:
+        if not _ALPHA.search(label):  # wiek „0”, wartość w kolumnie opisu — nie etykieta
             continue
         level = levels[i]
         stack = [(lvl, path) for lvl, path in stack if lvl < level]
