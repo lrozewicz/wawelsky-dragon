@@ -10,7 +10,7 @@ import type { QueryClient } from '@tanstack/react-query'
 import { api, apiCall } from '../../api/client'
 import { unwrapList } from '../../api/lists'
 import type { components } from '../../api/schema.gen'
-import { DEFAULT_VECTOR_WEIGHT } from '../../lib/retrievalDefaults'
+import { DEFAULT_TOP_N, DEFAULT_VECTOR_WEIGHT } from '../../lib/retrievalDefaults'
 
 export type Chat = components['schemas']['Chat']
 export type ChatListItem = components['schemas']['ChatListItem']
@@ -73,6 +73,8 @@ export function useCreateChat() {
             prompt_config: { prologue, empty_response: emptyResponse },
             // Waga wektorów WD (domyślna API zgodnego z RAGFlow to 0.3; patrz retrievalDefaults).
             vector_similarity_weight: DEFAULT_VECTOR_WEIGHT,
+            // Liczba fragmentów kontekstu WD (domyślna API zgodnego z RAGFlow to 6).
+            top_n: DEFAULT_TOP_N,
             // `dataset_ids` tylko gdy wybrano bazy (CONTRACT WP V13-2 §4) — brak klucza = czat bez bazy.
             ...(datasetIds !== undefined && datasetIds.length > 0
               ? { dataset_ids: datasetIds }

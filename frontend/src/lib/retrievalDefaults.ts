@@ -7,3 +7,12 @@
  * API zgodne z RAGFlow zostaje przy 0.3 — wagę ustawia klient (tu: UI).
  */
 export const DEFAULT_VECTOR_WEIGHT = 1.0
+
+/**
+ * Domyślna liczba fragmentów kontekstu w czacie WD (UI): 10 zamiast 6 z RAGFlow.
+ *
+ * Pomiar 05.11.2026 na 293 pytaniach spoza treningu (trafność odpowiedzi): gpt-4.1-mini 231 → 246,
+ * Qwen3.5-9B 220 → 234 (p≤0,001), Bielik 212 → 221; top_n=4 dawał gorzej (201). Koszt: ok.
+ * +1000 tokenów wejścia, Bielik na GX10 +1,3 s mediany. API zgodne z RAGFlow zostaje przy 6.
+ */
+export const DEFAULT_TOP_N = 10
