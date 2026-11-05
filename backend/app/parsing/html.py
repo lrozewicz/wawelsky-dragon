@@ -69,6 +69,15 @@ DROP_WITH_CONTENT: frozenset[str] = frozenset(
 )
 
 _RENAMES = {"b": "strong", "i": "em", "tfoot": "tbody"}
+# Kontenery spoza whitelisty, które jako liście (sam tekst) stają się akapitem.
+_LEAF_TO_P = frozenset({"div", "article", "main", "center", "blockquote", "address", "dd", "dt"})
+_BLOCK_TAGS = frozenset(
+    {
+        *_LEAF_TO_P,
+        *("p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "table", "pre"),
+        *("figure", "section", "aside", "dl", "hr"),
+    }
+)
 _SAFE_HREF_PREFIXES = ("http://", "https://", "mailto:", "/", "#")
 _SECTION_ATTRS = {"page": "data-page", "slide": "data-slide", "sheet": "data-sheet"}
 _PARAGRAPH_SPLIT = re.compile(r"\n[ \t]*\n+")
@@ -110,6 +119,13 @@ def _in_root(el: object, root: lxml.html.HtmlElement) -> bool:
     return any(anc is root for anc in el.iterancestors())  # type: ignore[attr-defined]
 
 
+def _is_leaf_block(el: lxml.html.HtmlElement) -> bool:
+    """Kontener bez bloków w środku, z tekstem (strony SEC/CMS składają akapity z div)."""
+    if any(isinstance(d.tag, str) and d.tag in _BLOCK_TAGS for d in el.iterdescendants()):
+        return False
+    return bool("".join(el.itertext()).strip())
+
+
 def _href_ok(value: str) -> bool:
     v = value.strip().lower()
     return v.startswith(_SAFE_HREF_PREFIXES) or ":" not in v
@@ -138,6 +154,9 @@ def sanitize_html(html: str) -> str:
         if tag == "aside" and "data-notes" not in el.attrib:
             el.drop_tag()
             continue
+        if tag in _LEAF_TO_P and _is_leaf_block(el):
+            el.tag = "p"  # div z samym tekstem to akapit; rozpakowany skleiłby zdania sąsiadów
+            tag = "p"
         if tag not in ALLOWED_TAGS:
             el.drop_tag()
             continue
@@ -168,7 +187,8 @@ def _serialize_children(root: lxml.html.HtmlElement) -> str:
     """Skleja tekst początkowy z serializacją dzieci korzenia (bez tagu korzenia)."""
     parts = [root.text or ""]
     for child in root:
-        parts.append(lxml.html.tostring(child, encoding="unicode", method="html"))
+        # with_tail=False: tail dokładany niżej; domyślne True dublowało tekst za każdym przebiegiem
+        parts.append(lxml.html.tostring(child, encoding="unicode", method="html", with_tail=False))
         parts.append(child.tail or "")
     return "".join(parts)
 

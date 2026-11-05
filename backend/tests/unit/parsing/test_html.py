@@ -309,3 +309,25 @@ def test_promote_table_headers(source: str, expected: str) -> None:
 )
 def test_text_chars(source: str, expected: int) -> None:
     assert text_chars(source) == expected
+
+
+def test_sanitize_does_not_duplicate_top_level_tail():
+    """tostring(with_tail=True) + ręczny tail dublował tekst za elementem przy każdym przebiegu."""
+    once = sanitize_html("<div><span><br/></span></div><div><span>A</span></div>")
+    assert once.count("A") == 1
+    assert sanitize_html(once) == once
+    assert (
+        promote_table_headers("<p>x</p>tail<table><tr><td>1</td></tr></table>").count("tail") == 1
+    )
+
+
+def test_leaf_div_becomes_paragraph():
+    """Strony SEC/CMS: akapity w div; po rozpakowaniu zdania sklejały się („PerformanceThe”)."""
+    out = sanitize_html(
+        "<div><div><span>Segment Operating Performance</span></div>"
+        "<div><span>The table shows net sales (in millions):</span></div>"
+        "<div><table><tr><td>1</td></tr></table></div></div>"
+    )
+    assert out.startswith("<p>Segment Operating Performance</p><p>The table shows net sales")
+    assert "<table>" in out
+    assert not sanitize_html("<div>   </div>").strip()
