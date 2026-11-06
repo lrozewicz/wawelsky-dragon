@@ -66,6 +66,7 @@ _ORDINAL_START = 2  # liczba porządkowa zaczyna się od 0, 1 albo 2
 _VALUE_COLUMN = 0.5  # udział liczb w niepustych komórkach kolumny danych
 _PERIOD_SHARE = 0.5
 _CASE_SHARE = 0.6
+_YEAR_BLOCKS = 3  # najwyżej co trzeci rok w wierszu nagłówka może zaczynać nowy blok
 _YEAR_COLUMN = 0.9  # tyle lat w kolumnie: to kolumna okresu, nie wartości
 _MIN_WIDE = 4  # od tylu kolumn ostatnia może być tłumaczeniem opisu (tabele GUS PL/EN)
 
@@ -115,7 +116,10 @@ def _ascending_years(cells: Sequence[str]) -> bool:
     keys = [_text(c)[:4] for c in cells]
     if len(set(keys)) * 2 <= len(keys):  # tabela „podwójna”: 2010 | 2020 | 2010 | 2020
         return True
-    return all(b >= a for a, b in itertools.pairwise(keys))
+    # rosnące bloki lat („2005 2009 2010 | 2005 2010” nad liczbami i wskaźnikami); wiersz danych
+    # o wartościach z zakresu lat (1886, 1839, 1804) spada częściej
+    drops = sum(b < a for a, b in itertools.pairwise(keys))
+    return drops * _YEAR_BLOCKS <= len(keys)
 
 
 def _int(cell: str) -> int | None:
@@ -161,7 +165,7 @@ def _first_data(grid: Sequence[Sequence[str]]) -> int | None:
     return None
 
 
-def _is_title(row: Sequence[str], full_width: bool) -> bool:
+def _is_title(row: Sequence[str], full_width: bool) -> bool:  # noqa: PLR0911
     """Wiersz tytułu/opisu nad nagłówkiem.
 
     ``full_width``: jedna komórka scalona przez całą szerokość tabeli.
@@ -177,12 +181,17 @@ def _is_title(row: Sequence[str], full_width: bool) -> bool:
         return False
     if len(filled) == 1:  # tytuł, tłumaczenie tytułu, „Stan w dniu…”, jednostka nad tabelą
         return full_width or first <= 1 or len(text) >= _TITLE_MIN or bool(_UNIT_ROW.match(text))
+    if len(filled) != 2 or first > 1:  # noqa: PLR2004
+        return False
+    second = filled[1][1]
+    if _STUB_HEAD.match(second):
+        return False
+    # „TABL. 9 /147/. | ZACHOROWANIA…”, „DZIAŁ XI | CHAPTER XI” (PL i EN obok siebie),
     # „KG PSP Warszawa ul. …” w 1. kolumnie i data wydruku w ostatniej
     return (
-        len(filled) == 2  # noqa: PLR2004
-        and first == 0
-        and len(text) >= _TITLE_MIN
-        and filled[1][0] >= len(row) - 2
+        bool(_CAPTION.match(text))
+        or (bool(_ALPHA.search(second)) and not _PL_CHARS.search(second) and first == 0)
+        or (len(text) >= _TITLE_MIN and filled[1][0] >= len(row) - 2)
     )
 
 
@@ -255,6 +264,26 @@ def _fill_groups(rows: list[list[str]], first_value: int) -> None:
             if parent is not None and parent[c] != parent[c - 1]:
                 continue
             row[c] = row[c - 1]
+    for level, row in enumerate(rows):
+        if level and _span_row(row, rows[level - 1], first_value):
+            for c in range(first_value + 1, len(row)):
+                if not _text(row[c]):
+                    row[c] = row[c - 1]
+
+
+def _span_row(row: Sequence[str], above: Sequence[str], first_value: int) -> bool:
+    """Wiersz grup POD pełnym wierszem (lata, potem „w liczbach bezwzględnych” / „na 100 tys.”).
+
+    Rzadkie komórki, każda otwiera blok pustych, a wiersz wyżej ma podpis w każdej kolumnie:
+    podpis obejmuje kolumny do następnego podpisu (scalenie zapisane w XLSX tylko w 1. komórce).
+    """
+    cells = list(row[first_value:])
+    marks = [i for i, c in enumerate(cells) if _text(c)]
+    if not marks or marks[0] != 0 or len(marks) * 2 > len(cells):
+        return False
+    if any(b - a < 2 for a, b in itertools.pairwise([*marks, len(cells)])):  # noqa: PLR2004
+        return False
+    return all(_text(c) for c in above[first_value:])
 
 
 def join_label(parts: Sequence[str]) -> str:

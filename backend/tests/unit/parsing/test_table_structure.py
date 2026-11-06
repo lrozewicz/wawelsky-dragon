@@ -239,3 +239,25 @@ def test_numbers_in_label_column_are_not_names() -> None:
     assert shape is not None
     assert shape.rows[1][0] == "-27,1"  # bez „Opole / -27,1”
     assert shape.rows[0][0] == "Opole"
+
+
+def test_side_by_side_titles_and_unit_groups_under_years() -> None:
+    grid = [
+        ["DZIAŁ XI", "", "", "", "", "CHAPTER XI", ""],
+        ["TABL. 9 /147/.", "ZACHOROWANIA NA NIEKTÓRE CHOROBY", "", "", "", "", ""],
+        ["", "CHOROBY", "2005", "2009", "2010", "2005", "2010"],
+        ["", "", "w liczbach bezwzględnych", "", "", "na 100 tys. ludności", ""],
+        ["", "Krztusiec", "77", "53", "8", "7,3", "0,8"],
+        ["", "Różyczka", "160", "389", "428", "15,2", "41,0"],
+    ]
+    shape = analyze(grid)
+    assert shape is not None
+    assert "CHAPTER XI" in " ".join(shape.title)
+    assert shape.labels == (
+        "CHOROBY",
+        "2005 / w liczbach bezwzględnych",
+        "2009 / w liczbach bezwzględnych",
+        "2010 / w liczbach bezwzględnych",
+        "2005 / na 100 tys. ludności",
+        "2010 / na 100 tys. ludności",
+    )
