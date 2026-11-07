@@ -290,6 +290,9 @@ async def test_logs_never_contain_token_or_signature(
     dest = tmp_path / "file.bin"
     # Poziom tylko dla naszego loggera: httpx na INFO sam loguje pełne URL-e (poza zakresem WP).
     caplog.set_level(logging.DEBUG, logger="app.integrations.sharepoint")
+    # Test wcześniej w tym samym procesie (test_main: konfiguracja logowania na INFO) włącza
+    # logi httpx z pełnym URL — wynik zależał od kolejności testów w workerach xdist.
+    caplog.set_level(logging.WARNING, logger="httpx")
     async with client.http:
         result = await client.download("b!d1", "i1", dest, GENEROUS_LIMIT)
 

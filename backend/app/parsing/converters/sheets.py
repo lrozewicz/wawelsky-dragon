@@ -18,12 +18,37 @@ from app.parsing.converters.pdf_layout import clean_cell, is_value, join_label
 from app.parsing.encoding import decode_bytes
 from app.parsing.errors import corrupted_file, encrypted_file, limit_exceeded
 from app.parsing.html import esc, section_html, table_html
+from app.parsing.table_structure import analyze
 from app.parsing.types import ConvertedDocument, ConvertOptions
 
 _DIAGNOSIS = "spreadsheet has no data"
 _HIDDEN_WARNING = "sheet '{name}' is hidden, skipped"
 _NAVIGATION = ("powrót do", "return to", "wróć do", "back to")
 _MIN_VALUES = 2  # tyle liczb w wierszu odróżnia dane od numeracji i opisów
+_INDENT_STEP = 100  # poziom wcięcia XLSX ważniejszy niż spacje (liczy się tylko porządek)
+
+
+def _leading_spaces(cells: Sequence[str]) -> int:
+    """Spacje przed opisem wiersza (pierwsza niepusta komórka): „   dzieci b” → 3."""
+    for cell in cells:
+        if cell.strip():
+            return len(cell) - len(cell.lstrip(" \u00a0"))
+    return 0
+
+
+def _xlsx_rows(sheet: Any, sink: list[int]) -> Iterator[list[object]]:
+    """Wartości wierszy arkusza XLSX; wcięcie pierwszej komórki z tekstem dopisywane do ``sink``."""
+    for row in sheet.iter_rows():
+        values: list[object] = []
+        indent = None
+        for cell in row:
+            value = getattr(cell, "value", None)
+            values.append(value)
+            if indent is None and isinstance(value, str) and value.strip():
+                alignment = getattr(cell, "alignment", None)
+                indent = int(getattr(alignment, "indent", 0) or 0)
+        sink.append(indent or 0)
+        yield values
 
 
 class _SemicolonDialect(csv.excel):
@@ -40,10 +65,16 @@ class _SheetRows:
         self._opts = opts
         self.used = used  # wiersze policzone dotąd w całym dokumencie
         self.rows: list[list[str]] = []
+        self.levels: list[int] = []  # wcięcie opisu wiersza (hierarchia „Spokrewnione / dzieci”)
 
-    def feed(self, raw_rows: Iterable[Sequence[object]]) -> None:
-        """Dodaje wiersze; limit sprawdzany natychmiast po przekroczeniu."""
+    def feed(self, raw_rows: Iterable[Sequence[object]], indents: Iterable[int] = ()) -> None:
+        """Dodaje wiersze; limit sprawdzany natychmiast po przekroczeniu.
+
+        ``indents``: wcięcie (``alignment.indent`` XLSX) każdego wiersza ``raw_rows``, gdy znane.
+        """
+        given = iter(indents)
         for raw in raw_rows:
+            indent = next(given, 0)
             cells = [cell_str(value) for value in raw]
             if not any(cells):
                 continue  # pusty wiersz
@@ -51,6 +82,7 @@ class _SheetRows:
             if self.used > self._opts.max_sheet_rows:
                 raise limit_exceeded("sheet rows", self.used, self._opts.max_sheet_rows)
             self.rows.append(cells)
+            self.levels.append(indent * _INDENT_STEP + _leading_spaces(cells))
         self._trim_trailing_columns()
 
     def _trim_trailing_columns(self) -> None:
@@ -121,8 +153,23 @@ def _fill_labels(rows: Sequence[list[str]]) -> list[list[str]]:
     return out
 
 
-def sheet_html(rows: Sequence[list[str]]) -> str:
-    """Arkusz: tytuł jako nagłówek (trafia do każdego chunku), nagłówek spłaszczony, dane."""
+def sheet_html(rows: Sequence[list[str]], levels: Sequence[int] = ()) -> str:
+    """Arkusz: tytuł jako nagłówek (trafia do każdego chunku), nagłówek spłaszczony, dane.
+
+    Strukturę (tytuł, nagłówek wielopoziomowy, hierarchia wierszy z wcięć) wyznacza
+    ``table_structure.analyze``; arkusz bez wiersza danych z opisem idzie starą ścieżką.
+    """
+    cleaned = [[clean_cell(cell) for cell in row] for row in rows]
+    shape = analyze(cleaned, None, list(levels) or None)
+    if shape is None:
+        return _plain_sheet_html(rows)
+    title = " ".join(t for t in shape.title if not t.lower().startswith(_NAVIGATION))
+    heading = f"<h2>{esc(title)}</h2>" if title else ""
+    table = [list(shape.labels), *(list(row) for row in shape.rows)]
+    return heading + table_html(table, header_rows=1)
+
+
+def _plain_sheet_html(rows: Sequence[list[str]]) -> str:
     first = _first_data_row(rows)
     if first is None:
         return table_html(rows)
@@ -190,10 +237,11 @@ def convert_xlsx(path: Path, opts: ConvertOptions) -> ConvertedDocument:
                 warnings.append(_HIDDEN_WARNING.format(name=name))
                 continue
             rows = _SheetRows(opts, used)
-            rows.feed(sheet.iter_rows(values_only=True))
+            indents: list[int] = []
+            rows.feed(_xlsx_rows(sheet, indents), indents)  # iterator listy widzi dopisane wcięcia
             used = rows.used
             if rows.rows:  # pusty arkusz pominięty
-                sections.append(section_html("sheet", name, sheet_html(rows.rows)))
+                sections.append(section_html("sheet", name, sheet_html(rows.rows, rows.levels)))
     finally:
         workbook.close()
     return _finish_sheets(sections, warnings)
@@ -220,7 +268,9 @@ def convert_xls(path: Path, opts: ConvertOptions) -> ConvertedDocument:
             rows.feed(_xls_cells(sheet, book.datemode))
             used = rows.used
             if rows.rows:  # pusty arkusz pominięty
-                sections.append(section_html("sheet", sheet.name, sheet_html(rows.rows)))
+                sections.append(
+                    section_html("sheet", sheet.name, sheet_html(rows.rows, rows.levels))
+                )
     finally:
         book.release_resources()
     return _finish_sheets(sections, warnings)
@@ -269,7 +319,7 @@ def _delimited_document(
     rows = _SheetRows(opts)
     rows.feed(csv.reader(io.StringIO(text, newline=""), dialect))
     return finish(
-        table_html(rows.rows),
+        sheet_html(rows.rows, rows.levels) if rows.rows else "",
         diagnosis=_DIAGNOSIS,
         metadata={"encoding": encoding},
     )

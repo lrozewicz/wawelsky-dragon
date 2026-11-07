@@ -5,7 +5,8 @@ from html import escape
 from html.parser import HTMLParser
 
 from app.domain.chunking.types import Block, BlockKind, Position, TableData
-from app.parsing.table_grid import cell_span, linearize
+from app.parsing.table_grid import cell_span, expand_cells, linearize
+from app.parsing.table_structure import analyze
 
 _VOID = frozenset({"br", "img", "hr"})
 _INVISIBLE = frozenset({"script", "style"})
@@ -250,6 +251,9 @@ class _Parser(HTMLParser):
             parts = []
             self._bfig = parts
             self._sink = (parts, "\n", False)
+        elif tag in ("p", "div") and self._t_cells is not None and self._sink is not None:
+            # Akapity w komórce (DOCX: „WYSZCZEGÓLNIENIE” i „SPECIFICATION”) bez sklejania wyrazów.
+            self._sink[0].append(" ")
 
     def _end_table_part(self, tag: str) -> bool:
         """Koniec thead/tr w tabeli: ustal nagłówek (thead z tr) albo dopisz wiersz."""
@@ -333,7 +337,25 @@ class _Parser(HTMLParser):
             self._lists[-1][1][-1][1].extend(lines)
 
     def _table_data(self) -> tuple[TableData, str]:
-        """TableData i tekst bloku tabeli (nagłówek z thead albo z pierwszego tr)."""
+        """TableData i tekst bloku tabeli: struktura z całej siatki (table_structure), a gdy
+        tabela nie ma danych liczbowych z opisem — nagłówek z thead albo z pierwszego tr."""
+        every = [*(self._t_thead or []), *self._t_rows]
+        spans = [(row[0], row[2]) for row in every]
+        shape = analyze(
+            expand_cells(spans, repeat_colspan=False), expand_cells(spans, repeat_colspan=True)
+        )
+        if shape is not None:
+            head = [every[r] for r in shape.header_rows]
+            lines = [_CELL_SEPARATOR.join(shape.labels)]
+            lines.extend(_CELL_SEPARATOR.join(row) for row in shape.rows)
+            table = TableData(
+                header=shape.labels,
+                rows=shape.rows,
+                header_html=f"<thead>{''.join(row[1] for row in head)}</thead>" if head else "",
+                rows_html=tuple(every[r][1] for r in shape.body),
+                title=" ".join(shape.title),
+            )
+            return table, "\n".join(lines)
         header_rows: list[_Row]
         body_rows: list[_Row]
         if self._t_thead is not None:

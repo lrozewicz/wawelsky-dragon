@@ -32,6 +32,8 @@ _MIN_SPAN = 2
 _MIN_ROWS_FOR_HEADER = 2
 
 _TABLE_START = "<table>"
+# Wartość liczbowa komórki (nie rok): odróżnia wiersz danych od wiersza nagłówka.
+_NUMBER = re.compile(r"(?!(?:19|20)\d\d$)[-−–]?\d[\d\s]*(?:[.,]\d+)?\s?%?")  # noqa: RUF001
 
 
 def otsl_to_html(text: str) -> tuple[str, list[str]]:
@@ -139,17 +141,37 @@ def _has_partial_colspan(row: _Row, width: int) -> bool:
 
 
 def _header_rows(grid: list[_Row], width: int) -> set[int]:
-    """Indeksy wierszy nagłówka: jawne ``ched``/``rhed`` albo heurystyka H."""
+    """Indeksy wierszy nagłówka: jawne ``ched``/``rhed`` albo heurystyka H.
+
+    Nagłówek to ciągły blok od pierwszego wiersza i kończy się przed pierwszym wierszem
+    z liczbami. Scalenie w pionie (``ucel``) w wierszu danych to opis rozpisany na lata
+    („Polska” nad 2000, 2005, 2010), nie nagłówek: <thead> przed <tbody> przestawiłby wiersze
+    i oderwał wartości od opisu.
+    """
     explicit = {y for y, row in enumerate(grid) if any(t in _HEADER_TOKENS for t, _ in row)}
     if explicit:
-        return explicit
+        return _prefix(explicit, grid)
     headers = {0}
     for y in range(len(grid) - 1):
         if y == 0 and _has_partial_colspan(grid[0], width):
             headers.add(y + 1)
         if any(t in _ROWSPAN_TOKENS for t, _ in grid[y + 1]):
             headers.add(y + 1)
-    return headers
+    return _prefix(headers, grid)
+
+
+def _numbers(row: _Row) -> int:
+    return sum(_NUMBER.fullmatch(text.strip()) is not None for _, text in row)
+
+
+def _prefix(rows: set[int], grid: list[_Row]) -> set[int]:
+    """Ciągły początek zbioru wierszy nagłówka, bez wierszy z co najmniej dwiema liczbami."""
+    out: set[int] = set()
+    y = 0
+    while y in rows and (y == 0 or _numbers(grid[y]) < _MIN_SPAN):
+        out.add(y)
+        y += 1
+    return out
 
 
 def _render_row(row: _Row, grid: list[_Row], y: int, width: int, tag: str) -> str:

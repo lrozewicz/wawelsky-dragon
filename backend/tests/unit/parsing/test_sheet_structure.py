@@ -29,7 +29,9 @@ def test_header_levels_are_flattened() -> None:
     assert table.header[0] == "WYSZCZEGÓLNIENIE"
     assert table.header[2] == "Mężczyźni / wiek / 0"
     assert table.header[3] == "Mężczyźni / wiek / 15"
-    assert table.header[4] == "Kobiety / wiek / 0"
+    # „wiek” stoi tylko pod „Mężczyźni”: puste komórki należą do grupy z lewej, ale nie
+    # przechodzą przez granicę grupy wyższego poziomu („Kobiety”).
+    assert table.header[4] == "Kobiety / 0"
 
 
 def test_merged_labels_are_repeated_on_each_row() -> None:
