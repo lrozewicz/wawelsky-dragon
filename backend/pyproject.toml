@@ -7,16 +7,16 @@ requires-python = "==3.13.*"
 dependencies = [
     "fastapi==0.162.0",
     "starlette==1.10.0",
-    "pydantic==2.14.1",
+    "pydantic==2.14.2",
     "pydantic-settings==2.16.2",
     "uvicorn==0.54.0",
-    "sqlalchemy[asyncio]==2.1.6",
+    "sqlalchemy[asyncio]==2.1.8",
     "asyncmy==0.2.17",
     "pymysql==1.2.3",
     "alembic==1.20.1",
     "httpx==0.28.1",
     "xxhash==4.0.2",
-    "openai==3.41.0",
+    "openai==3.46.0",
     "httpx2==2.16.0",
     "tiktoken==0.14.0",
     "cryptography==50.0.2",
@@ -36,7 +36,7 @@ dependencies = [
     "pytesseract==0.3.13",
     "pillow==13.0.0",
     "pystempel==1.2.0",
-    "python-multipart==0.0.32",
+    "python-multipart==0.0.33",
     # Mapa modeli dla migracji RAGFlow→WD (E4-6a): czytana w runtime przez `plan`/`run`.
     "pyyaml==6.0.3",
     "wordfreq==3.1.1",
@@ -59,7 +59,7 @@ dev = [
     # Port testów upstream RAGFlow (E2-3a1): `hypothesis` (dekoratory `@given`),
     # `requests-toolbelt` (`MultipartEncoder` uploadu dokumentów), `reportlab` (PDF-y w
     # `utils/file_utils.py`). Instalowane też w obrazach dev, ale nie w runtime.
-    "hypothesis==6.170.13",
+    "hypothesis==6.170.14",
     "requests-toolbelt==1.0.0",
     "reportlab==5.1.0",
     # Port testów SDK (E2-3b): klient `ragflow_sdk` w wersji upstream v0.27.2.
