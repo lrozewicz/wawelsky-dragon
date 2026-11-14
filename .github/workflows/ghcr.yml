@@ -1,8 +1,9 @@
 # Public images on GitHub Container Registry, for installations that do not build from source
-# (docs/en/kubernetes.md):
+# (docs/en/getting-started.md, docs/en/kubernetes.md):
 #   ghcr.io/lrozewicz/wawelsky-dragon/backend   api, worker and MCP server (different command)
 #   ghcr.io/lrozewicz/wawelsky-dragon/web
 #   ghcr.io/lrozewicz/wawelsky-dragon/searxng
+#   ghcr.io/lrozewicz/wawelsky-dragon/mariadb   MariaDB with the project configuration (Docker Compose only)
 # Tags for release v1.2.3: "1.2.3", "1.2" and "latest". Each image is built from the release tag.
 #   tag v1.2.3            -> published automatically
 #   "Run workflow"        -> publishes an existing release tag (input "tag"); "latest" moves only if asked
@@ -36,9 +37,10 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - {name: backend, context: backend}
-          - {name: web, context: frontend}
-          - {name: searxng, context: docker/searxng}
+          - {name: backend, context: backend, target: runtime}
+          - {name: web, context: frontend, target: runtime}
+          - {name: searxng, context: docker/searxng, target: runtime}
+          - {name: mariadb, context: deploy/mariadb, target: ""}
     env:
       RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
       MOVE_LATEST: ${{ github.event_name == 'push' || inputs.latest }}
@@ -69,7 +71,7 @@ jobs:
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ${{ matrix.image.context }}
-          target: runtime
+          target: ${{ matrix.image.target }}
           push: true
           tags: ${{ steps.tags.outputs.tags }}
           labels: |

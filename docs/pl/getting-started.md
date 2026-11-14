@@ -36,11 +36,29 @@ Wszystkie polecenia uruchamiaj w katalogu głównym repozytorium.
    - `WD_ADMIN_EMAIL` i `WD_ADMIN_PASSWORD`: konto administratora, zakładane raz, przy pierwszym starcie;
    - opcjonalnie: `WD_PUBLIC_BASE_URL`, `WD_HTTP_PORT` (domyślnie 8080), `WD_OIDC_*` (logowanie SSO).
 
-3. Uruchom stos. `--build` jest potrzebne przy pierwszym starcie i po aktualizacji, inaczej użyty zostanie istniejący obraz.
+3. Uruchom stos. Do wyboru są dwa sposoby:
+
+   **Gotowe obrazy** (zalecane). Każde wydanie jest publikowane w GitHub Container Registry
+   (`ghcr.io/lrozewicz/wawelsky-dragon/backend`, `/web`, `/searxng`, `/mariadb`), więc nic nie trzeba budować:
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d --wait
+   ```
+
+   Domyślnie używany jest tag `latest`. Aby przypiąć wersję, dopisz w `.env` np. `WD_VERSION=0.2.2`
+   (tagi wydania `v0.2.2`: `0.2.2`, `0.2` i `latest`). Aktualizacja: zmień `WD_VERSION` albo wykonaj
+   `docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull`, po czym uruchom to samo polecenie `up`.
+   Ten sposób wymaga Docker Compose v2.24 lub nowszego.
+
+   **Budowanie ze źródeł.** Obrazy powstają lokalnie z kodu w repozytorium. `--build` jest potrzebne przy pierwszym
+   starcie i po aktualizacji, inaczej użyty zostanie istniejący obraz.
 
    ```bash
    docker compose up -d --build --wait
    ```
+
+   Pozostałe polecenia `docker compose` w tej instrukcji działają w obu wariantach; przy gotowych obrazach dodawaj
+   do nich `-f docker-compose.yml -f docker-compose.ghcr.yml`.
 
 4. Sprawdź działanie:
 

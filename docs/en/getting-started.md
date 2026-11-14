@@ -36,11 +36,29 @@ Run all commands from the repository root.
    - `WD_ADMIN_EMAIL` and `WD_ADMIN_PASSWORD`: the admin account, created once on first start;
    - optional: `WD_PUBLIC_BASE_URL`, `WD_HTTP_PORT` (default 8080), `WD_OIDC_*` (single sign-on).
 
-3. Start the stack. `--build` is needed on first start and after an update; otherwise an existing image is reused.
+3. Start the stack. There are two ways:
+
+   **Released images** (recommended). Every release is published to GitHub Container Registry
+   (`ghcr.io/lrozewicz/wawelsky-dragon/backend`, `/web`, `/searxng`, `/mariadb`), so nothing has to be built:
+
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d --wait
+   ```
+
+   The `latest` tag is used by default. To pin a version, add for example `WD_VERSION=0.2.2` to `.env`
+   (release `v0.2.2` has the tags `0.2.2`, `0.2` and `latest`). To update, change `WD_VERSION` or run
+   `docker compose -f docker-compose.yml -f docker-compose.ghcr.yml pull`, then run the same `up` command.
+   This way needs Docker Compose v2.24 or newer.
+
+   **Build from source.** The images are built locally from the code in the repository. `--build` is needed on first
+   start and after an update; otherwise an existing image is reused.
 
    ```bash
    docker compose up -d --build --wait
    ```
+
+   The other `docker compose` commands in this guide work with both; with the released images add
+   `-f docker-compose.yml -f docker-compose.ghcr.yml` to them.
 
 4. Check that it works:
 
