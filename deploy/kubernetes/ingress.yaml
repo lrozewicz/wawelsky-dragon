@@ -1,0 +1,25 @@
+# Replace the host (and WD_PUBLIC_BASE_URL in config.yaml). Uploads can be large and chat answers are
+# streamed, so raise the body-size limit and timeouts of your ingress controller; examples in the docs.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wawelsky-dragon
+  # annotations:
+  #   cert-manager.io/cluster-issuer: letsencrypt
+  #   nginx.ingress.kubernetes.io/proxy-body-size: 1024m
+  #   nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+spec:
+  # ingressClassName: nginx
+  rules:
+    - host: dragon.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port: {name: http}
+  # tls:
+  #   - hosts: [dragon.example.com]
+  #     secretName: wawelsky-dragon-tls
