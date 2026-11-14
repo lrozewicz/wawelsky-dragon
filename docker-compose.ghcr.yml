@@ -1,0 +1,23 @@
+# Gotowe obrazy z GitHub Container Registry zamiast budowania ze źródeł (docs/pl/getting-started.md).
+#   docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d --wait
+# Wersję wybiera WD_VERSION w .env (np. 0.2.2); bez niej używany jest tag `latest`.
+# Wymaga Docker Compose v2.24 lub nowszego (znacznik !reset).
+x-image-backend: &backend
+  image: ghcr.io/lrozewicz/wawelsky-dragon/backend:${WD_VERSION:-latest}
+  build: !reset null
+
+services:
+  mariadb:
+    image: ghcr.io/lrozewicz/wawelsky-dragon/mariadb:${WD_VERSION:-latest}
+    build: !reset null
+  migrate: *backend
+  api: *backend
+  worker: *backend
+  mcp: *backend
+  gpu-agent: *backend
+  web:
+    image: ghcr.io/lrozewicz/wawelsky-dragon/web:${WD_VERSION:-latest}
+    build: !reset null
+  searxng:
+    image: ghcr.io/lrozewicz/wawelsky-dragon/searxng:${WD_VERSION:-latest}
+    build: !reset null

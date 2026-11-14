@@ -41,8 +41,10 @@ git clone https://github.com/lrozewicz/wawelsky-dragon.git
 cd wawelsky-dragon
 scripts/gen-secrets.sh           # tworzy .env z losowymi sekretami
 $EDITOR .env                     # ustaw WD_LLM_BASE_URL, WD_LLM_API_KEY, WD_ADMIN_EMAIL, WD_ADMIN_PASSWORD
-docker compose up -d --build --wait
+docker compose -f docker-compose.yml -f docker-compose.ghcr.yml up -d --wait
 ```
+
+To polecenie uruchamia wydane obrazy z GitHub Container Registry. Aby zbudować je ze źródeł, użyj `docker compose up -d --build --wait`.
 
 Otwórz http://localhost:8080 i zaloguj się na konto administratora. Pełny opis: [Pierwsze kroki](docs/pl/getting-started.md).
 
