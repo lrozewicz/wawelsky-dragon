@@ -1,0 +1,11 @@
+# Uploaded documents and chunk images (/data), shared by api and worker.
+# ReadWriteOnce works because worker.yaml schedules the worker on the node of the api pod.
+# With a ReadWriteMany storage class you can drop that affinity.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: wawelsky-dragon-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests: {storage: 20Gi}

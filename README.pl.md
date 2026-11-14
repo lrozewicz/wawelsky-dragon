@@ -51,6 +51,7 @@ Otwórz http://localhost:8080 i zaloguj się na konto administratora. Pełny opi
 | Temat | Co znajdziesz |
 | --- | --- |
 | [Pierwsze kroki](docs/pl/getting-started.md) | wymagania, dobór zasobów, instalacja, sprawdzenie działania, testy |
+| [Kubernetes](docs/pl/kubernetes.md) | przykładowe manifesty, instalacja, pamięć masowa, ingress, aktualizacje |
 | [Architektura](docs/pl/architecture.md) | usługi, przepływ danych, decyzje projektowe |
 | [Zgodność z RAGFlow](docs/pl/ragflow-compatibility.md) | co jest zgodne, czego nie ma, jak migrować |
 

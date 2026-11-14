@@ -1,0 +1,62 @@
+# Static SPA and reverse proxy to api and mcp: the only component exposed outside the cluster.
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector: {app.kubernetes.io/name: wawelsky-dragon, app.kubernetes.io/component: web}
+  ports:
+    - {name: http, port: 80, targetPort: http}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wawelsky-dragon-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app.kubernetes.io/name: wawelsky-dragon, app.kubernetes.io/component: web}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: wawelsky-dragon, app.kubernetes.io/component: web}
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: web
+          image: wawelsky/web
+          ports:
+            - {name: http, containerPort: 8080}
+          env:
+            - {name: PORT, value: "8080"}
+            - {name: WD_API_UPSTREAM, value: http://api:8000}
+            - {name: WD_MCP_UPSTREAM, value: http://mcp:9382}
+            - {name: WD_MAX_UPLOAD_MB, value: "1024"}
+            - name: WD_PUBLIC_BASE_URL
+              valueFrom: {configMapKeyRef: {name: wawelsky-dragon-config, key: WD_PUBLIC_BASE_URL}}
+            - {name: TZ, value: Europe/Warsaw}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+          # /healthz proxies to the api, which needs about 30 s (migrations) after a deploy.
+          readinessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 30
+            timeoutSeconds: 3
+            failureThreshold: 6
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 25m, memory: 64Mi}
+            limits: {memory: 256Mi}
+      volumes:
+        - name: tmp
+          emptyDir: {}

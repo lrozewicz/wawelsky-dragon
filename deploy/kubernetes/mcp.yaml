@@ -1,0 +1,56 @@
+# MCP server (optional): calls the WD API with the key supplied by the client; no database, no secrets.
+# To leave it out, remove mcp.yaml from kustomization.yaml and WD_MCP_UPSTREAM from web.yaml.
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp
+spec:
+  selector: {app.kubernetes.io/name: wawelsky-dragon, app.kubernetes.io/component: mcp}
+  ports:
+    - {name: http, port: 9382, targetPort: http}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wawelsky-dragon-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app.kubernetes.io/name: wawelsky-dragon, app.kubernetes.io/component: mcp}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: wawelsky-dragon, app.kubernetes.io/component: mcp}
+    spec:
+      securityContext:
+        runAsUser: 10001
+        runAsGroup: 10001
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: mcp
+          image: wawelsky/backend
+          command: [python, -m, app.mcp]
+          ports:
+            - {name: http, containerPort: 9382}
+          env:
+            - {name: WD_MCP_PORT, value: "9382"}
+            - {name: WD_MCP_API_BASE, value: http://api:8000/api/v1}
+            - {name: HOME, value: /tmp}
+          volumeMounts:
+            - {name: tmp, mountPath: /tmp}
+          readinessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            initialDelaySeconds: 15
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 10m, memory: 64Mi}
+            limits: {memory: 256Mi}
+      volumes:
+        - name: tmp
+          emptyDir: {}

@@ -1,0 +1,43 @@
+# Non-secret settings shared by api and worker. All variables: .env.example in the repository root.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wawelsky-dragon-config
+data:
+  WD_ENV: prod
+  WD_COOKIE_SECURE: auto
+  # Public address of the installation — the same host as in ingress.yaml.
+  WD_PUBLIC_BASE_URL: https://dragon.example.com
+  WD_DB_HOST: mariadb
+  WD_DB_PORT: "3306"
+  WD_DB_NAME: wawelsky
+  WD_DB_USER: wawelsky
+  WD_STORAGE_ROOT: /data
+  WD_LOG_LEVEL: INFO
+  # Default models, seeded on first start only; later changes are made in the app (Settings → Models).
+  WD_LLM_DEFAULT_CHAT: openai/gpt-4.1-mini
+  WD_LLM_DEFAULT_EMBEDDING: openai/text-embedding-3-large
+  WD_LLM_DEFAULT_VLM: openai/gpt-4.1-mini
+  TZ: Europe/Warsaw
+  HOME: /tmp
+---
+# The same settings as deploy/mariadb/wawelsky.cnf. Size innodb_buffer_pool_size to about 75% of the
+# memory limit in mariadb.yaml (sizing table: docs/en/getting-started.md).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-config
+data:
+  wawelsky.cnf: |
+    [mysqld]
+    character-set-server      = utf8mb4
+    collation-server          = utf8mb4_uca1400_ai_ci
+    innodb_buffer_pool_size   = 2G
+    innodb_log_file_size      = 256M
+    innodb_ft_min_token_size  = 2
+    innodb_ft_enable_stopword = OFF
+    max_allowed_packet        = 256M
+    max_connections           = 200
+    wait_timeout              = 600
+    transaction_isolation     = READ-COMMITTED
+    skip-name-resolve

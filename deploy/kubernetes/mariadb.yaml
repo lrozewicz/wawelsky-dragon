@@ -1,0 +1,78 @@
+# The only database: metadata, vectors, full-text indexes, job queue, LLM cache.
+# For production consider mariadb-operator (backups, upgrades); this StatefulSet is the minimal equivalent.
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+spec:
+  clusterIP: None
+  selector: {app.kubernetes.io/name: mariadb}
+  ports:
+    - {name: mariadb, port: 3306, targetPort: mariadb}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+spec:
+  serviceName: mariadb
+  replicas: 1
+  selector:
+    matchLabels: {app.kubernetes.io/name: mariadb}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: mariadb}
+    spec:
+      securityContext:
+        runAsUser: 999
+        runAsGroup: 999
+        fsGroup: 999
+        runAsNonRoot: true
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: mariadb
+          image: mariadb:11.8.9
+          ports:
+            - {name: mariadb, containerPort: 3306}
+          env:
+            - {name: MARIADB_DATABASE, value: wawelsky}
+            - {name: MARIADB_USER, value: wawelsky}
+            - name: MARIADB_PASSWORD
+              valueFrom: {secretKeyRef: {name: wawelsky-dragon-app, key: WD_DB_PASSWORD}}
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom: {secretKeyRef: {name: wawelsky-dragon-app, key: MARIADB_ROOT_PASSWORD}}
+            - {name: MARIADB_AUTO_UPGRADE, value: "1"}
+            # jemalloc instead of glibc malloc: glibc keeps freed memory and RSS grows to the limit under
+            # parallel retrieval. The library ships in the image (path for amd64).
+            - {name: LD_PRELOAD, value: /usr/lib/x86_64-linux-gnu/libjemalloc.so.2}
+          volumeMounts:
+            - {name: data, mountPath: /var/lib/mysql}
+            - {name: config, mountPath: /etc/mysql/conf.d/wawelsky.cnf, subPath: wawelsky.cnf}
+          startupProbe:
+            exec: {command: [healthcheck.sh, --connect, --innodb_initialized]}
+            periodSeconds: 5
+            failureThreshold: 60
+          livenessProbe:
+            exec: {command: [healthcheck.sh, --connect, --innodb_initialized]}
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec: {command: [healthcheck.sh, --connect, --innodb_initialized]}
+            periodSeconds: 5
+            timeoutSeconds: 5
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: [ALL]}
+          resources:
+            requests: {cpu: 200m, memory: 2560Mi}
+            limits: {memory: 3Gi}
+      volumes:
+        - name: config
+          configMap: {name: mariadb-config}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests: {storage: 20Gi}

@@ -1,0 +1,29 @@
+# Example Kubernetes deployment of Wawelsky Dragon. Instructions: docs/en/kubernetes.md (docs/pl/kubernetes.md).
+#   kubectl apply -f namespace.yaml
+#   kubectl -n wawelsky-dragon apply -f secret.yaml      # your copy of secret.example.yaml
+#   kubectl apply -k .
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: wawelsky-dragon
+resources:
+  - namespace.yaml
+  - config.yaml
+  - mariadb.yaml
+  - data-pvc.yaml
+  - api.yaml
+  - worker.yaml
+  - mcp.yaml
+  - searxng.yaml
+  - web.yaml
+  - ingress.yaml
+# Released images from GitHub Container Registry; pin a version. To use your own registry, change newName.
+images:
+  - name: wawelsky/backend
+    newName: ghcr.io/lrozewicz/wawelsky-dragon/backend
+    newTag: "0.2.2"
+  - name: wawelsky/web
+    newName: ghcr.io/lrozewicz/wawelsky-dragon/web
+    newTag: "0.2.2"
+  - name: wawelsky/searxng
+    newName: ghcr.io/lrozewicz/wawelsky-dragon/searxng
+    newTag: "0.2.2"

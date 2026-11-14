@@ -51,6 +51,7 @@ Open http://localhost:8080 and log in with the admin account. Full walkthrough: 
 | Topic | What you will find |
 | --- | --- |
 | [Getting started](docs/en/getting-started.md) | requirements, sizing, installation, health checks, running the tests |
+| [Kubernetes](docs/en/kubernetes.md) | example manifests, installation, storage, ingress, upgrades |
 | [Architecture](docs/en/architecture.md) | services, data flow, design decisions |
 | [RAGFlow compatibility](docs/en/ragflow-compatibility.md) | what is compatible, what is left out, how to migrate |
 
