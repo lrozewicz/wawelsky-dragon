@@ -24,6 +24,7 @@ _BLOCK_TAGS = frozenset(
         "ol",
         "section",
         "blockquote",
+        "pre",
     }
 )
 _LIST_TAG = "li"
