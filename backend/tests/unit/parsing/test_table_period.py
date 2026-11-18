@@ -112,3 +112,38 @@ def test_rowspan_label_is_repeated_so_year_can_join_it() -> None:
     assert [_record(t, r)["OGÓŁEM"] for r in range(3)] == ["1769849", "1757434", "1703248"]
     assert t.rows_html[2].startswith("<tr><td>TOTAL 2000</td><td>1703248</td>")
     assert "rowspan" not in "".join(t.rows_html)
+
+
+_WARSZAWA = (
+    "<table><thead><tr><th colspan='2' rowspan='2'>LATA PŁEĆ</th><th rowspan='2'>Ogółem</th>"
+    "<th colspan='2'>Czas pozostawania bez pracy</th></tr>"
+    "<tr><th>do 1 miesiąca</th><th>powyżej 24 miesięcy</th></tr></thead><tbody>"
+    "<tr><td>O G Ó Ł E M</td><td>2005</td><td>58398</td><td>3641</td><td>19580</td></tr>"
+    "<tr><td>T O T A L</td><td>2010</td><td>38640</td><td>3301</td><td>2887</td></tr>"
+    "<tr><td></td><td>2015</td><td>39724</td><td>3140</td><td>9753</td></tr>"
+    "<tr><td>Mężczyźni</td><td>2005</td><td>28257</td><td>1909</td><td>9013</td></tr>"
+    "<tr><td>Males</td><td>2010</td><td>20189</td><td>1849</td><td>1482</td></tr>"
+    "<tr><td></td><td>2014</td><td>25278</td><td>1874</td><td>6464</td></tr>"
+    "<tr><td></td><td>2015</td><td>20512</td><td>1708</td><td>5199</td></tr>"
+    "</tbody></table>"
+)
+
+
+def test_empty_label_in_wide_stub_gets_group_label() -> None:
+    # Warszawa 2016, tabela „Bezrobotni według czasu pozostawania bez pracy” (DOCX, scalenie
+    # w pionie): wiersz 2015 mężczyzn trafiał do fragmentu bez słowa „Mężczyźni”.
+    t = _table(_WARSZAWA)
+    assert t.rows_html[2].startswith("<tr><td>O G Ó Ł E M T O T A L</td><td>2015</td>")
+    assert t.rows_html[5].startswith("<tr><td>Mężczyźni Males</td><td>2014</td>")
+    assert t.rows_html[6].startswith("<tr><td>Mężczyźni Males</td><td>2015</td><td>20512</td>")
+    assert t.rows_html[3].startswith("<tr><td>Mężczyźni</td><td>2005</td>")  # własna etykieta
+    assert "Mężczyźni" in t.rows[6][0]
+
+
+def test_narrow_stub_empty_label_is_left_alone() -> None:
+    html = (
+        "<table><thead><tr><th>Wyszczególnienie</th><th>2014</th><th>2015</th></tr></thead>"
+        "<tbody><tr><td>Ludność</td><td>10</td><td>11</td></tr>"
+        "<tr><td></td><td>12</td><td>13</td></tr></tbody></table>"
+    )
+    assert _table(html).rows_html[1].startswith("<tr><td></td>")

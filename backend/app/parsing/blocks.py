@@ -6,7 +6,7 @@ from html.parser import HTMLParser
 
 from app.domain.chunking.types import Block, BlockKind, Position, TableData
 from app.parsing.table_grid import GridRow, cell_span, expand_cells, linearize
-from app.parsing.table_period import merge_period_cells
+from app.parsing.table_period import repair_body
 from app.parsing.table_structure import TableShape, analyze
 
 _VOID = frozenset({"br", "img", "hr"})
@@ -350,7 +350,7 @@ class _Parser(HTMLParser):
         every = [*(self._t_thead or []), *self._t_rows]
         shape = _shape(every)
         if shape is not None and shape.header_rows:
-            body = merge_period_cells(
+            body = repair_body(
                 [every[r] for r in shape.header_rows], [every[r] for r in shape.body]
             )
             if any(new is not every[r] for r, new in zip(shape.body, body, strict=True)):
@@ -380,7 +380,7 @@ class _Parser(HTMLParser):
             body_rows = self._t_rows[1:]
         else:
             header_rows, header_html, body_rows = [], "", []
-        body_rows = merge_period_cells(header_rows, body_rows)
+        body_rows = repair_body(header_rows, body_rows)
         header, rows = linearize(header_rows, body_rows)
         lines = [_CELL_SEPARATOR.join(header)] if header else []
         lines.extend(_CELL_SEPARATOR.join(row[0]) for row in body_rows)

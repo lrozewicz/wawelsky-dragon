@@ -190,3 +190,47 @@ def _expand_stub(body: Sequence[GridRow], stub: int) -> list[GridRow]:
         html = (opening.group(0) if opening else "<tr>") + "".join(c[3] for c in cells) + "</tr>"
         out.append((tuple(c[1] for c in cells), html, tuple(c[2] for c in cells)))
     return out
+
+
+_LABEL_RUN = 2  # etykieta dwujęzyczna: „Mężczyźni” w jednym wierszu, „Males” w następnym
+
+
+def fill_stub_labels(head: Sequence[GridRow], body: Sequence[GridRow]) -> list[GridRow]:
+    """Pusta etykieta wiersza w boczku szerszym niż jedna kolumna dostaje etykietę grupy.
+
+    DOCX (komórka scalona w pionie) i część PDF dają ``<td></td><td>2015</td><td>20512</td>…``
+    pod wierszami ``Mężczyźni | 2005 …`` i ``Males | 2010 …``: po podziale tabeli na fragmenty
+    wiersz 2015 nie mówi, czy to mężczyźni, czy ogółem. Etykieta grupy = ostatnie (najwyżej dwie)
+    niepuste etykiety przed pustymi wierszami; wiersz na całą szerokość zeruje grupę.
+    """
+    if not head or not body or not head[0][2] or head[0][2][0][0] < _LABEL_RUN:
+        return list(body)
+    out: list[GridRow] = []
+    run: list[str] = []
+    filled = False
+    after_empty = False
+    for cells, tr, spans in body:
+        own = cells[0].strip() if cells else ""
+        if len(cells) < _MIN_PERIOD_ROWS:
+            run, after_empty = [], False
+        elif own:
+            run = [own] if after_empty else [*run, own]
+            after_empty = False
+        elif run and any(_VALUE.match(c.strip()) for c in cells[1:]):
+            label = " ".join(run[-_LABEL_RUN:])
+            raw = list(_CELL_HTML.finditer(tr))
+            opening = _TR_OPEN.match(tr)
+            if raw and opening is not None and not _LETTER.search(raw[0].group(3)):
+                first = raw[0]
+                parts = [f"<t{first.group(1)}{first.group(2)}>{escape(label)}</t{first.group(1)}>"]
+                html = opening.group(0) + "".join(parts + [m.group(0) for m in raw[1:]]) + "</tr>"
+                out.append(((label, *cells[1:]), html, spans))
+                filled = after_empty = True
+                continue
+        out.append((cells, tr, spans))
+    return out if filled else list(body)
+
+
+def repair_body(head: Sequence[GridRow], body: Sequence[GridRow]) -> list[GridRow]:
+    """Naprawy wierszy tabeli przed linearyzacją: rok w osobnej komórce, puste etykiety grup."""
+    return fill_stub_labels(head, merge_period_cells(head, body))

@@ -5,10 +5,11 @@ import pickle
 from collections.abc import Sequence
 from pathlib import Path
 
+import pdfplumber
 import pytest
 from PIL import Image
 
-from app.parsing.converters.pdf import convert_pdf
+from app.parsing.converters.pdf import _column_text, convert_pdf
 from app.parsing.errors import (
     CorruptedFile,
     EmptyDocument,
@@ -243,3 +244,21 @@ def test_pending_page_text_layer_empty_for_mojibake(tmp_path: Path) -> None:
 def test_convert_pdf_is_picklable() -> None:
     data = pickle.dumps(convert_pdf)
     assert callable(pickle.loads(data))  # noqa: S301 — round-trip własnej funkcji
+
+
+def test_figure_text_splits_side_by_side_legends() -> None:
+    # Dwie mapy obok siebie: extract_text skleja legendy w „pomorskie = 147 pomorskie = 14,6”.
+    texts = [
+        PdfText(50, 100, 10, "Czytelnicy na 1000 ludnosci"),
+        PdfText(350, 100, 10, "Wypozyczenia na 1 czytelnika"),
+        PdfText(50, 300, 10, "pomorskie = 147"),
+        PdfText(350, 300, 10, "pomorskie = 14,6"),
+    ]
+    with pdfplumber.open(io.BytesIO(make_pdf([PdfPage(texts=texts)]))) as document:
+        lines = _column_text(document.pages[0]).splitlines()
+    assert lines == [
+        "Czytelnicy na 1000 ludnosci",
+        "pomorskie = 147",
+        "Wypozyczenia na 1 czytelnika",
+        "pomorskie = 14,6",
+    ]
