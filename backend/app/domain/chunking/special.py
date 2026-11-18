@@ -9,6 +9,7 @@ from app.domain.chunking.finalize import apply_overlap, finalize, merge_small
 from app.domain.chunking.general import chunk_general
 from app.domain.chunking.limits import split_to_limit
 from app.domain.chunking.presets import preset_for
+from app.domain.chunking.tables import split_rows_html
 from app.domain.chunking.types import Block, ChunkConfig, ChunkDraft, Position, TableData
 
 # Para Q/A: (pytanie, odpowiedź, pozycje, heading_path).
@@ -310,7 +311,11 @@ def _row_drafts(block: Block, roles: Mapping[str, str], cfg: ChunkConfig) -> lis
         text, metadata = _row_text_and_metadata(table.header, row, roles)
         if not text:
             continue
-        row_html = table.rows_html[index] if index < len(table.rows_html) else ""
+        row_html = (
+            "".join(split_rows_html(table.rows_html, [index]))
+            if index < len(table.rows_html)
+            else ""
+        )
         fragment_html = f"<table>{table.header_html}<tbody>{row_html}</tbody></table>"
         pieces = [text]
         if cfg.count_tokens(text) > cfg.max_tokens:

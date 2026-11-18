@@ -9,6 +9,7 @@ from app.domain.chunking.tables import (
     chunk_table,
     row_text,
     section_heads,
+    split_rows_html,
     table_lead,
     table_lines,
     table_text,
@@ -524,3 +525,38 @@ def test_caption_not_taken_across_heading():
     )
     before = [_para("Tabela 5. Wyniki"), heading]
     assert table_lead(heading, before) == ""
+
+
+# Rocznik Euroregionu Nysa, TABL. 13: etykieta części (rowspan) nad latami. Fragment
+# zaczynający się w środku rozpiętości dostawał wiersze bez etykiety, więc „2000” stało w
+# boczku, a wartości pod nazwą sąsiedniej kolumny.
+_NYSA_ROWS = (
+    "<tr><td>Polska</td><td>1991</td><td>3514</td><td>5,8</td></tr>",
+    '<tr><td rowspan="4">Polish</td><td>1995</td><td>3110</td><td>5,1</td></tr>',
+    "<tr><td>2000</td><td>3188</td><td>5,4</td></tr>",
+    "<tr><td>2005</td><td>2870</td><td>4,9</td></tr>",
+    "<tr><td>2010</td><td>3109</td><td>5,4</td></tr>",
+    "<tr><td>Czeska</td><td>1991</td><td>3109</td><td>7,3</td></tr>",
+)
+
+
+def test_split_rows_carry_rowspan_label_into_next_fragment() -> None:
+    rows = split_rows_html(_NYSA_ROWS, [3, 4, 5])
+    assert rows[0] == '<tr><td rowspan="2">Polish</td><td>2005</td><td>2870</td><td>4,9</td></tr>'
+    assert rows[1] == _NYSA_ROWS[4]
+    assert rows[2] == _NYSA_ROWS[5]
+
+
+def test_split_rows_clip_rowspan_at_fragment_end() -> None:
+    rows = split_rows_html(_NYSA_ROWS, [0, 1, 2])
+    assert rows[0] == _NYSA_ROWS[0]
+    assert rows[1] == '<tr><td rowspan="2">Polish</td><td>1995</td><td>3110</td><td>5,1</td></tr>'
+    assert rows[2] == _NYSA_ROWS[2]
+
+
+def test_split_rows_single_row_and_tables_without_rowspan_unchanged() -> None:
+    assert split_rows_html(_NYSA_ROWS, [2]) == [
+        "<tr><td>Polish</td><td>2000</td><td>3188</td><td>5,4</td></tr>"
+    ]
+    plain = ("<tr><td>a</td><td>1</td></tr>", "<tr><td>b</td><td>2</td></tr>")
+    assert split_rows_html(plain, [1]) == [plain[1]]

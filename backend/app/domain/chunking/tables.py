@@ -359,8 +359,80 @@ def _row_groups(t: TableData, bc: str, cfg: ChunkConfig, lines: Lines) -> list[l
     return groups
 
 
+_CELL_HTML = re.compile(r"<t([dh])\b([^>]*)>(.*?)</t\1\s*>", re.S | re.I)
+_TR_OPEN = re.compile(r"^\s*<tr\b[^>]*>", re.I)
+_ROWSPAN = re.compile(r"""\s+rowspan\s*=\s*["']?\d*["']?""", re.I)
+_SPAN_VALUE = r"""\b{}\s*=\s*["']?(\d+)"""
+
+
+def _span_of(attrs: str, name: str) -> int:
+    m = re.search(_SPAN_VALUE.format(name), attrs, re.I)
+    return max(1, int(m.group(1))) if m else 1
+
+
+def _with_rowspan(cell: re.Match[str], rows: int) -> str:
+    """Komórka z rowspan ustawionym na ``rows`` (1 → bez atrybutu)."""
+    attrs = _ROWSPAN.sub("", cell.group(2)) + (f' rowspan="{rows}"' if rows > 1 else "")
+    return f"<t{cell.group(1)}{attrs}>{cell.group(3)}</t{cell.group(1)}>"
+
+
+def split_rows_html(rows_html: Sequence[str], group: Sequence[int]) -> list[str]:
+    """``<tr>`` wierszy ``group`` (kolejne indeksy) z rowspan domkniętym w obrębie grupy.
+
+    Gdy tabela dzielona na fragmenty ma komórkę z rowspan (np. etykieta „Polska” nad
+    latami), wiersze-kontynuacje w następnym fragmencie nie mają tej komórki, więc ich
+    wartości przesuwają się o kolumnę w lewo. Pierwszy wiersz grupy dostaje kopię komórek
+    rozpiętych z wcześniejszych wierszy, a rowspan nie wystaje poza grupę. Wiersze bez
+    zmian zostają dosłownie.
+    """
+    rows = [list(_CELL_HTML.finditer(h)) for h in rows_html]
+    if not group or not any(_span_of(c.group(2), "rowspan") > 1 for row in rows for c in row):
+        return [rows_html[i] for i in group]
+    first, last = group[0], group[-1]
+    if list(group) != list(range(first, last + 1)):
+        return [rows_html[i] for i in group]
+    occupied: set[tuple[int, int]] = set()
+    placed: list[list[tuple[int, re.Match[str], int]]] = []  # (kolumna, komórka, rowspan)
+    for r, row in enumerate(rows[: last + 1]):
+        column, cells = 0, []
+        for cell in row:
+            while (r, column) in occupied:
+                column += 1
+            colspan = _span_of(cell.group(2), "colspan")
+            rowspan = _span_of(cell.group(2), "rowspan")
+            for dr in range(rowspan):
+                for dc in range(colspan):
+                    occupied.add((r + dr, column + dc))
+            cells.append((column, cell, rowspan))
+            column += colspan
+        placed.append(cells)
+    out: list[str] = []
+    for r in group:
+        own = [
+            (c, _with_rowspan(m, last - r + 1), True)
+            if rs > last - r + 1
+            else (c, m.group(0), False)
+            for c, m, rs in placed[r]
+        ]
+        carried = []
+        if r == first:
+            carried = [
+                (c, _with_rowspan(m, min(origin + rs, last + 1) - first), True)
+                for origin in range(first)
+                for c, m, rs in placed[origin]
+                if origin + rs > first
+            ]
+        opening = _TR_OPEN.match(rows_html[r])
+        if not any(changed for *_, changed in own + carried) or opening is None:
+            out.append(rows_html[r])
+            continue
+        cells = sorted(own + carried, key=lambda x: x[0])
+        out.append(opening.group(0) + "".join(html_ for _, html_, _ in cells) + "</tr>")
+    return out
+
+
 def _split_html(t: TableData, group: list[int]) -> str:
-    body = "".join(t.rows_html[i] for i in group)
+    body = "".join(split_rows_html(t.rows_html, group))
     return "<table>" + t.header_html + "<tbody>" + body + "</tbody></table>"
 
 
