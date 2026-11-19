@@ -5,6 +5,7 @@ Euroregionu Nysa 2011 — wartości stały pod nazwą sąsiedniej kolumny, model
 „zawarto 2008 małżeństw”.
 """
 
+from app.domain.chunking.tables import table_lines
 from app.parsing.blocks import html_to_blocks
 from app.parsing.table_period import merge_period_cells
 
@@ -147,3 +148,75 @@ def test_narrow_stub_empty_label_is_left_alone() -> None:
         "<tr><td></td><td>12</td><td>13</td></tr></tbody></table>"
     )
     assert _table(html).rows_html[1].startswith("<tr><td></td>")
+
+
+# Przełamane etykiety: TABL. 4 (106) Rocznika Statystycznego Przemysłu 2019 (XLSX) — nazwa działu
+# w dwóch wierszach arkusza („… i opty-” bez liczb, „cznych ……” z liczbami); wiersz bez liczb
+# był sekcją doklejaną do wszystkich dalszych działów („opty- / Produkcja mebli”).
+def _wrapped(*rows: str) -> str:
+    head = "<thead><tr><th>SEKCJE I DZIAŁY</th><th>2009</th><th>2010</th></tr></thead>"
+    return f"<table>{head}<tbody>{''.join(rows)}</tbody></table>"
+
+
+def _lines(html: str) -> list[str]:
+    return [line for lines in table_lines(_table(html)) for line in lines]
+
+
+def test_hyphen_wrapped_label_is_joined_and_not_a_section() -> None:
+    html = _wrapped(
+        "<tr><td>Produkcja komputerów, wyrobów elektronicznych i opty-</td><td></td><td></td></tr>",
+        "<tr><td>cznych ……………</td><td>105.1</td><td>108.2</td></tr>",
+        "<tr><td>Produkcja mebli ……………</td><td>110</td><td>107.1</td></tr>",
+    )
+    lines = _lines(html)
+    assert any(
+        line.startswith(
+            "SEKCJE I DZIAŁY: Produkcja komputerów, wyrobów elektronicznych i optycznych"
+        )
+        for line in lines
+    )
+    assert any(line.startswith("SEKCJE I DZIAŁY: Produkcja mebli") for line in lines)
+    assert not any("opty-" in line for line in lines)
+    assert any("optycznych" in tr and "105.1" in tr for tr in _table(html).rows_html)
+
+
+def test_lowercase_continuation_with_leaders_is_joined() -> None:
+    html = _wrapped(
+        "<tr><td>Produkcja wyrobów z pozostałych mineralnych surowców</td><td></td><td></td></tr>",
+        "<tr><td>niemetalicznych ……………</td><td>108.7</td><td>103.7</td></tr>",
+        "<tr><td>Produkcja metali ……………</td><td>102.9</td><td>102.1</td></tr>",
+    )
+    lines = _lines(html)
+    assert any("surowców niemetalicznych" in line for line in lines)
+    assert any(line.startswith("SEKCJE I DZIAŁY: Produkcja metali") for line in lines)
+
+
+def test_section_with_subordinate_row_is_not_joined() -> None:
+    html = _wrapped(
+        "<tr><td>Miasta</td><td></td><td></td></tr>",
+        "<tr><td>w tym kobiety ……</td><td>51</td><td>52</td></tr>",
+    )
+    assert any(line.startswith("SEKCJE I DZIAŁY: Miasta / w tym kobiety") for line in _lines(html))
+
+
+def test_section_with_several_unit_rows_is_not_joined() -> None:
+    # Rocznik Statystyczny Przemysłu 2025: „Energia pierwotna ogółem” nad „w TJ …” i „w % …”
+    html = _wrapped(
+        "<tr><td>Energia pierwotna ogółem</td><td></td><td></td></tr>",
+        "<tr><td>w TJ ……</td><td>5100</td><td>5200</td></tr>",
+        "<tr><td>w % ……</td><td>100,0</td><td>100,0</td></tr>",
+    )
+    lines = _lines(html)
+    assert any(
+        line.startswith("SEKCJE I DZIAŁY: Energia pierwotna ogółem / w TJ") for line in lines
+    )
+    assert any(line.startswith("SEKCJE I DZIAŁY: Energia pierwotna ogółem / w %") for line in lines)
+
+
+def test_english_translation_row_is_not_joined() -> None:
+    html = _wrapped(
+        "<tr><td>choroby niedokrwienne serca ……</td><td>4992</td><td>107,3</td></tr>",
+        "<tr><td>ischaemic heart disease</td><td></td><td></td></tr>",
+        "<tr><td>choroby naczyń mózgowych ……</td><td>3814</td><td>90,1</td></tr>",
+    )
+    assert not any("disease choroby" in line for line in _lines(html))

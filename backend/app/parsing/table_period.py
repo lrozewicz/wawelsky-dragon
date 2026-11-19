@@ -16,6 +16,7 @@ from collections.abc import Sequence
 from html import escape
 
 from app.parsing.table_grid import GridRow, expand_cells
+from app.parsing.table_structure import SUBORDINATE
 
 # Rok okresu: 1950-2030, z odnośnikiem („2020b”, „2015*”). Liczby spoza zakresu
 # (1809, 2050) w kolumnach wartości to zwykle dane, nie lata.
@@ -231,6 +232,73 @@ def fill_stub_labels(head: Sequence[GridRow], body: Sequence[GridRow]) -> list[G
     return out if filled else list(body)
 
 
+_WRAP_HYPHEN = re.compile(r"[^\W\d_]-$")  # „opty-”, nie „ - ” ani „2015-”
+_LEADERS = re.compile(r"…|\.{3,}")  # kropki wiodące GUS kończą etykietę boczka
+_PL_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")  # wiersz-tłumaczenie EN nie jest początkiem nazwy
+
+
+def _continuation(label: str, nxt: str, after: str) -> str | None:
+    """Etykieta sklejona z przełamanej na dwa wiersze albo None, gdy to nie przełamanie.
+
+    ``after``: etykieta wiersza za ``nxt``; z małej litery znaczy, że ``nxt`` to pierwszy z kilku
+    podwierszy sekcji („Energia pierwotna ogółem”, „w TJ …”, „w % …”), a nie dokończenie nazwy.
+    """
+    if not nxt[:1].islower():
+        return None
+    if _WRAP_HYPHEN.search(label):
+        return label[:-1] + nxt
+    # „Miasta” + „w tym kobiety ……” to sekcja i podwiersz; „ischaemic heart disease” (EN pod
+    # wierszem z danymi) + „choroby naczyń mózgowych …” to tłumaczenie i następna pozycja
+    if SUBORDINATE.match(nxt) or after[:1].islower():
+        return None
+    if (
+        label[-1:].islower()
+        and _PL_CHARS.search(label)
+        and not _LEADERS.search(label)
+        and _LEADERS.search(nxt)
+    ):
+        return f"{label} {nxt}"
+    return None
+
+
+def join_wrapped_labels(body: Sequence[GridRow]) -> list[GridRow]:
+    """Etykieta wiersza przełamana na dwa wiersze tabeli wraca do jednego wiersza.
+
+    GUS (XLS, PDF) łamie długą nazwę: ``Produkcja komputerów, wyrobów elektronicznych i opty-``
+    w wierszu bez liczb, a ``cznych ……`` z liczbami pod spodem. Wiersz bez liczb wyglądał jak
+    sekcja i jego tekst trafiał do etykiet wszystkich dalszych wierszy tabeli („opty- /
+    Produkcja mebli”), a model widział osobny wiersz „cznych”. Sklejane tylko przeniesienie
+    wyrazu („opty-” + „cznych”) albo dokończenie z małej litery z kropkami wiodącymi
+    („…surowców” + „niemetalicznych ……”). Pusty po sklejeniu wiersz zostaje jako pusty, żeby
+    liczba wierszy się nie zmieniała. Bez sklejania: podwiersze sekcji („w tym kobiety”, kilka
+    wierszy z małej litery pod rząd) i tłumaczenia EN.
+    """
+    out = list(body)
+    changed = False
+    for i in range(len(out) - 1):
+        cells, _tr, spans = out[i]
+        nxt_cells, nxt_tr, nxt_spans = out[i + 1]
+        if not cells or not nxt_cells or any(c.strip() for c in cells[1:]):
+            continue
+        label, own = cells[0].strip(), nxt_cells[0].strip()
+        if not label or not any(_VALUE.match(c.strip()) for c in nxt_cells[1:]):
+            continue
+        after = next((r[0][0].strip() for r in out[i + 2 :] if r[0] and r[0][0].strip()), "")
+        joined = _continuation(label, own, after)
+        raw = list(_CELL_HTML.finditer(nxt_tr))
+        opening = _TR_OPEN.match(nxt_tr)
+        if joined is None or not raw or opening is None:
+            continue
+        first = raw[0]
+        cell = f"<t{first.group(1)}{first.group(2)}>{escape(joined)}</t{first.group(1)}>"
+        html = opening.group(0) + cell + "".join(m.group(0) for m in raw[1:]) + "</tr>"
+        out[i + 1] = ((joined, *nxt_cells[1:]), html, nxt_spans)
+        out[i] = (tuple("" for _ in cells), "<tr></tr>", spans)
+        changed = True
+    return out if changed else list(body)
+
+
 def repair_body(head: Sequence[GridRow], body: Sequence[GridRow]) -> list[GridRow]:
-    """Naprawy wierszy tabeli przed linearyzacją: rok w osobnej komórce, puste etykiety grup."""
-    return fill_stub_labels(head, merge_period_cells(head, body))
+    """Naprawy wierszy tabeli przed linearyzacją: przełamane etykiety, rok w osobnej komórce,
+    puste etykiety grup."""
+    return fill_stub_labels(head, merge_period_cells(head, join_wrapped_labels(body)))
