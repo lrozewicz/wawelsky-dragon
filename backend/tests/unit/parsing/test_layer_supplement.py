@@ -79,3 +79,20 @@ def test_apply_recognition_appends_lines_to_page_section() -> None:
 
 def test_supplement_html_escapes() -> None:
     assert supplement_html(["a < b"]) == "<p>a &lt; b</p>"
+
+
+def test_table_row_with_leader_dots_is_added() -> None:
+    # Rocznik woj. warmińsko-mazurskiego 2011: OCR zgubił wiersze tabeli mieszkań; w warstwie
+    # mają kropki wiodące jak spis treści, ale za nimi stoją wartości, nie numer strony
+    layer = (
+        "Mieszkania oddane do użytkowania\nna 1000 ludności ................. 2,6 3,1 4,8 3,4 3,3"
+    )
+    assert missing_lines("<p>Mieszkania oddane do użytkowania</p>", layer) == [
+        "na 1000 ludności ................. 2,6 3,1 4,8 3,4 3,3"
+    ]
+
+
+def test_table_row_kept_by_ocr_is_not_duplicated() -> None:
+    ocr = "<table><tr><td>na 1000 ludności</td><td>2,6</td><td>3,1</td><td>4,8</td></tr></table>"
+    layer = "na 1000 ludności ........ 2,6 3,1 4,8\nprzeciętna 1 mieszkania ..... 59,4 64,9 65,6"
+    assert missing_lines(ocr, layer) == ["przeciętna 1 mieszkania ..... 59,4 64,9 65,6"]

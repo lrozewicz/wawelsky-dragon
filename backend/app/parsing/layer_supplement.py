@@ -20,7 +20,8 @@ _THOUSANDS = re.compile(r"(?<=\d)[ \u00a0](?=\d{3}\b)")
 _NUMBER = re.compile(r"(?<![^\W\d_])-?\d+(?:,\d+)?")  # bez cyfr jednostek: km2, m3
 _YEAR = re.compile(r"^(1[89]|20)\d\d$")
 _WORD = re.compile(r"[^\W\d_]{2,}")
-_TOC = re.compile(r"\.{4,}|…{2,}")
+# spis treści: kropki wiodące i sam numer strony; wiersz tabeli GUS ma za kropkami wartości
+_TOC = re.compile(r"(\.{4,}|…{2,})\s*\d{1,4}\s*$")
 _SKELETON = re.compile(r"[\W_]+")
 _DIGITS = re.compile(r"\d+")
 REPEATED_MIN_PAGES = 3  # linia (z cyframi zamienionymi na #) na tylu stronach to pagina/stopka
@@ -86,7 +87,18 @@ def missing_lines(fragment: str, layer: str, drop: frozenset[str] = frozenset())
     if not lost:
         return []
     body = _skeleton(text)
-    return [x for x in kept if _skeleton(x) not in body]
+    return [x for x in kept if _skeleton(x) not in body and _numbers_lost(x, found)]
+
+
+def _numbers_lost(line: str, found: set[str]) -> bool:
+    """Linia z liczbami wraca tylko, gdy OCR nie ma co najmniej połowy z nich.
+
+    Wiersz tabeli z kropkami wiodącymi („na 1000 ludności ……… 2,6 3,1”) ma inny zapis niż
+    komórki HTML z OCR, więc porównanie szkieletu tekstu wziąłby za brak także wiersze, które OCR
+    przepisał — dopisek powielałby tabelę. Linia bez liczb (opis legendy) — bez zmian.
+    """
+    numbers = {n for n in _numbers(line) if not _YEAR.match(n.lstrip("-"))}
+    return not numbers or 2 * len(numbers - found) >= len(numbers)
 
 
 def supplement_html(lines: Sequence[str]) -> str:

@@ -20,7 +20,10 @@ _UNIT = re.compile(
 )
 # Tytuł tabeli: „TABL. 13 (227).”, „Tablica 2”, „Tabela 1.”, „Tab. 4”, „Table 3”.
 _CAPTION = re.compile(r"(?i)^(tabl\.|tablica|tabela|tab\.|table)\s*(\d|[ivxlc]+\b)")
-_CAPTION_LOOKBACK = 3
+_CAPTION_LOOKBACK = (
+    5  # Nysa: TABL. 4 | Stan w dniu 31 XII | POPULATION BY AGE | As of 31 XII | tabela
+)
+_CAPTION_GAP_MAX = 120  # dłuższy akapit między tytułem a tabelą to treść — tytuł jest czegoś innego
 _CAPTION_TAIL = 2
 _CONT = re.compile(r"(?i)\((cd|cont|dok)\.?\)")
 _PL_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")
@@ -51,9 +54,10 @@ def table_caption(before: Sequence[Block]) -> str:
     W rocznikach tytuł stoi w akapicie (czasem na końcu bloku przypisów poprzedniej tabeli),
     nie w nagłówku, więc bez niego żaden chunk tabeli nie mówi, czego dotyczą liczby.
     Szuka w ostatnich ``_CAPTION_LOOKBACK`` akapitach; za tytułem dopuszcza najwyżej
-    ``_CAPTION_TAIL`` linii (tłumaczenie tytułu, podtytuł).
+    ``_CAPTION_TAIL`` linii w tym samym akapicie (tłumaczenie tytułu, podtytuł) albo krótkie
+    osobne akapity (OCR: „Stan w dniu 31 XII”, tytuł EN, „As of 31 XII”).
     """
-    for block in reversed(before[-_CAPTION_LOOKBACK:]):
+    for back, block in enumerate(reversed(before[-_CAPTION_LOOKBACK:])):
         if block.kind in ("table", "heading"):  # tytuł sprzed nagłówka należy do innej sekcji
             return ""
         if block.kind != "paragraph":
@@ -64,6 +68,10 @@ def table_caption(before: Sequence[Block]) -> str:
                 if len(lines) - 1 - i > _CAPTION_TAIL:
                     return ""
                 return " ".join(lines[i].split())[:_LEAD_MAX]
+        # OCR daje dopiski tytułu („Stan w dniu 31 XII”, tłumaczenie) jako osobne akapity; tytuł
+        # może stać kilka akapitów wyżej, ale tylko za krótkimi dopiskami, nie za tekstem
+        if back and len(" ".join(lines)) > _CAPTION_GAP_MAX:
+            return ""
     return ""
 
 

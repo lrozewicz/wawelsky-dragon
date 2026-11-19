@@ -560,3 +560,25 @@ def test_split_rows_single_row_and_tables_without_rowspan_unchanged() -> None:
     ]
     plain = ("<tr><td>a</td><td>1</td></tr>", "<tr><td>b</td><td>2</td></tr>")
     assert split_rows_html(plain, [1]) == [plain[1]]
+
+
+def test_table_lead_caption_above_short_ocr_paragraphs():
+    # Rocznik Euroregionu Nysa 2011, s. 44 (OCR): dopiski tytułu jako osobne akapity; okruszek
+    # fragmentów został z poprzedniego nagłówka („TABL. 2. LUDNOŚĆ WEDŁUG WIELKOŚCI GMIN”)
+    before = [
+        _para("TABL. 4. LUDNOŚĆ WEDŁUG WIEKU"),
+        _para("Stan w dniu 31 XII"),
+        _para("POPULATION BY AGE"),
+        _para("As of 31 XII"),
+    ]
+    assert table_lead(before[-1], before) == "TABL. 4. LUDNOŚĆ WEDŁUG WIEKU"
+
+
+def test_table_lead_caption_not_taken_over_body_text():
+    before = [
+        _para("TABL. 4. LUDNOŚĆ WEDŁUG WIEKU"),
+        _para("Stan w dniu 31 XII"),
+        _para("W 2010 r. w Euroregionie Nysa mieszkało ponad 1,6 mln osób, tj. o 9% mniej. " * 3),
+        _para("As of 31 XII"),
+    ]
+    assert table_lead(before[-1], before) == ""
