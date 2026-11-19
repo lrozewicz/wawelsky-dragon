@@ -51,6 +51,7 @@ _CAPTION = re.compile(r"(?i)^(tabl\.|tablica|tabela|tab\.|table|wykres|zestawien
 _ALPHA = re.compile(r"[^\W\d_]")
 _PL_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")
 # Początek etykiety podwiersza w tabelach statystycznych (pod wierszem z wielkiej litery).
+_TRAILING_PERIOD = re.compile(r"\s+(19|20)\d\d[a-z*]?$")
 SUBORDINATE = re.compile(
     r"(?i)^(w tym|z tego|z liczby|of which|in which|including|"
     r"kobiety|mężczyźni|chłopcy|dziewczęta|dzieci|miasta|wieś|wsie|na wsi|w miastach|"
@@ -462,7 +463,8 @@ def _nest(rows: list[list[str]], col: int, levels: Sequence[int]) -> bool:
             unique = {lvl: path for lvl, path in unique.items() if lvl < level}
         full = join_label([base, label]) if base and not label.startswith(base) else label
         if repeated[(level, label)] == 1:
-            unique[level] = full
+            # rodzic bez roku doklejonego do etykiety („Dostawa wody … 2024” → „Dostawa wody …”)
+            unique[level] = _TRAILING_PERIOD.sub("", full)
         stack.append((level, full))
         if full != label:
             row[col] = full

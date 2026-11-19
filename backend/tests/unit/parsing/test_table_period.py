@@ -220,3 +220,55 @@ def test_english_translation_row_is_not_joined() -> None:
         "<tr><td>choroby naczyń mózgowych ……</td><td>3814</td><td>90,1</td></tr>",
     )
     assert not any("disease choroby" in line for line in _lines(html))
+
+
+# TABL. 12 (41) Rocznika Statystycznego Przemysłu 2025 (OCR): kolumna „Lp.” przed opisem, rok
+# w osobnej komórce pod „Ogółem”, nazwa działu przełamana na wiersze lat 2010 i 2015.
+_LP_HEAD = (
+    "<thead><tr><th rowspan='2'>Lp.</th><th rowspan='2'>WYSZCZEGÓLNIENIE</th>"
+    "<th rowspan='2'>Ogółem</th><th colspan='2'>Zapasy</th></tr>"
+    "<tr><th>razem</th><th>materiały</th></tr></thead>"
+)
+
+
+def _lp_table(*rows: str) -> str:
+    return f"<table>{_LP_HEAD}<tbody>{''.join(rows)}</tbody></table>"
+
+
+_ENERGY = _lp_table(
+    "<tr><td>6</td><td>Wytwarzanie i zaopatrywanie w energię elek-</td><td>2010</td>"
+    "<td>56023,3</td><td>5108,7</td><td>3774,4</td></tr>",
+    "<tr><td>7</td><td>tryczną, gaz, parę wodną i gorącą wodę</td><td>2015</td>"
+    "<td>61289,3</td><td>10040,5</td><td>6059,7</td></tr>",
+    "<tr><td>8</td><td></td><td>2020</td><td>86721,7</td><td>13229,7</td><td>8794,9</td></tr>",
+    "<tr><td>11</td><td>Sektor publiczny ...</td><td>2010</td>"
+    "<td>36318,0</td><td>3143,7</td><td>2587,0</td></tr>",
+    "<tr><td>12</td><td></td><td>2015</td><td>30491,7</td><td>4050,4</td><td>2810,3</td></tr>",
+    "<tr><td>21</td><td>Dostawa wody; gospodarowanie ściekami</td><td>2010</td>"
+    "<td>10298,9</td><td>728,1</td><td>391,1</td></tr>",
+    "<tr><td>22</td><td>i odpadami; rekultywacja</td><td>2015</td>"
+    "<td>11205,0</td><td>868,7</td><td>418,4</td></tr>",
+    "<tr><td>26</td><td>Sektor publiczny ...</td><td>2010</td>"
+    "<td>6231,7</td><td>242,3</td><td>184,3</td></tr>",
+    "<tr><td>27</td><td></td><td>2015</td><td>7031,8</td><td>292,8</td><td>210,3</td></tr>",
+)
+
+
+def test_ordinal_column_does_not_hide_shifted_year() -> None:
+    lines = _lines(_ENERGY)
+    full = "Wytwarzanie i zaopatrywanie w energię elektryczną, gaz, parę wodną i gorącą wodę"
+    assert any(
+        f"WYSZCZEGÓLNIENIE: {full} 2010; Ogółem: 56023,3; Zapasy / razem: 5108,7" in x
+        for x in lines
+    )
+    assert any(f"WYSZCZEGÓLNIENIE: {full} 2020; Ogółem: 86721,7" in x for x in lines)
+    assert not any("Ogółem: 2010" in x or "elek-" in x for x in lines)
+
+
+def test_parent_of_repeated_label_has_no_year() -> None:
+    lines = _lines(_ENERGY)
+    assert any("gorącą wodę / Sektor publiczny ... 2015; Ogółem: 30491,7" in x for x in lines)
+    water = "Dostawa wody; gospodarowanie ściekami i odpadami; rekultywacja"
+    assert any(f"{water} 2015; Ogółem: 11205,0" in x for x in lines)
+    assert any(f"{water} / Sektor publiczny ... 2010; Ogółem: 6231,7" in x for x in lines)
+    assert not any(" 2020 / Sektor" in x or " 2015 / Sektor" in x for x in lines)

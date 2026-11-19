@@ -58,13 +58,14 @@ def _header_at(head: Sequence[GridRow], column: int) -> str:
     return " ".join(dict.fromkeys(names))
 
 
-def _period_index(
+def _period_index(  # noqa: PLR0913
     cells: Sequence[str],
     spans: Sequence[tuple[int, int]],
     starts: list[int],
     stub: int,
     *,
     all_years: bool,
+    lead: int = 0,
 ) -> int | None:
     """Indeks komórki-roku w kolumnie ``stub`` tuż za własną etykietą wiersza; inaczej None.
 
@@ -82,7 +83,7 @@ def _period_index(
             or starts[label] + spans[label][0] != stub
             or not _PERIOD.match(cells[i].strip())
             or (not all_years and cells[label].strip())
-            or any(_VALUE.match(cells[k].strip()) for k in range(i))
+            or any(_VALUE.match(cells[k].strip()) for k in range(i) if starts[k] >= lead)
             or not any(_VALUE.match(cell.strip()) for cell in cells[i + 1 :])
         ):
             return None
@@ -90,7 +91,55 @@ def _period_index(
     return None
 
 
-def _merged_html(tr: str, label: int, year: str, section: str = "") -> str | None:
+_WRAP_HYPHEN = re.compile(r"[^\W\d_]-$")  # „opty-”, nie „ - ” ani „2015-”
+_LEADERS = re.compile(r"…|\.{3,}")  # kropki wiodące GUS kończą etykietę boczka
+_PL_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")  # wiersz-tłumaczenie EN nie jest początkiem nazwy
+_CONTINUES = re.compile(r"(i|oraz|lub|albo|w|we|z|ze|na|do|dla|od|po|przez|pod|nad|bez)\s")
+_ORDINAL_HEAD = re.compile(r"(?i)^(lp|l\.\s?p|nr|no)\.?$")
+
+
+def _wrap_join(name: str, part: str) -> str | None:
+    """Nazwa z częścią z następnego wiersza, gdy ta część ją dokończa: przeniesienie wyrazu
+    („elek-” + „tryczną”) albo ciąg od spójnika lub przyimka („… ściekami” + „i odpadami”).
+
+    Nie: tłumaczenie EN z małej litery („manufacture of furniture”) ani następna pozycja
+    („Industry” + „górnictwo”).
+    """
+    if not part[:1].islower() or SUBORDINATE.match(part):
+        return None
+    if _WRAP_HYPHEN.search(name):
+        return name[:-1] + part
+    return f"{name} {part}" if _CONTINUES.match(part) else None
+
+
+def _group_names(body: Sequence[GridRow], found: Sequence[int | None]) -> dict[int, str]:
+    """Pełna nazwa grupy dla wierszy, na które rozpisano jej części (rok w każdym wierszu).
+
+    Rocznik Przemysłu 2025 (OCR): ``Wytwarzanie i zaopatrywanie w energię elek- | 2010 | …``,
+    ``tryczną, gaz, parę wodną i gorącą wodę | 2015 | …``, dalej puste etykiety z latami.
+    """
+    out: dict[int, str] = {}
+    name, parts = "", []
+    for r, ((cells, _, _), i) in enumerate(zip(body, found, strict=True)):
+        own = _TRAILING_YEAR.sub("", cells[i - 1].strip()) if i is not None else ""
+        if len(cells) < _MIN_PERIOD_ROWS or i is None:
+            name, parts = "", []
+            continue
+        if not own:
+            continue
+        joined = _wrap_join(name, own) if name else None
+        if joined is None:
+            name, parts = own, [r]
+            continue
+        name = joined
+        parts.append(r)
+        out.update(dict.fromkeys(parts, name))
+    return out
+
+
+def _merged_html(
+    tr: str, label: int, year: str, section: str = "", *, replace: bool = False
+) -> str | None:
     """``<tr>`` bez komórki-roku, z rokiem doklejonym do etykiety; None, gdy HTML nie pasuje.
 
     Pusta etykieta dostaje etykietę sekcji z wiersza wyżej (``section``) — samo „2008” w
@@ -102,7 +151,10 @@ def _merged_html(tr: str, label: int, year: str, section: str = "") -> str | Non
         return None
     parts = [m.group(0) for m in raw]
     tag, attrs, inner = raw[label].group(1), raw[label].group(2), raw[label].group(3)
-    joined = f"{inner} {escape(year)}" if inner.strip() else escape(f"{section} {year}".strip())
+    if inner.strip() and not replace:
+        joined = f"{inner} {escape(year)}"
+    else:  # pusta etykieta albo część nazwy przełamanej na wiersze lat — pełna nazwa grupy
+        joined = escape(f"{section} {year}".strip())
     parts[label] = f"<t{tag}{attrs}>{joined}</t{tag}>"
     del parts[label + 1]
     return opening.group(0) + "".join(parts) + "</tr>"
@@ -120,6 +172,9 @@ def merge_period_cells(head: Sequence[GridRow], body: Sequence[GridRow]) -> list
     if not head or not body or not head[0][2]:
         return list(body)
     stub = head[0][2][0][0]
+    lead = 0  # szerokość kolumny porządkowej („Lp.”) przed opisem — jej liczby to nie wartości
+    if _ORDINAL_HEAD.match(head[0][0][0].strip() if head[0][0] else "") and len(head[0][2]) > 1:
+        lead, stub = stub, stub + head[0][2][1][0]
     name = _header_at(head, stub)
     if not name or not _LETTER.search(name) or _PERIOD_HEAD.search(name):
         return list(body)
@@ -137,21 +192,30 @@ def merge_period_cells(head: Sequence[GridRow], body: Sequence[GridRow]) -> list
     if years < _MIN_PERIOD_ROWS:
         return original
     all_years = years == len(column)
+    found = [
+        _period_index(cells, spans, row_starts, stub, all_years=all_years, lead=lead)
+        for (cells, _, spans), row_starts in zip(body, starts, strict=True)
+    ]
+    full = _group_names(body, found)
     out: list[GridRow] = []
     merged = False
     section = ""  # ostatnia niepusta etykieta wiersza (bez roku) — dla wierszy z pustą etykietą
-    for (cells, tr, spans), row_starts in zip(body, starts, strict=True):
-        i = _period_index(cells, spans, row_starts, stub, all_years=all_years)
+    for r, ((cells, tr, spans), i) in enumerate(zip(body, found, strict=True)):
         own = cells[i - 1].strip() if i is not None else (cells[0].strip() if cells else "")
         if len(cells) < _MIN_PERIOD_ROWS:
             section = ""  # wiersz-sekcja na całą szerokość („W LICZBACH BEZWZGLĘDNYCH”)
         elif own:
-            section = _TRAILING_YEAR.sub("", own)
-        html = None if i is None else _merged_html(tr, i - 1, cells[i].strip(), section)
+            section = full.get(r) or _TRAILING_YEAR.sub("", own)
+        html = (
+            None
+            if i is None
+            else _merged_html(tr, i - 1, cells[i].strip(), section, replace=r in full)
+        )
         if i is None or html is None:
             out.append((cells, tr, spans))
             continue
-        label = " ".join(x for x in (cells[i - 1].strip() or section, cells[i].strip()) if x)
+        own_label = section if r in full else cells[i - 1].strip()
+        label = " ".join(x for x in (own_label or section, cells[i].strip()) if x)
         new_cells = (*cells[: i - 1], label, *cells[i + 1 :])
         out.append((tuple(new_cells), html, tuple((*spans[:i], *spans[i + 1 :]))))
         merged = True
@@ -230,11 +294,6 @@ def fill_stub_labels(head: Sequence[GridRow], body: Sequence[GridRow]) -> list[G
                 continue
         out.append((cells, tr, spans))
     return out if filled else list(body)
-
-
-_WRAP_HYPHEN = re.compile(r"[^\W\d_]-$")  # „opty-”, nie „ - ” ani „2015-”
-_LEADERS = re.compile(r"…|\.{3,}")  # kropki wiodące GUS kończą etykietę boczka
-_PL_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")  # wiersz-tłumaczenie EN nie jest początkiem nazwy
 
 
 def _continuation(label: str, nxt: str, after: str) -> str | None:
