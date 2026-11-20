@@ -348,7 +348,7 @@ class _Parser(HTMLParser):
     def _table_data(self) -> tuple[TableData, str]:
         """TableData i tekst bloku tabeli: struktura z całej siatki (table_structure), a gdy
         tabela nie ma danych liczbowych z opisem — nagłówek z thead albo z pierwszego tr."""
-        every = [*(self._t_thead or []), *self._t_rows]
+        every: list[GridRow] = [*(self._t_thead or []), *self._t_rows]
         shape = _shape(every)
         if shape is not None and shape.header_rows:
             body = repair_body(
@@ -371,14 +371,15 @@ class _Parser(HTMLParser):
                 title=" ".join(shape.title),
             )
             return table, "\n".join(lines)
-        header_rows: list[_Row]
-        body_rows: list[_Row]
+        header_rows: list[GridRow]
+        body_rows: list[GridRow]
         if self._t_thead is not None:
-            header_rows, header_html, body_rows = self._t_thead, self._t_thead_html, self._t_rows
+            header_rows, header_html = list(self._t_thead), self._t_thead_html
+            body_rows = list(self._t_rows)
         elif self._t_rows:
             header_rows = [self._t_rows[0]]
             header_html = f"<thead>{self._t_rows[0][1]}</thead>"
-            body_rows = self._t_rows[1:]
+            body_rows = list(self._t_rows[1:])
         else:
             header_rows, header_html, body_rows = [], "", []
         body_rows = repair_body(header_rows, body_rows)

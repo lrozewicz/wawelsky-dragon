@@ -462,13 +462,13 @@ def split_rows_html(rows_html: Sequence[str], group: Sequence[int]) -> list[str]
         placed.append(cells)
     out: list[str] = []
     for r in group:
-        own = [
+        own: list[tuple[int, str, bool]] = [
             (c, _with_rowspan(m, last - r + 1), True)
             if rs > last - r + 1
             else (c, m.group(0), False)
             for c, m, rs in placed[r]
         ]
-        carried = []
+        carried: list[tuple[int, str, bool]] = []
         if r == first:
             carried = [
                 (c, _with_rowspan(m, min(origin + rs, last + 1) - first), True)
@@ -480,8 +480,8 @@ def split_rows_html(rows_html: Sequence[str], group: Sequence[int]) -> list[str]
         if not any(changed for *_, changed in own + carried) or opening is None:
             out.append(rows_html[r])
             continue
-        cells = sorted(own + carried, key=lambda x: x[0])
-        out.append(opening.group(0) + "".join(html_ for _, html_, _ in cells) + "</tr>")
+        merged = sorted(own + carried, key=lambda x: x[0])
+        out.append(opening.group(0) + "".join(html_ for _, html_, _ in merged) + "</tr>")
     return out
 
 

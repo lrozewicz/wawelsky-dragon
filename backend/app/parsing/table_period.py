@@ -119,7 +119,7 @@ def _group_names(body: Sequence[GridRow], found: Sequence[int | None]) -> dict[i
     ``tryczną, gaz, parę wodną i gorącą wodę | 2015 | …``, dalej puste etykiety z latami.
     """
     out: dict[int, str] = {}
-    name, parts = "", []
+    name, parts = "", list[int]()
     for r, ((cells, _, _), i) in enumerate(zip(body, found, strict=True)):
         own = _TRAILING_YEAR.sub("", cells[i - 1].strip()) if i is not None else ""
         if len(cells) < _MIN_PERIOD_ROWS or i is None:
@@ -222,6 +222,9 @@ def merge_period_cells(head: Sequence[GridRow], body: Sequence[GridRow]) -> list
     return out if merged else original
 
 
+_StubCell = tuple[int, str, tuple[int, int], str]  # kolumna, tekst, (colspan, rowspan), HTML
+
+
 def _expand_stub(body: Sequence[GridRow], stub: int) -> list[GridRow]:
     """Etykiety boczku z rowspan (``<td rowspan="4">Polish</td>`` nad latami) w każdym wierszu.
 
@@ -232,8 +235,8 @@ def _expand_stub(body: Sequence[GridRow], stub: int) -> list[GridRow]:
     raws = [[m.group(0) for m in _CELL_HTML.finditer(tr)] for _, tr, _ in body]
     if any(len(raw) != len(cells) for raw, (cells, _, _) in zip(raws, body, strict=True)):
         return list(body)
-    rows = [
-        [list(zip(row_starts, cells, spans, raw, strict=True)), tr]
+    rows: list[tuple[list[_StubCell], str]] = [
+        (list(zip(row_starts, cells, spans, raw, strict=True)), tr)
         for (cells, tr, spans), row_starts, raw in zip(body, starts, raws, strict=True)
     ]
     changed = False
