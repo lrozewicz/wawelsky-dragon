@@ -35,7 +35,7 @@ async def sm(migrated_db: Settings) -> AsyncIterator[async_sessionmaker[AsyncSes
 
 
 async def test_upgrade_sets_default_weights_to_one(migrated_db, sm) -> None:
-    """Po downgrade do 0013 i ponownym upgrade: 0.3 → 1.0, 0.7 bez zmian, brak klucza → 1.0."""
+    """Po downgrade do 0013 i upgrade do 0014: 0.3 → 1.0, 0.7 bez zmian, brak klucza → 1.0."""
     owner = await _seed_user(sm)
     default_chat = await seed_chat(sm, owner, [], vector_similarity_weight=0.3)
     custom_chat = await seed_chat(sm, owner, [], vector_similarity_weight=0.7)
@@ -49,7 +49,7 @@ async def test_upgrade_sets_default_weights_to_one(migrated_db, sm) -> None:
 
     cfg = alembic_cfg(migrated_db)
     await asyncio.to_thread(command.downgrade, cfg, "0013")
-    await asyncio.to_thread(command.upgrade, cfg, "head")
+    await asyncio.to_thread(command.upgrade, cfg, "0014")  # 0016 przestawia 1.0 → 0.8
 
     async with transaction(sm) as session:
         chats = dict(

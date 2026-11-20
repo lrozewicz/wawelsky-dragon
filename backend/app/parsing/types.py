@@ -39,6 +39,9 @@ class PendingPage:
     image_png: bytes  # render 200 dpi (vision) / 300 dpi (ocr)
     reason: str  # np. "chars<150", "mojibake", "image_cover"
     text_layer: str = ""  # warstwa tekstowa strony, tylko gdy przeszła bramkę routera (DEC-248 P1)
+    # Warstwa do uzupełnienia wyniku OCR o pominięte linie (mapy, wykresy): także strony
+    # odesłane przez image_cover — ich warstwa jest poprawna, tylko krótka (layer_supplement).
+    figure_layer: str = ""
 
 
 @dataclass

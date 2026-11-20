@@ -53,6 +53,34 @@ def test_prepare_query_empty(question: str) -> None:
     assert qt == QueryTerms(raw_terms=(), terms=(), bigrams=(), ft_raw="", ft_stem="")
 
 
+@pytest.mark.parametrize(
+    ("question", "expected"),
+    [
+        # skrót wersalikami: 1.0 + premia 1.0 (inaczej przegrywa z „oznacza” 1.5)
+        ("Co oznacza ZKM", {"co": 0.4, "oznacza": 0.6, "zkm": 0.8}),
+        ("SKARBNET4", {"skarbnet4": 1.2}),  # litery + cyfra: 1.5 + 0.5 + 1.0
+        ("poz. 1270", {"poz": 0.4, "1270": 1.0}),  # numer >= 3 cyfr
+        # lata i dni są w każdej tabeli — bez premii; pojedyncza wielka litera to nie skrót
+        ("rok 2023, dzień 31", {"rok": 0.4, "2023": 0.6, "dzien": 0.4, "31": 0.6}),
+        ("Zkm W", {"zkm": 0.4, "w": 0.4}),
+    ],
+)
+def test_prepare_query_identifier_bonus(question: str, expected: dict[str, float]) -> None:
+    qt = prepare_query(question, stopwords=frozenset(), stem=fold)
+    assert dict(qt.terms) == pytest.approx(expected)
+
+
+def test_prepare_query_identifier_bonus_in_bigram() -> None:
+    qt = prepare_query("tabela PKB", stopwords=frozenset(), stem=fold)
+    assert qt.bigrams == (("tabela pkb", pytest.approx(0.6 * 2.0)),)  # max(1.5, 1.0 + 1.0)
+
+
+def test_prepare_query_identifier_detected_on_any_occurrence() -> None:
+    # dedup po lower: „pkb … PKB” to jeden term, ale wersaliki gdziekolwiek dają premię
+    qt = prepare_query("pkb PKB", stopwords=frozenset(), stem=fold)
+    assert qt.terms == (("pkb", pytest.approx(0.8)),)
+
+
 def test_prepare_query_dedups_raw_terms() -> None:
     qt = prepare_query("umowa umowa Umowa", stopwords=frozenset(), stem=lambda t: t)
     assert qt.raw_terms == ("umowa",)

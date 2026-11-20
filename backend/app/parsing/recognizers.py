@@ -22,6 +22,7 @@ from app.parsing.cancel_watch import run_with_cancel_watch
 from app.parsing.diacritics_stage import DiacriticsCorrector
 from app.parsing.errors import binary_missing, empty_document
 from app.parsing.html import paragraphs_html, sanitize_html, section_html, text_chars
+from app.parsing.layer_supplement import missing_lines, repeated_keys, supplement_html
 from app.parsing.ocr_coverage import COVERAGE_NUMBERS_MIN, coverage, number_atoms
 from app.parsing.otsl import otsl_to_html
 from app.parsing.types import ConvertedDocument, PendingPage
@@ -264,13 +265,17 @@ def apply_recognition(
     pages_ocr = 0
     pages_vision = 0
     empty_pages = 0
+    drop = repeated_keys(pending.figure_layer for pending, *_ in outcomes)
     for pending, fragment, rec, page_warnings in outcomes:
         warnings.extend(page_warnings)
         if fragment is None:
             empty_pages += 1
             warnings.append(f"page {pending.page}: no text recognized ({pending.reason})")
             continue
-        html = _insert_fragment(html, pending.page, fragment)
+        extra = missing_lines(fragment, pending.figure_layer, drop) if pending.figure_layer else []
+        if extra:
+            warnings.append(f"page {pending.page}: {len(extra)} text-layer lines added after OCR")
+        html = _insert_fragment(html, pending.page, fragment + supplement_html(extra))
         if rec is vision:
             pages_vision += 1
         else:

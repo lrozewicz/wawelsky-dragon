@@ -5,8 +5,10 @@ from html import escape
 from html.parser import HTMLParser
 
 from app.domain.chunking.types import Block, BlockKind, Position, TableData
-from app.parsing.table_grid import cell_span, expand_cells, linearize
-from app.parsing.table_structure import analyze
+from app.parsing.table_continuation import join_continued_tables
+from app.parsing.table_grid import GridRow, cell_span, expand_cells, linearize
+from app.parsing.table_period import repair_body
+from app.parsing.table_structure import TableShape, analyze
 
 _VOID = frozenset({"br", "img", "hr"})
 _INVISIBLE = frozenset({"script", "style"})
@@ -35,6 +37,13 @@ _SectionState = tuple[str | None, int | None]  # (nazwa sekcji, strona dla posit
 _Sink = tuple[list[str], str, bool]  # kawałki tekstu, wstawka za <br>, tryb dosłowny (pre)
 _Item = tuple[list[str], list[str]]  # element listy: kawałki tekstu + wiersze podlisty
 _ListLevel = tuple[bool, list[_Item]]  # ramka listy: numerowana (ol) + jej elementy
+
+
+def _shape(every: list[GridRow]) -> "TableShape | None":
+    spans = [(row[0], row[2]) for row in every]
+    return analyze(
+        expand_cells(spans, repeat_colspan=False), expand_cells(spans, repeat_colspan=True)
+    )
 
 
 def _attr(attrs: list[tuple[str, str | None]], name: str) -> str | None:
@@ -339,11 +348,17 @@ class _Parser(HTMLParser):
     def _table_data(self) -> tuple[TableData, str]:
         """TableData i tekst bloku tabeli: struktura z całej siatki (table_structure), a gdy
         tabela nie ma danych liczbowych z opisem — nagłówek z thead albo z pierwszego tr."""
-        every = [*(self._t_thead or []), *self._t_rows]
-        spans = [(row[0], row[2]) for row in every]
-        shape = analyze(
-            expand_cells(spans, repeat_colspan=False), expand_cells(spans, repeat_colspan=True)
-        )
+        every: list[GridRow] = [*(self._t_thead or []), *self._t_rows]
+        shape = _shape(every)
+        if shape is not None and shape.header_rows:
+            body = repair_body(
+                [every[r] for r in shape.header_rows], [every[r] for r in shape.body]
+            )
+            if any(new is not every[r] for r, new in zip(shape.body, body, strict=True)):
+                every = list(every)
+                for r, new in zip(shape.body, body, strict=True):
+                    every[r] = new
+                shape = _shape(every)
         if shape is not None:
             head = [every[r] for r in shape.header_rows]
             lines = [_CELL_SEPARATOR.join(shape.labels)]
@@ -356,16 +371,18 @@ class _Parser(HTMLParser):
                 title=" ".join(shape.title),
             )
             return table, "\n".join(lines)
-        header_rows: list[_Row]
-        body_rows: list[_Row]
+        header_rows: list[GridRow]
+        body_rows: list[GridRow]
         if self._t_thead is not None:
-            header_rows, header_html, body_rows = self._t_thead, self._t_thead_html, self._t_rows
+            header_rows, header_html = list(self._t_thead), self._t_thead_html
+            body_rows = list(self._t_rows)
         elif self._t_rows:
             header_rows = [self._t_rows[0]]
             header_html = f"<thead>{self._t_rows[0][1]}</thead>"
-            body_rows = self._t_rows[1:]
+            body_rows = list(self._t_rows[1:])
         else:
             header_rows, header_html, body_rows = [], "", []
+        body_rows = repair_body(header_rows, body_rows)
         header, rows = linearize(header_rows, body_rows)
         lines = [_CELL_SEPARATOR.join(header)] if header else []
         lines.extend(_CELL_SEPARATOR.join(row[0]) for row in body_rows)
@@ -414,9 +431,17 @@ class _Parser(HTMLParser):
         self.blocks.append(Block(_KINDS[tag], text, html, None, path, positions, section, table))
 
 
-def html_to_blocks(html: str) -> list[Block]:
-    """Parsuj znormalizowany HTML (05 §7) na listę Block (CONTRACT WP E1-5 C11)."""
+def _parse(html: str) -> list[Block]:
     parser = _Parser()
     parser.feed(html)
     parser.close()
     return parser.blocks
+
+
+def html_to_blocks(html: str) -> list[Block]:
+    """Parsuj znormalizowany HTML (05 §7) na listę Block (CONTRACT WP E1-5 C11).
+
+    Tabele-ciągi dalsze (strona bez powtórzonego nagłówka i tytułu) dostają nagłówek i tytuł
+    poprzedniej tabeli (``table_continuation``).
+    """
+    return join_continued_tables(_parse(html), _parse)

@@ -18,9 +18,18 @@ _UNIT = re.compile(
     r"(?i)\b(in (thousands|millions|billions)|w (tys\.?|tysiącach|mln|milionach|mld|miliardach)"
     r"|(tys|mln|mld)\.? (zł|złotych|pln|usd|eur)|thousands of|millions of)\b"
 )
-# Tytuł tabeli: „TABL. 13 (227).”, „Tablica 2”, „Tabela 1.”, „Tab. 4”, „Table 3”.
-_CAPTION = re.compile(r"(?i)^(tabl\.|tablica|tabela|tab\.|table)\s*(\d|[ivxlc]+\b)")
-_CAPTION_LOOKBACK = 3
+# Tytuł tabeli: „TABL. 13 (227).”, „Tablica 2”, „Tabela 1.”, „Tab. 4”, „Table 3”; OCR także
+# „TABLE. 27”, „TABLEL. 26”. Roczniki w DOCX: „TABL.” stoi poza tekstem akapitu (styl
+# „Tyt. tab. pol.”), zostaje „5 (190). POJAZDY…” — numer w dziale, numer w roczniku w nawiasie
+# i tytuł wielkimi literami.
+_CAPTION = re.compile(
+    r"(?i)^(tabl\.|tablica|tabela|tab\.|tablel?\.?)\s*(\d|[ivxlc]+\b)"
+    r"|^\d{1,3}\s?\(\d{1,4}\)\.\s*(?-i:[A-ZĄĆĘŁŃÓŚŹŻ]{2})"
+)
+# Nysa: TABL. 4 | Stan w dniu 31 XII | POPULATION BY AGE | As of 31 XII | tabela;
+# praca 2017: TABL. 13 (116) + 3 linie tytułu PL + 2 linie EN, każda osobnym akapitem.
+_CAPTION_LOOKBACK = 7
+_CAPTION_GAP_MAX = 120  # dłuższy akapit między tytułem a tabelą to treść — tytuł jest czegoś innego
 _CAPTION_TAIL = 2
 _CONT = re.compile(r"(?i)\((cd|cont|dok)\.?\)")
 _PL_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")
@@ -51,9 +60,10 @@ def table_caption(before: Sequence[Block]) -> str:
     W rocznikach tytuł stoi w akapicie (czasem na końcu bloku przypisów poprzedniej tabeli),
     nie w nagłówku, więc bez niego żaden chunk tabeli nie mówi, czego dotyczą liczby.
     Szuka w ostatnich ``_CAPTION_LOOKBACK`` akapitach; za tytułem dopuszcza najwyżej
-    ``_CAPTION_TAIL`` linii (tłumaczenie tytułu, podtytuł).
+    ``_CAPTION_TAIL`` linii w tym samym akapicie (tłumaczenie tytułu, podtytuł) albo krótkie
+    osobne akapity (OCR: „Stan w dniu 31 XII”, tytuł EN, „As of 31 XII”).
     """
-    for block in reversed(before[-_CAPTION_LOOKBACK:]):
+    for back, block in enumerate(reversed(before[-_CAPTION_LOOKBACK:])):
         if block.kind in ("table", "heading"):  # tytuł sprzed nagłówka należy do innej sekcji
             return ""
         if block.kind != "paragraph":
@@ -64,6 +74,10 @@ def table_caption(before: Sequence[Block]) -> str:
                 if len(lines) - 1 - i > _CAPTION_TAIL:
                     return ""
                 return " ".join(lines[i].split())[:_LEAD_MAX]
+        # OCR daje dopiski tytułu („Stan w dniu 31 XII”, tłumaczenie) jako osobne akapity; tytuł
+        # może stać kilka akapitów wyżej, ale tylko za krótkimi dopiskami, nie za tekstem
+        if back and len(" ".join(lines)) > _CAPTION_GAP_MAX:
+            return ""
     return ""
 
 
@@ -78,6 +92,46 @@ def table_lead(prev: Block | None, before: Sequence[Block] = ()) -> str:
     if caption and unit and (unit in caption or caption in unit):
         return max(caption, unit, key=len)
     return "\n".join(part for part in (caption, unit) if part)
+
+
+_CAPS_MIN_WORDS = 4
+_CAPS_MIN_CHARS = 25
+_CAPS_RATIO = 0.9
+_PL_LETTERS = frozenset("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ")
+_EN_WORDS = frozenset({"THE", "OF", "IN", "BY", "ON", "AND", "AGAINST", "FOR", "WITH"})
+
+
+def _english(text: str) -> bool:
+    """Angielski tekst: bez polskich liter i z angielskim słowem funkcyjnym."""
+    words = {w.strip(".,:;()").upper() for w in text.split()}
+    return not _PL_LETTERS.intersection(text) and bool(words & _EN_WORDS)
+
+
+def caps_title(prev: Block | None) -> str:
+    """Tytuł bez „Tabela N” wersalikami tuż nad tabelą (załączniki aktów: „LIMIT PRZYJĘĆ…”).
+
+    Tylko gdy tabela nie ma tytułu z ``table_lead`` — inaczej krótkie wersaliki to wiersz-sekcja
+    albo nagłówek strony. Pomija tabelę, której tytuł „TABL. …” jest nagłówkiem (stoi w
+    breadcrumbie) — wersaliki pod nim to tylko tłumaczenie.
+    """
+    if prev is None or prev.kind != "paragraph":
+        return ""
+    if prev.heading_path and _CAPTION.match(prev.heading_path[-1]):
+        return ""
+    text = " ".join(prev.text.split())
+    if _english(text):  # tłumaczenie EN polskiego nagłówka („VOIVODSHIP AGAINST THE…”)
+        return ""
+    letters = [c for c in text if c.isalpha()]
+    if (
+        len(text) < _CAPS_MIN_CHARS
+        or len(text) > _LEAD_MAX
+        or len(text.split()) < _CAPS_MIN_WORDS
+        or text.endswith(".")
+        or not letters
+        or sum(c.isupper() for c in letters) < _CAPS_RATIO * len(letters)
+    ):
+        return ""
+    return text
 
 
 def _norm_head(cell: str) -> str:
@@ -359,8 +413,80 @@ def _row_groups(t: TableData, bc: str, cfg: ChunkConfig, lines: Lines) -> list[l
     return groups
 
 
+_CELL_HTML = re.compile(r"<t([dh])\b([^>]*)>(.*?)</t\1\s*>", re.S | re.I)
+_TR_OPEN = re.compile(r"^\s*<tr\b[^>]*>", re.I)
+_ROWSPAN = re.compile(r"""\s+rowspan\s*=\s*["']?\d*["']?""", re.I)
+_SPAN_VALUE = r"""\b{}\s*=\s*["']?(\d+)"""
+
+
+def _span_of(attrs: str, name: str) -> int:
+    m = re.search(_SPAN_VALUE.format(name), attrs, re.I)
+    return max(1, int(m.group(1))) if m else 1
+
+
+def _with_rowspan(cell: re.Match[str], rows: int) -> str:
+    """Komórka z rowspan ustawionym na ``rows`` (1 → bez atrybutu)."""
+    attrs = _ROWSPAN.sub("", cell.group(2)) + (f' rowspan="{rows}"' if rows > 1 else "")
+    return f"<t{cell.group(1)}{attrs}>{cell.group(3)}</t{cell.group(1)}>"
+
+
+def split_rows_html(rows_html: Sequence[str], group: Sequence[int]) -> list[str]:
+    """``<tr>`` wierszy ``group`` (kolejne indeksy) z rowspan domkniętym w obrębie grupy.
+
+    Gdy tabela dzielona na fragmenty ma komórkę z rowspan (np. etykieta „Polska” nad
+    latami), wiersze-kontynuacje w następnym fragmencie nie mają tej komórki, więc ich
+    wartości przesuwają się o kolumnę w lewo. Pierwszy wiersz grupy dostaje kopię komórek
+    rozpiętych z wcześniejszych wierszy, a rowspan nie wystaje poza grupę. Wiersze bez
+    zmian zostają dosłownie.
+    """
+    rows = [list(_CELL_HTML.finditer(h)) for h in rows_html]
+    if not group or not any(_span_of(c.group(2), "rowspan") > 1 for row in rows for c in row):
+        return [rows_html[i] for i in group]
+    first, last = group[0], group[-1]
+    if list(group) != list(range(first, last + 1)):
+        return [rows_html[i] for i in group]
+    occupied: set[tuple[int, int]] = set()
+    placed: list[list[tuple[int, re.Match[str], int]]] = []  # (kolumna, komórka, rowspan)
+    for r, row in enumerate(rows[: last + 1]):
+        column, cells = 0, []
+        for cell in row:
+            while (r, column) in occupied:
+                column += 1
+            colspan = _span_of(cell.group(2), "colspan")
+            rowspan = _span_of(cell.group(2), "rowspan")
+            for dr in range(rowspan):
+                for dc in range(colspan):
+                    occupied.add((r + dr, column + dc))
+            cells.append((column, cell, rowspan))
+            column += colspan
+        placed.append(cells)
+    out: list[str] = []
+    for r in group:
+        own: list[tuple[int, str, bool]] = [
+            (c, _with_rowspan(m, last - r + 1), True)
+            if rs > last - r + 1
+            else (c, m.group(0), False)
+            for c, m, rs in placed[r]
+        ]
+        carried: list[tuple[int, str, bool]] = []
+        if r == first:
+            carried = [
+                (c, _with_rowspan(m, min(origin + rs, last + 1) - first), True)
+                for origin in range(first)
+                for c, m, rs in placed[origin]
+                if origin + rs > first
+            ]
+        opening = _TR_OPEN.match(rows_html[r])
+        if not any(changed for *_, changed in own + carried) or opening is None:
+            out.append(rows_html[r])
+            continue
+        merged = sorted(own + carried, key=lambda x: x[0])
+        out.append(opening.group(0) + "".join(html_ for _, html_, _ in merged) + "</tr>")
+    return out
+
+
 def _split_html(t: TableData, group: list[int]) -> str:
-    body = "".join(t.rows_html[i] for i in group)
+    body = "".join(split_rows_html(t.rows_html, group))
     return "<table>" + t.header_html + "<tbody>" + body + "</tbody></table>"
 
 

@@ -51,7 +51,8 @@ _CAPTION = re.compile(r"(?i)^(tabl\.|tablica|tabela|tab\.|table|wykres|zestawien
 _ALPHA = re.compile(r"[^\W\d_]")
 _PL_CHARS = re.compile(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]")
 # Początek etykiety podwiersza w tabelach statystycznych (pod wierszem z wielkiej litery).
-_SUBORDINATE = re.compile(
+_TRAILING_PERIOD = re.compile(r"\s+(19|20)\d\d[a-z*]?$")
+SUBORDINATE = re.compile(
     r"(?i)^(w tym|z tego|z liczby|of which|in which|including|"
     r"kobiety|mężczyźni|chłopcy|dziewczęta|dzieci|miasta|wieś|wsie|na wsi|w miastach|"
     r"females|males|women|men|children|urban|rural|"
@@ -387,7 +388,7 @@ def _sub_rows(rows: list[list[str]], label_col: int) -> None:
     """Podwiersz („dzieci”, „w tym kobiety”, „na 1000 ludności”) dostaje rodzica w etykiecie.
 
     GUS pisze podwiersze małą literą pod wierszem z wielkiej („Spokrewnione”, „dzieci”); bez
-    rodzica model bierze liczbę rodzin zamiast dzieci. Tylko etykiety z listy ``_SUBORDINATE``:
+    rodzica model bierze liczbę rodzin zamiast dzieci. Tylko etykiety z listy ``SUBORDINATE``:
     w tabelach administracyjnych mała litera znaczy co innego (powiat nad gminami KG PSP).
     Rodzic to najbliższy wyższy wiersz z danymi z wielkiej litery, a między nim a podwierszem
     mogą stać tylko inne podwiersze; wiersz-sekcja (opis bez danych) przerywa dziedziczenie.
@@ -408,7 +409,7 @@ def _sub_rows(rows: list[list[str]], label_col: int) -> None:
             continue
         if first.isupper():
             parent = label
-        elif parent and " / " not in label and _SUBORDINATE.match(label):
+        elif parent and " / " not in label and SUBORDINATE.match(label):
             row[label_col] = f"{parent} / {label}"
         else:
             parent = ""
@@ -462,7 +463,8 @@ def _nest(rows: list[list[str]], col: int, levels: Sequence[int]) -> bool:
             unique = {lvl: path for lvl, path in unique.items() if lvl < level}
         full = join_label([base, label]) if base and not label.startswith(base) else label
         if repeated[(level, label)] == 1:
-            unique[level] = full
+            # rodzic bez roku doklejonego do etykiety („Dostawa wody … 2024” → „Dostawa wody …”)
+            unique[level] = _TRAILING_PERIOD.sub("", full)
         stack.append((level, full))
         if full != label:
             row[col] = full

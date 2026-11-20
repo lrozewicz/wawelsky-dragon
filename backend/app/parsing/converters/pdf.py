@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import pdfplumber
 import pypdfium2
@@ -57,6 +58,7 @@ class _RoutedPage:
     text: str
     height: float
     lines: tuple[TextLine, ...]  # puste dla stron pending (tryb inny niż text)
+    figure_text: str = ""  # warstwa kolumnami (strony pending) — uzupełnienie OCR, layer_supplement
 
 
 @dataclass(frozen=True)
@@ -99,6 +101,40 @@ def _open_pdfium(path: Path) -> pypdfium2.PdfDocument:
         if getattr(exc, "err_code", None) == pdfium_raw.FPDF_ERR_PASSWORD:
             raise encrypted_file("pdf") from None
         raise corrupted_file("pdf", str(exc)) from None
+
+
+_LINE_TOLERANCE_PT = 3.0
+_COLUMN_GAP_SHARE = 0.08  # przerwa w linii > 8% szerokości strony: osobne pola obok siebie
+
+
+def _column_text(page: pdfplumber.page.Page) -> str:
+    """Warstwa strony z polami obok siebie rozdzielonymi: najpierw lewa połowa, potem prawa.
+
+    ``extract_text`` skleja w jedną linię legendy dwóch map stojących obok siebie
+    („pomorskie = 147 pomorskie = 14,6”) i model bierze wartość z sąsiedniej. Tu linię dzielimy
+    na dużych przerwach, a odcinki układamy kolumnami, więc każda legenda stoi pod swoim opisem.
+    """
+    words = sorted(page.extract_words(), key=lambda w: (w["top"], w["x0"]))
+    rows: list[list[dict[str, Any]]] = []
+    for word in words:
+        if rows and abs(word["top"] - rows[-1][0]["top"]) <= _LINE_TOLERANCE_PT:
+            rows[-1].append(word)
+        else:
+            rows.append([word])
+    gap = page.width * _COLUMN_GAP_SHARE
+    columns: tuple[list[str], list[str]] = ([], [])
+    for row in rows:
+        row.sort(key=lambda w: w["x0"])
+        segment = [row[0]]
+        for word in row[1:]:
+            if word["x0"] - segment[-1]["x1"] > gap:
+                columns[segment[0]["x0"] >= page.width / 2].append(
+                    " ".join(w["text"] for w in segment)
+                )
+                segment = []
+            segment.append(word)
+        columns[segment[0]["x0"] >= page.width / 2].append(" ".join(w["text"] for w in segment))
+    return "\n".join([*columns[0], *columns[1]])
 
 
 def _image_cover(page: pdfplumber.page.Page) -> float:
@@ -208,7 +244,8 @@ def _render_pending(
             # Warstwa trafia do korekty tylko, gdy przeszła bramkę routera (DEC-248 P1);
             # dla strategii vision _pending_reason zwraca "strategy=vision", więc
             # bramkę liczymy wprost przez route_reason.
-            text_layer = page.text if route_reason(page.quality, opts) == "" else ""
+            reason = route_reason(page.quality, opts)
+            text_layer = page.text if reason == "" else ""
             pending.append(
                 PendingPage(
                     page.number,
@@ -216,6 +253,7 @@ def _render_pending(
                     png_bytes(image),
                     _pending_reason(page.quality, opts),
                     text_layer,
+                    page.figure_text if reason in ("", "image_cover") else "",
                 )
             )
     finally:
@@ -239,7 +277,8 @@ def pdf_route_batch(path: Path, pages: tuple[int, ...], opts: ConvertOptions) ->
             quality = page_text_quality(info)
             mode = route_page(quality, opts.pdf_strategy, opts)
             lines = tuple(page_lines(page)) if mode == "text" else ()
-            routed.append(_RoutedPage(number, mode, quality, text, page.height, lines))
+            figure = _column_text(page) if mode != "text" else ""
+            routed.append(_RoutedPage(number, mode, quality, text, page.height, lines, figure))
     return RoutedBatch(tuple(routed), _render_pending(path, routed, opts))
 
 

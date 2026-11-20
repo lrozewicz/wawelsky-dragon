@@ -1,12 +1,13 @@
 /**
- * Domyślna waga wektorów w wyszukiwaniu WD (UI): 1.0 zamiast 0.3 z RAGFlow.
+ * Domyślna waga wektorów w wyszukiwaniu WD (UI): 0.8 — hybryda z pełnotekstowym.
  *
- * Pomiar 05.11.2026 na 262 pytaniach spoza treningu: waga 0.3 → właściwy fragment w top-6
- * w 194 przypadkach, 1.0 → 205 (McNemar p=0,035; top-1: 119 vs 143, p=0,001). Przy 1.0 backend
- * pomija zapytanie pełnotekstowe (nie zmienia rankingu), co skraca wyszukiwanie o sekundy.
+ * Pomiar 05.11.2026 na 262 pytaniach spoza treningu: 0.3 z RAGFlow istotnie gorsze (top-6 194
+ * vs 205 przy 1.0, p=0,035), 0.7–1.0 równoważne. Pomiar 20.11.2026: same wektory (1.0) gubią
+ * zapytania o identyfikator — skrót, numer tablicy, „poz. 1270”: fragment w top-10 w 94/245,
+ * przy 0.8 w 220/245 (z premią identyfikatorów w backendzie); pytania opisowe bez zmian.
  * API zgodne z RAGFlow zostaje przy 0.3 — wagę ustawia klient (tu: UI).
  */
-export const DEFAULT_VECTOR_WEIGHT = 1.0
+export const DEFAULT_VECTOR_WEIGHT = 0.8
 
 /**
  * Domyślna liczba fragmentów kontekstu w czacie WD (UI): 10 zamiast 6 z RAGFlow.

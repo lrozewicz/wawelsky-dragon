@@ -9,6 +9,7 @@ from app.domain.chunking.tables import (
     chunk_table,
     row_text,
     section_heads,
+    split_rows_html,
     table_lead,
     table_lines,
     table_text,
@@ -314,6 +315,24 @@ def test_table_lead_caption_at_end_of_footnote_block():
     assert table_lead(block, [block]) == "TABL. 14 (228). BRANŻOWE SZKOŁY I STOPNIA"
 
 
+def test_table_lead_docx_caption_without_tabl_prefix():
+    """Rocznik DOCX: „TABL.” jest w stylu akapitu, w tekście zostaje „5 (190). TYTUŁ”."""
+    before = [
+        _para("a W lotach komunikacyjnych.\na In communication flights."),
+        _para("5 (190).\tPOJAZDY SAMOCHODOWE I CIĄGNIKI ZAREJESTROWANE a"),
+        _para("Stan w dniu 31 XII"),
+        _para("REGISTERED ROAD VEHICLES AND TRACTORS a"),
+        _para("As of 31 XII"),
+    ]
+    caption = "5 (190). POJAZDY SAMOCHODOWE I CIĄGNIKI ZAREJESTROWANE a"
+    assert table_lead(before[-1], before) == caption
+
+
+def test_table_lead_numbered_sentence_is_not_caption():
+    block = _para("3 (12). Według ustawy dane podaje się co roku.")
+    assert table_lead(block, [block]) == ""
+
+
 def test_table_lead_ignores_caption_far_above():
     block = _para("Tabela 2. Wyniki\n" + "\n".join(f"Linia {i} tekstu." for i in range(5)))
     assert table_lead(block, [block]) == ""
@@ -524,3 +543,60 @@ def test_caption_not_taken_across_heading():
     )
     before = [_para("Tabela 5. Wyniki"), heading]
     assert table_lead(heading, before) == ""
+
+
+# Rocznik Euroregionu Nysa, TABL. 13: etykieta części (rowspan) nad latami. Fragment
+# zaczynający się w środku rozpiętości dostawał wiersze bez etykiety, więc „2000” stało w
+# boczku, a wartości pod nazwą sąsiedniej kolumny.
+_NYSA_ROWS = (
+    "<tr><td>Polska</td><td>1991</td><td>3514</td><td>5,8</td></tr>",
+    '<tr><td rowspan="4">Polish</td><td>1995</td><td>3110</td><td>5,1</td></tr>',
+    "<tr><td>2000</td><td>3188</td><td>5,4</td></tr>",
+    "<tr><td>2005</td><td>2870</td><td>4,9</td></tr>",
+    "<tr><td>2010</td><td>3109</td><td>5,4</td></tr>",
+    "<tr><td>Czeska</td><td>1991</td><td>3109</td><td>7,3</td></tr>",
+)
+
+
+def test_split_rows_carry_rowspan_label_into_next_fragment() -> None:
+    rows = split_rows_html(_NYSA_ROWS, [3, 4, 5])
+    assert rows[0] == '<tr><td rowspan="2">Polish</td><td>2005</td><td>2870</td><td>4,9</td></tr>'
+    assert rows[1] == _NYSA_ROWS[4]
+    assert rows[2] == _NYSA_ROWS[5]
+
+
+def test_split_rows_clip_rowspan_at_fragment_end() -> None:
+    rows = split_rows_html(_NYSA_ROWS, [0, 1, 2])
+    assert rows[0] == _NYSA_ROWS[0]
+    assert rows[1] == '<tr><td rowspan="2">Polish</td><td>1995</td><td>3110</td><td>5,1</td></tr>'
+    assert rows[2] == _NYSA_ROWS[2]
+
+
+def test_split_rows_single_row_and_tables_without_rowspan_unchanged() -> None:
+    assert split_rows_html(_NYSA_ROWS, [2]) == [
+        "<tr><td>Polish</td><td>2000</td><td>3188</td><td>5,4</td></tr>"
+    ]
+    plain = ("<tr><td>a</td><td>1</td></tr>", "<tr><td>b</td><td>2</td></tr>")
+    assert split_rows_html(plain, [1]) == [plain[1]]
+
+
+def test_table_lead_caption_above_short_ocr_paragraphs():
+    # Rocznik Euroregionu Nysa 2011, s. 44 (OCR): dopiski tytułu jako osobne akapity; okruszek
+    # fragmentów został z poprzedniego nagłówka („TABL. 2. LUDNOŚĆ WEDŁUG WIELKOŚCI GMIN”)
+    before = [
+        _para("TABL. 4. LUDNOŚĆ WEDŁUG WIEKU"),
+        _para("Stan w dniu 31 XII"),
+        _para("POPULATION BY AGE"),
+        _para("As of 31 XII"),
+    ]
+    assert table_lead(before[-1], before) == "TABL. 4. LUDNOŚĆ WEDŁUG WIEKU"
+
+
+def test_table_lead_caption_not_taken_over_body_text():
+    before = [
+        _para("TABL. 4. LUDNOŚĆ WEDŁUG WIEKU"),
+        _para("Stan w dniu 31 XII"),
+        _para("W 2010 r. w Euroregionie Nysa mieszkało ponad 1,6 mln osób, tj. o 9% mniej. " * 3),
+        _para("As of 31 XII"),
+    ]
+    assert table_lead(before[-1], before) == ""

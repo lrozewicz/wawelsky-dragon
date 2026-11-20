@@ -36,6 +36,12 @@ CASES = [
     pytest.param("<div><span></span></div>", "", id="10-div-span"),
     pytest.param("zwykły tekst\ndruga linia", "zwykły tekst\ndruga linia", id="11-bez-html"),
     pytest.param("<p>a <b>b</b> c</p>", "a b c", id="12-inline"),
+    pytest.param(
+        "<pre><code>z dnia 14</code></pre><pre><code>sierpnia 2013 r.</code></pre>",
+        "z dnia 14\nsierpnia 2013 r.",
+        id="13-pre-code-linie",
+    ),
+    pytest.param("<p>wywołaj <code>f()</code> teraz</p>", "wywołaj f() teraz", id="14-code-inline"),
 ]
 
 
