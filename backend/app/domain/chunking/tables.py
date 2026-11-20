@@ -18,11 +18,17 @@ _UNIT = re.compile(
     r"(?i)\b(in (thousands|millions|billions)|w (tys\.?|tysiącach|mln|milionach|mld|miliardach)"
     r"|(tys|mln|mld)\.? (zł|złotych|pln|usd|eur)|thousands of|millions of)\b"
 )
-# Tytuł tabeli: „TABL. 13 (227).”, „Tablica 2”, „Tabela 1.”, „Tab. 4”, „Table 3”.
-_CAPTION = re.compile(r"(?i)^(tabl\.|tablica|tabela|tab\.|table)\s*(\d|[ivxlc]+\b)")
-_CAPTION_LOOKBACK = (
-    5  # Nysa: TABL. 4 | Stan w dniu 31 XII | POPULATION BY AGE | As of 31 XII | tabela
+# Tytuł tabeli: „TABL. 13 (227).”, „Tablica 2”, „Tabela 1.”, „Tab. 4”, „Table 3”; OCR także
+# „TABLE. 27”, „TABLEL. 26”. Roczniki w DOCX: „TABL.” stoi poza tekstem akapitu (styl
+# „Tyt. tab. pol.”), zostaje „5 (190). POJAZDY…” — numer w dziale, numer w roczniku w nawiasie
+# i tytuł wielkimi literami.
+_CAPTION = re.compile(
+    r"(?i)^(tabl\.|tablica|tabela|tab\.|tablel?\.?)\s*(\d|[ivxlc]+\b)"
+    r"|^\d{1,3}\s?\(\d{1,4}\)\.\s*(?-i:[A-ZĄĆĘŁŃÓŚŹŻ]{2})"
 )
+# Nysa: TABL. 4 | Stan w dniu 31 XII | POPULATION BY AGE | As of 31 XII | tabela;
+# praca 2017: TABL. 13 (116) + 3 linie tytułu PL + 2 linie EN, każda osobnym akapitem.
+_CAPTION_LOOKBACK = 7
 _CAPTION_GAP_MAX = 120  # dłuższy akapit między tytułem a tabelą to treść — tytuł jest czegoś innego
 _CAPTION_TAIL = 2
 _CONT = re.compile(r"(?i)\((cd|cont|dok)\.?\)")
@@ -86,6 +92,46 @@ def table_lead(prev: Block | None, before: Sequence[Block] = ()) -> str:
     if caption and unit and (unit in caption or caption in unit):
         return max(caption, unit, key=len)
     return "\n".join(part for part in (caption, unit) if part)
+
+
+_CAPS_MIN_WORDS = 4
+_CAPS_MIN_CHARS = 25
+_CAPS_RATIO = 0.9
+_PL_LETTERS = frozenset("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ")
+_EN_WORDS = frozenset({"THE", "OF", "IN", "BY", "ON", "AND", "AGAINST", "FOR", "WITH"})
+
+
+def _english(text: str) -> bool:
+    """Angielski tekst: bez polskich liter i z angielskim słowem funkcyjnym."""
+    words = {w.strip(".,:;()").upper() for w in text.split()}
+    return not _PL_LETTERS.intersection(text) and bool(words & _EN_WORDS)
+
+
+def caps_title(prev: Block | None) -> str:
+    """Tytuł bez „Tabela N” wersalikami tuż nad tabelą (załączniki aktów: „LIMIT PRZYJĘĆ…”).
+
+    Tylko gdy tabela nie ma tytułu z ``table_lead`` — inaczej krótkie wersaliki to wiersz-sekcja
+    albo nagłówek strony. Pomija tabelę, której tytuł „TABL. …” jest nagłówkiem (stoi w
+    breadcrumbie) — wersaliki pod nim to tylko tłumaczenie.
+    """
+    if prev is None or prev.kind != "paragraph":
+        return ""
+    if prev.heading_path and _CAPTION.match(prev.heading_path[-1]):
+        return ""
+    text = " ".join(prev.text.split())
+    if _english(text):  # tłumaczenie EN polskiego nagłówka („VOIVODSHIP AGAINST THE…”)
+        return ""
+    letters = [c for c in text if c.isalpha()]
+    if (
+        len(text) < _CAPS_MIN_CHARS
+        or len(text) > _LEAD_MAX
+        or len(text.split()) < _CAPS_MIN_WORDS
+        or text.endswith(".")
+        or not letters
+        or sum(c.isupper() for c in letters) < _CAPS_RATIO * len(letters)
+    ):
+        return ""
+    return text
 
 
 def _norm_head(cell: str) -> str:

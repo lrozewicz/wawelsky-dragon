@@ -315,6 +315,24 @@ def test_table_lead_caption_at_end_of_footnote_block():
     assert table_lead(block, [block]) == "TABL. 14 (228). BRANŻOWE SZKOŁY I STOPNIA"
 
 
+def test_table_lead_docx_caption_without_tabl_prefix():
+    """Rocznik DOCX: „TABL.” jest w stylu akapitu, w tekście zostaje „5 (190). TYTUŁ”."""
+    before = [
+        _para("a W lotach komunikacyjnych.\na In communication flights."),
+        _para("5 (190).\tPOJAZDY SAMOCHODOWE I CIĄGNIKI ZAREJESTROWANE a"),
+        _para("Stan w dniu 31 XII"),
+        _para("REGISTERED ROAD VEHICLES AND TRACTORS a"),
+        _para("As of 31 XII"),
+    ]
+    caption = "5 (190). POJAZDY SAMOCHODOWE I CIĄGNIKI ZAREJESTROWANE a"
+    assert table_lead(before[-1], before) == caption
+
+
+def test_table_lead_numbered_sentence_is_not_caption():
+    block = _para("3 (12). Według ustawy dane podaje się co roku.")
+    assert table_lead(block, [block]) == ""
+
+
 def test_table_lead_ignores_caption_far_above():
     block = _para("Tabela 2. Wyniki\n" + "\n".join(f"Linia {i} tekstu." for i in range(5)))
     assert table_lead(block, [block]) == ""

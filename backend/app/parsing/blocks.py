@@ -5,6 +5,7 @@ from html import escape
 from html.parser import HTMLParser
 
 from app.domain.chunking.types import Block, BlockKind, Position, TableData
+from app.parsing.table_continuation import join_continued_tables
 from app.parsing.table_grid import GridRow, cell_span, expand_cells, linearize
 from app.parsing.table_period import repair_body
 from app.parsing.table_structure import TableShape, analyze
@@ -429,9 +430,17 @@ class _Parser(HTMLParser):
         self.blocks.append(Block(_KINDS[tag], text, html, None, path, positions, section, table))
 
 
-def html_to_blocks(html: str) -> list[Block]:
-    """Parsuj znormalizowany HTML (05 §7) na listę Block (CONTRACT WP E1-5 C11)."""
+def _parse(html: str) -> list[Block]:
     parser = _Parser()
     parser.feed(html)
     parser.close()
     return parser.blocks
+
+
+def html_to_blocks(html: str) -> list[Block]:
+    """Parsuj znormalizowany HTML (05 §7) na listę Block (CONTRACT WP E1-5 C11).
+
+    Tabele-ciągi dalsze (strona bez powtórzonego nagłówka i tytułu) dostają nagłówek i tytuł
+    poprzedniej tabeli (``table_continuation``).
+    """
+    return join_continued_tables(_parse(html), _parse)

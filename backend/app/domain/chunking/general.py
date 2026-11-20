@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 from app.domain.chunking.delimiter import parse_delimiter_field, split_paragraphs
 from app.domain.chunking.limits import split_to_limit
-from app.domain.chunking.tables import chunk_table, section_heads, table_lead
+from app.domain.chunking.tables import caps_title, chunk_table, section_heads, table_lead
 from app.domain.chunking.types import (
     Block,
     BlockKind,
@@ -107,7 +107,7 @@ def _table_context(blocks: Sequence[Block]) -> tuple[dict[int, str], frozenset[s
     for i, b in enumerate(blocks):
         if b.kind != "table":
             continue
-        lead = table_lead(blocks[i - 1], blocks[:i]) if i else ""
+        lead = (table_lead(blocks[i - 1], blocks[:i]) or caps_title(blocks[i - 1])) if i else ""
         title = b.table.title if b.table is not None else ""
         if title and title not in lead:  # tytuł z wierszy nad nagłówkiem (CSV: adres, nazwa)
             lead = f"{title}\n{lead}" if lead else title
