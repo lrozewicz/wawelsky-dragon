@@ -16,7 +16,7 @@ describe('DEFAULT_SETTINGS', () => {
   it('ma wartości domyślne z kontraktu', () => {
     expect(DEFAULT_SETTINGS).toEqual({
       similarityThreshold: 0.2,
-      vectorWeight: 1,
+      vectorWeight: 0.8,
       topN: 10,
       rerankId: '',
       crossLanguages: [],
