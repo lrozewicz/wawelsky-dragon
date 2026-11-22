@@ -64,7 +64,7 @@ dev = [
     "reportlab==5.1.0",
     # Port testów SDK (E2-3b): klient `ragflow_sdk` w wersji upstream v0.27.2.
     # Tylko do testów kontraktowych — nie trafia do obrazów runtime.
-    "ragflow-sdk==0.27.3",
+    "ragflow-sdk==1.0.0",
     "pip-audit==2.10.1",
 ]
 
