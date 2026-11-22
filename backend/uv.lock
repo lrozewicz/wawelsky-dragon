@@ -1460,15 +1460,15 @@ wheels = [
 
 [[package]]
 name = "ragflow-sdk"
-version = "0.27.3"
+version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "beartype" },
     { name = "requests" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/90/09/0b22f4f9490d67fb1b9a985ac7d2e5d958eb9daf95d89f088bbcef1f88a4/ragflow_sdk-0.27.3.tar.gz", hash = "sha256:9d4ff3c5001753b0c2821fa9ba428d67a39f09cd99ac61a81b9672c9bae52895", size = 10458, upload-time = "2026-10-23T06:34:21.303Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a6/ab/c574022d6a14230ed19d490f8d1718afdfda775b85afe4f6acbb71ea0d95/ragflow_sdk-1.0.0.tar.gz", hash = "sha256:9fd4536382108de5d383972b56e4152d735c86535cc0d7fb8982dbeb7783b906", size = 12823, upload-time = "2026-11-06T11:47:42.289Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a5/f0/3f912c15a8e31c7b2fe0ed493ff8e561b02afd01910891a62eda8cdd4c36/ragflow_sdk-0.27.3-py3-none-any.whl", hash = "sha256:1288dd7787cb7da9b07b7cfd111b29855513722e3adff0a1a21f3fed8d9eab53", size = 17926, upload-time = "2026-10-23T06:34:20.432Z" },
+    { url = "https://files.pythonhosted.org/packages/04/67/e6c2c11e35984b48d0f1d0897f2ba9d812f10cdc7adae073838129e65b11/ragflow_sdk-1.0.0-py3-none-any.whl", hash = "sha256:9910d75ff1844c21c282cb2b014983c4952bae40c8cd295f1f83d26ae61c616e", size = 18641, upload-time = "2026-11-06T11:47:41.4Z" },
 ]
 
 [[package]]
@@ -1907,7 +1907,7 @@ dev = [
     { name = "pytest-cov", specifier = "==7.1.0" },
     { name = "pytest-timeout", specifier = "==2.4.0" },
     { name = "pytest-xdist", specifier = "==3.8.0" },
-    { name = "ragflow-sdk", specifier = "==0.27.3" },
+    { name = "ragflow-sdk", specifier = "==1.0.0" },
     { name = "reportlab", specifier = "==5.1.0" },
     { name = "requests-toolbelt", specifier = "==1.0.0" },
     { name = "ruff", specifier = "==0.17.4" },
